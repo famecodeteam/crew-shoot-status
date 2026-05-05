@@ -1,10 +1,21 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getDemoShoot, type Shoot } from "./demo-data";
+import { getBySlug } from "@/lib/storage";
+import type { Shoot } from "@/lib/types";
+import { getDemoShoot } from "./demo-data";
 import { TIMELINE_STEPS, currentStepIndex } from "./status";
+
+// Re-fetch on every request — we want ≤60s lag from a Trello move.
+// (When we add Vercel KV in M5, swap to `revalidate = 30` for ISR.)
+export const dynamic = "force-dynamic";
 
 const FAME_LOGO_URL =
   "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65bcbe23cfb0eb14d2ce0063_logo.svg";
+
+async function loadShoot(slug: string): Promise<Shoot | null> {
+  if (slug === "demo") return getDemoShoot();
+  return getBySlug(slug);
+}
 
 export async function generateMetadata({
   params,
@@ -12,16 +23,14 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const shoot = slug === "demo" ? getDemoShoot() : null;
+  const shoot = await loadShoot(slug);
   if (!shoot) return { title: "Fame Crew" };
   return { title: `Fame Crew - Shoot Status - ${shoot.shootNumber}` };
 }
 
 export default async function ShootPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-
-  // M0: only the static `demo` slug is wired up. Real lookups arrive in M2.
-  const shoot = slug === "demo" ? getDemoShoot() : null;
+  const shoot = await loadShoot(slug);
   if (!shoot) notFound();
 
   return <ShootView shoot={shoot} />;

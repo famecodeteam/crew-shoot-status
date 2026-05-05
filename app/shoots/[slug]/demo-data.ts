@@ -1,28 +1,11 @@
-import type { ShootStatus } from "./status";
+import type { Shoot } from "@/lib/types";
 
-export type Shoot = {
-  slug: string;
-  shootNumber: string;
-  clientName: string;
-  location: string;
-  shootDate: string; // ISO YYYY-MM-DD
-  status: ShootStatus;
-  statusLabel: string;
-  crew?: {
-    name: string;
-    bio: string;
-    photoUrl?: string;
-  };
-  briefUrl?: string;
-  quoteUrl?: string;
-  finalAssetsUrl?: string;
-  producerEmail: string;
-};
-
-// Hardcoded for M0. Replaced by KV lookup in M2.
+// Hardcoded for /shoots/demo so the visual demo always works regardless
+// of what's in storage. Real shoots come from lib/storage.
 export function getDemoShoot(): Shoot {
   return {
     slug: "demo",
+    cardId: "demo-card-id",
     shootNumber: "#0190",
     clientName: "genOway",
     location: "London, UK",
@@ -37,5 +20,8 @@ export function getDemoShoot(): Shoot {
     quoteUrl: "https://app.betterproposals.io/example-quote",
     // No finalAssetsUrl yet — section should hide silently to demo graceful empty state.
     producerEmail: "zandro@fame.so",
+    trelloListId: "demo",
+    trelloListName: "Crew Booked",
+    updatedAt: new Date().toISOString(),
   };
 }

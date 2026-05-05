@@ -1,0 +1,168 @@
+// Trello card + board context → Shoot record.
+// Pure transform (no I/O) so it's easy to unit-test against fixture cards.
+
+import type { Shoot } from "./types";
+import type {
+  TrelloCard,
+  TrelloCustomField,
+  TrelloList,
+} from "./trello";
+import { mapList, statusLabel } from "./list-mapping";
+
+// Default producer until we add a per-shoot Trello field for it.
+const DEFAULT_PRODUCER_EMAIL = "zandro@fame.so";
+
+export type TransformContext = {
+  listsById: Map<string, TrelloList>;
+  customFieldsById: Map<string, TrelloCustomField>;
+  // Custom field IDs we resolved by name. null = field not present on board.
+  fieldId: {
+    location: string | null;
+    shootDate: string | null;
+    crewName: string | null;
+    crewPhotoUrl: string | null;
+    crewBio: string | null;
+    publicSlug: string | null;
+  };
+};
+
+// Build the lookup context once per backfill / webhook batch.
+export function buildContext(
+  lists: TrelloList[],
+  customFields: TrelloCustomField[],
+): TransformContext {
+  const listsById = new Map(lists.map((l) => [l.id, l]));
+  const customFieldsById = new Map(customFields.map((f) => [f.id, f]));
+
+  function findByName(name: string): string | null {
+    const lower = name.toLowerCase();
+    for (const f of customFields) {
+      if (f.name.trim().toLowerCase() === lower) return f.id;
+    }
+    return null;
+  }
+
+  return {
+    listsById,
+    customFieldsById,
+    fieldId: {
+      location: findByName("Shoot Location"),
+      shootDate: findByName("Shoot Date"),
+      crewName: findByName("Crew Member Name"),
+      crewPhotoUrl: findByName("Crew Member Photo URL"),
+      crewBio: findByName("Crew Member Bio"),
+      publicSlug: findByName("Public Slug"),
+    },
+  };
+}
+
+// Title format per brief: "#NNNN - Client Name". Falls back gracefully.
+export function parseTitle(name: string): { shootNumber: string; clientName: string } {
+  const trimmed = (name || "").trim();
+  // Match e.g. "#0190 - genOway" or "#0190 — genOway" (em-dash too).
+  const m = trimmed.match(/^(#\d{3,5})\s*[-–—]\s*(.+)$/);
+  if (m) return { shootNumber: m[1], clientName: m[2].trim() };
+  // Loose: number anywhere at start, but no dash separator
+  const m2 = trimmed.match(/^(#\d{3,5})\s+(.+)$/);
+  if (m2) return { shootNumber: m2[1], clientName: m2[2].trim() };
+  return { shootNumber: "", clientName: trimmed };
+}
+
+function readCustomFieldText(
+  card: TrelloCard,
+  fieldId: string | null,
+): string {
+  if (!fieldId) return "";
+  const item = card.customFieldItems?.find((x) => x.idCustomField === fieldId);
+  return item?.value?.text?.trim() ?? "";
+}
+
+function readCustomFieldDate(
+  card: TrelloCard,
+  fieldId: string | null,
+): string {
+  if (!fieldId) return "";
+  const item = card.customFieldItems?.find((x) => x.idCustomField === fieldId);
+  const raw = item?.value?.date;
+  if (!raw) return "";
+  // Trello stores ISO datetime; we want YYYY-MM-DD.
+  return raw.slice(0, 10);
+}
+
+// Random URL-safe hash. Crypto-strong + slug-friendly.
+function randomSlugHash(): string {
+  const bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function clientSlugify(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 24);
+}
+
+// Generate a slug for a card on first sync. Pattern: NNNN-client-xxxxxxxx.
+// Brief example: "0203-rios-x7k2m". We use 8 hex chars for less ambiguity.
+export function generateSlug(shootNumber: string, clientName: string): string {
+  const num = shootNumber.replace(/^#/, "") || "card";
+  const client = clientSlugify(clientName) || "shoot";
+  return `${num}-${client}-${randomSlugHash()}`;
+}
+
+// Decide whether a card should be exposed publicly. Returns null if not
+// (e.g. cards in pre-Won lists, or in lists we don't recognise).
+export function transformCard(
+  card: TrelloCard,
+  ctx: TransformContext,
+  existingSlug?: string,
+): Shoot | null {
+  const list = ctx.listsById.get(card.idList);
+  if (!list || card.closed) return null;
+
+  const mapping = mapList(list.name);
+  if (!mapping || !mapping.publishable) return null;
+
+  const { shootNumber, clientName } = parseTitle(card.name);
+
+  const location = readCustomFieldText(card, ctx.fieldId.location);
+  const shootDate = readCustomFieldDate(card, ctx.fieldId.shootDate);
+
+  const crewName = readCustomFieldText(card, ctx.fieldId.crewName);
+  const crewPhotoUrl = readCustomFieldText(card, ctx.fieldId.crewPhotoUrl);
+  const crewBio = readCustomFieldText(card, ctx.fieldId.crewBio);
+
+  // Crew object only if we have at least the name. Photo + bio optional.
+  const crew = crewName
+    ? {
+        name: crewName,
+        bio: crewBio,
+        photoUrl: crewPhotoUrl || undefined,
+      }
+    : undefined;
+
+  const crewFirstName = crew ? crew.name.split(/\s+/)[0] : undefined;
+
+  // Slug: prefer existing (from store), else the Trello custom field, else generate.
+  const fieldSlug = readCustomFieldText(card, ctx.fieldId.publicSlug);
+  const slug = existingSlug || fieldSlug || generateSlug(shootNumber, clientName);
+
+  // Attachments are M3 — for now we leave brief/quote/finalAssets unset.
+  return {
+    slug,
+    cardId: card.id,
+    shootNumber,
+    clientName,
+    location,
+    shootDate,
+    status: mapping.status,
+    statusLabel: statusLabel(mapping.status, crewFirstName),
+    crew,
+    producerEmail: DEFAULT_PRODUCER_EMAIL,
+    trelloListId: list.id,
+    trelloListName: list.name,
+    updatedAt: new Date().toISOString(),
+  };
+}

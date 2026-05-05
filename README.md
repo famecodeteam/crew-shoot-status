@@ -11,11 +11,27 @@ auto-updated when a card moves on the Trello "Crew Delivery" board.
 
 ```bash
 pnpm install
+cp .env.example .env.local   # then fill in TRELLO_KEY + TRELLO_TOKEN
 pnpm dev
 ```
 
-Then open http://localhost:3000/shoots/demo for the static design demo
-(M0 — no Trello plumbing yet).
+- `http://localhost:3000/shoots/demo` — static design demo (always works)
+- `http://localhost:3000/shoots/<real-slug>` — live shoot from `.data/shoots.json`
+  (run `pnpm backfill` first to populate it)
+
+## Pulling shoots from Trello
+
+```bash
+pnpm backfill
+```
+
+Reads every card from the Crew Delivery board, transforms each into a Shoot
+record, and writes to `.data/shoots.json`. Idempotent: existing slugs are
+preserved on re-runs. Cards in non-publishable lists (e.g. Lead) and archived
+cards are skipped.
+
+The `/api/trello-webhook` route updates a single card on each Trello webhook —
+register it once we have a public URL (M5).
 
 ## Milestones
 
