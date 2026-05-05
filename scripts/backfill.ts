@@ -12,6 +12,8 @@ import {
 } from "../lib/trello";
 import { listAll, upsertByCardId, deleteByCardId, getByCardId } from "../lib/storage";
 import { buildContext, transformCard } from "../lib/transform";
+import { findShootDriveLinks, driveServiceAccount } from "../lib/drive";
+import type { Shoot } from "../lib/types";
 
 async function main() {
   const boardId = process.env.TRELLO_BOARD_ID;
@@ -42,6 +44,22 @@ async function main() {
   const seenCardIds = new Set<string>();
   let written = 0;
   let skipped = 0;
+  let driveHits = 0;
+  let driveMisses = 0;
+  let driveErrors = 0;
+
+  // Probe Drive auth once up front. If it fails, log loudly and skip Drive
+  // enrichment entirely — backfill still produces useful pages without
+  // brief/quote URLs.
+  let driveAvailable = true;
+  try {
+    console.log(`[backfill] drive: service account = ${driveServiceAccount()}`);
+  } catch (err) {
+    driveAvailable = false;
+    console.warn(
+      `[backfill] drive: auth not available — brief/quote lookup skipped (${(err as Error).message.split("\n")[0]})`,
+    );
+  }
 
   for (const card of cards) {
     const existing = await getByCardId(card.id);
@@ -51,6 +69,21 @@ async function main() {
       continue;
     }
     seenCardIds.add(card.id);
+
+    if (driveAvailable && next.shootNumber) {
+      try {
+        const links = await findShootDriveLinks(next.shootNumber);
+        if (links.briefUrl || links.quoteUrl) driveHits++;
+        else driveMisses++;
+        applyDriveLinks(next, links);
+      } catch (err) {
+        driveErrors++;
+        console.warn(
+          `[backfill]   drive lookup failed for ${next.shootNumber}: ${(err as Error).message.split("\n")[0]}`,
+        );
+      }
+    }
+
     await upsertByCardId(card.id, () => next);
     written++;
   }
@@ -68,6 +101,11 @@ async function main() {
   console.log(
     `[backfill] wrote ${written}, skipped ${skipped} (closed / non-publishable list / unparseable), pruned ${pruned}`,
   );
+  if (driveAvailable) {
+    console.log(
+      `[backfill] drive: ${driveHits} cards with brief/quote, ${driveMisses} folder-not-found-or-empty, ${driveErrors} errors`,
+    );
+  }
 
   // Print a quick summary so Tom sees something useful in the terminal.
   const after = await listAll();
@@ -82,6 +120,15 @@ async function main() {
       `  ${s.shootNumber.padEnd(6)} ${s.clientName.padEnd(30)} ${s.trelloListName.padEnd(28)} /shoots/${s.slug}`,
     );
   }
+}
+
+// Mutates `shoot` in place — we know the type and Drive returns optional fields.
+function applyDriveLinks(
+  shoot: Shoot,
+  links: { briefUrl?: string; quoteUrl?: string },
+): void {
+  if (links.briefUrl) shoot.briefUrl = links.briefUrl;
+  if (links.quoteUrl) shoot.quoteUrl = links.quoteUrl;
 }
 
 main().catch((err) => {

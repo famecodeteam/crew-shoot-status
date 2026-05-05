@@ -12,6 +12,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getBoardCustomFields, getBoardLists, getCard } from "@/lib/trello";
 import { deleteByCardId, getByCardId, upsertByCardId } from "@/lib/storage";
 import { buildContext, transformCard } from "@/lib/transform";
+import { findShootDriveLinks } from "@/lib/drive";
 
 // Defer the route to be dynamic — we always need to handle the live POST.
 export const dynamic = "force-dynamic";
@@ -76,6 +77,22 @@ export async function POST(req: NextRequest) {
     // Card moved to a non-publishable list (or was archived). Drop it.
     await deleteByCardId(cardId);
     return NextResponse.json({ ok: true, action: "deleted", cardId });
+  }
+
+  // Enrich with brief / quote from Drive. Best-effort — if Drive is down or
+  // the SA isn't configured, we still upsert the card with empty link slots
+  // and the page just hides those sections.
+  if (next.shootNumber) {
+    try {
+      const links = await findShootDriveLinks(next.shootNumber);
+      if (links.briefUrl) next.briefUrl = links.briefUrl;
+      if (links.quoteUrl) next.quoteUrl = links.quoteUrl;
+    } catch (err) {
+      console.warn(
+        `[trello-webhook] drive lookup failed for ${next.shootNumber}:`,
+        (err as Error).message,
+      );
+    }
   }
 
   await upsertByCardId(cardId, () => next);

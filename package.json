@@ -12,6 +12,7 @@
     "register-webhook": "tsx --env-file=.env.local scripts/register-webhook.ts"
   },
   "dependencies": {
+    "googleapis": "^171.4.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
