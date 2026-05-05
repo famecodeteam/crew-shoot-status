@@ -57,13 +57,15 @@ export function buildContext(
 }
 
 // Title format per brief: "#NNNN - Client Name". Falls back gracefully.
+// Allows letter suffixes on the shoot number (e.g. #0171a / #0171b for
+// split-day shoots) since those exist on the live board.
 export function parseTitle(name: string): { shootNumber: string; clientName: string } {
   const trimmed = (name || "").trim();
-  // Match e.g. "#0190 - genOway" or "#0190 — genOway" (em-dash too).
-  const m = trimmed.match(/^(#\d{3,5})\s*[-–—]\s*(.+)$/);
+  // Match e.g. "#0190 - genOway", "#0190 — genOway" (em-dash), "#0171a - Ascom (Sydney)".
+  const m = trimmed.match(/^(#\d{3,5}[a-z]?)\s*[-–—]\s*(.+)$/i);
   if (m) return { shootNumber: m[1], clientName: m[2].trim() };
-  // Loose: number anywhere at start, but no dash separator
-  const m2 = trimmed.match(/^(#\d{3,5})\s+(.+)$/);
+  // Loose: number anywhere at start, no dash separator.
+  const m2 = trimmed.match(/^(#\d{3,5}[a-z]?)\s+(.+)$/i);
   if (m2) return { shootNumber: m2[1], clientName: m2[2].trim() };
   return { shootNumber: "", clientName: trimmed };
 }

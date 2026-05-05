@@ -30,6 +30,13 @@ const LISTS: Record<string, Mapping> = {
     publishable: true,
     showTimeline: true,
   },
+  // Live board has the misspelling "Recieved" — match both so a future
+  // typo-fix on Trello doesn't break this mapping.
+  "assets recieved from crew": {
+    status: "in-editing",
+    publishable: true,
+    showTimeline: true,
+  },
   "assets in production": {
     status: "in-editing",
     publishable: true,
