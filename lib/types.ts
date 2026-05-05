@@ -19,6 +19,9 @@ export type Shoot = {
   quoteUrl?: string;
   finalAssetsUrl?: string;
   producerEmail: string;
+  // Whether Fame is doing post-production. Drives whether the timeline
+  // includes the "In editing" step. Source: "Post Production" Trello label.
+  hasPostProduction: boolean;
   // Bookkeeping
   trelloListId: string;
   trelloListName: string;

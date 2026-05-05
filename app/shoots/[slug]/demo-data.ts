@@ -20,6 +20,7 @@ export function getDemoShoot(): Shoot {
     quoteUrl: "https://app.betterproposals.io/example-quote",
     // No finalAssetsUrl yet — section should hide silently to demo graceful empty state.
     producerEmail: "zandro@fame.so",
+    hasPostProduction: true,
     trelloListId: "demo",
     trelloListName: "Crew Booked",
     updatedAt: new Date().toISOString(),

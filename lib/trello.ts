@@ -67,6 +67,12 @@ export type TrelloCustomField = {
   options?: { id: string; value: { text: string } }[];
 };
 
+export type TrelloLabel = {
+  id: string;
+  name: string;
+  color: string | null;
+};
+
 export type TrelloCard = {
   id: string;
   name: string;
@@ -77,6 +83,8 @@ export type TrelloCard = {
   shortLink: string;
   due?: string | null;
   dateLastActivity: string;
+  labels?: TrelloLabel[];
+  idLabels?: string[];
   attachments?: TrelloAttachment[];
   customFieldItems?: TrelloCustomFieldItem[];
 };
@@ -101,7 +109,7 @@ export function getBoardCards(boardId: string): Promise<TrelloCard[]> {
     customFieldItems: "true",
     attachments: "true",
     fields:
-      "name,desc,closed,idList,shortUrl,shortLink,due,dateLastActivity",
+      "name,desc,closed,idList,shortUrl,shortLink,due,dateLastActivity,labels,idLabels",
   });
 }
 
@@ -110,7 +118,7 @@ export function getCard(cardId: string): Promise<TrelloCard> {
     customFieldItems: "true",
     attachments: "true",
     fields:
-      "name,desc,closed,idList,shortUrl,shortLink,due,dateLastActivity",
+      "name,desc,closed,idList,shortUrl,shortLink,due,dateLastActivity,labels,idLabels",
   });
 }
 

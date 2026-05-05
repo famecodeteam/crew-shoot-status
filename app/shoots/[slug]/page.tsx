@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getBySlug } from "@/lib/storage";
 import type { Shoot } from "@/lib/types";
 import { getDemoShoot } from "./demo-data";
-import { TIMELINE_STEPS, currentStepIndex } from "./status";
+import { currentStepIndex, timelineSteps } from "./status";
 
 // Re-fetch on every request — we want ≤60s lag from a Trello move.
 // (When we add Vercel KV in M5, swap to `revalidate = 30` for ISR.)
@@ -37,11 +37,14 @@ export default async function ShootPage({ params }: { params: Promise<{ slug: st
 }
 
 function ShootView({ shoot }: { shoot: Shoot }) {
-  const stepIdx = currentStepIndex(shoot.status);
+  const steps = timelineSteps(shoot.hasPostProduction);
+  const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
   const isOnHold = shoot.status === "on-hold";
   const isDelivered = shoot.status === "delivered";
   const showCrew = stepIdx >= 1 && shoot.crew && !isOnHold;
-  const showAssets = stepIdx >= 4 && shoot.finalAssetsUrl && !isOnHold;
+  // Final assets render at the last step. Index varies by timeline length.
+  const finalStepIdx = steps.length - 1;
+  const showAssets = stepIdx >= finalStepIdx && shoot.finalAssetsUrl && !isOnHold;
   const countdown = formatCountdown(shoot.shootDate, isDelivered);
 
   return (
@@ -82,8 +85,11 @@ function ShootView({ shoot }: { shoot: Shoot }) {
       ) : (
         <section className="section">
           <div className="card-h">Progress</div>
-          <ol className="timeline">
-            {TIMELINE_STEPS.map((label, i) => (
+          <ol
+            className="timeline"
+            style={{ gridTemplateColumns: `repeat(${steps.length}, 1fr)` }}
+          >
+            {steps.map((label, i) => (
               <li
                 key={label}
                 className={

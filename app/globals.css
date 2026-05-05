@@ -153,7 +153,8 @@ img {
 
 .timeline {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* grid-template-columns is set inline per shoot — 4 or 5 columns
+     depending on whether the shoot includes post-production. */
   gap: 0;
   position: relative;
 }
@@ -232,7 +233,8 @@ img {
 
 @media (max-width: 640px) {
   .timeline {
-    grid-template-columns: 1fr;
+    /* Mobile: stack vertically regardless of step count. */
+    grid-template-columns: 1fr !important;
     gap: 0;
   }
   .step {

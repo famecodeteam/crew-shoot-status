@@ -22,6 +22,7 @@ export type TransformContext = {
     crewName: string | null;
     crewPhotoUrl: string | null;
     crewBio: string | null;
+    finalAssetsUrl: string | null;
     publicSlug: string | null;
   };
 };
@@ -42,15 +43,26 @@ export function buildContext(
     return null;
   }
 
+  // Fallback aliases — accept either name so a future Trello rename
+  // doesn't silently break the page.
+  function findFirst(...names: string[]): string | null {
+    for (const n of names) {
+      const id = findByName(n);
+      if (id) return id;
+    }
+    return null;
+  }
+
   return {
     listsById,
     customFieldsById,
     fieldId: {
-      location: findByName("Shoot Location"),
+      location: findFirst("Location", "Shoot Location"),
       shootDate: findByName("Shoot Date"),
       crewName: findByName("Crew Member Name"),
       crewPhotoUrl: findByName("Crew Member Photo URL"),
       crewBio: findByName("Crew Member Bio"),
+      finalAssetsUrl: findFirst("Final Asset URL", "Final Assets URL"),
       publicSlug: findByName("Public Slug"),
     },
   };
@@ -151,7 +163,16 @@ export function transformCard(
   const fieldSlug = readCustomFieldText(card, ctx.fieldId.publicSlug);
   const slug = existingSlug || fieldSlug || generateSlug(shootNumber, clientName);
 
-  // Attachments are M3 — for now we leave brief/quote/finalAssets unset.
+  const hasPostProduction = (card.labels ?? []).some(
+    (l) => l.name.trim().toLowerCase() === "post production",
+  );
+
+  // Brief / quote arrive in M3 (parsed from attachments). Final assets can
+  // come from the "Final Asset URL" custom field today; M3 will also let
+  // it come from a card attachment.
+  const finalAssetsUrl =
+    readCustomFieldText(card, ctx.fieldId.finalAssetsUrl) || undefined;
+
   return {
     slug,
     cardId: card.id,
@@ -162,7 +183,9 @@ export function transformCard(
     status: mapping.status,
     statusLabel: statusLabel(mapping.status, crewFirstName),
     crew,
+    finalAssetsUrl,
     producerEmail: DEFAULT_PRODUCER_EMAIL,
+    hasPostProduction,
     trelloListId: list.id,
     trelloListName: list.name,
     updatedAt: new Date().toISOString(),
