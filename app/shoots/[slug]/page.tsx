@@ -1,6 +1,21 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getDemoShoot, type Shoot } from "./demo-data";
 import { TIMELINE_STEPS, currentStepIndex } from "./status";
+
+const FAME_LOGO_URL =
+  "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65bcbe23cfb0eb14d2ce0063_logo.svg";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const shoot = slug === "demo" ? getDemoShoot() : null;
+  if (!shoot) return { title: "Fame Crew" };
+  return { title: `Fame Crew - Shoot Status - ${shoot.shootNumber}` };
+}
 
 export default async function ShootPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -24,7 +39,8 @@ function ShootView({ shoot }: { shoot: Shoot }) {
     <main className="shell">
       <header className="hero">
         <div className="hero-top">
-          <div className="hero-logo">Fame</div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="hero-logo" src={FAME_LOGO_URL} alt="Fame" />
         </div>
         <div className="hero-shoot-no">Shoot {shoot.shootNumber}</div>
         <h1 className="hero-title">{shoot.clientName}</h1>
@@ -138,7 +154,7 @@ function ShootView({ shoot }: { shoot: Shoot }) {
           Questions? Email{" "}
           <a href={`mailto:${shoot.producerEmail}`}>{shoot.producerEmail}</a>.
         </div>
-        <div>Fame</div>
+        <div>Fame Crew</div>
       </footer>
     </main>
   );

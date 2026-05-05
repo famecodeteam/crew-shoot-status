@@ -36,6 +36,6 @@ export function getDemoShoot(): Shoot {
     briefUrl: "https://docs.google.com/document/d/example-brief",
     quoteUrl: "https://app.betterproposals.io/example-quote",
     // No finalAssetsUrl yet — section should hide silently to demo graceful empty state.
-    producerEmail: "hello@fame.so",
+    producerEmail: "zandro@fame.so",
   };
 }

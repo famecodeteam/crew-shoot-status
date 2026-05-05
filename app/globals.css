@@ -74,10 +74,8 @@ img {
 }
 
 .hero-logo {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--pink);
-  letter-spacing: -0.01em;
+  height: 28px;
+  width: auto;
 }
 
 .hero-shoot-no {
