@@ -41,7 +41,10 @@ function ShootView({ shoot }: { shoot: Shoot }) {
   const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
   const isOnHold = shoot.status === "on-hold";
   const isDelivered = shoot.status === "delivered";
-  const showCrew = stepIdx >= 1 && shoot.crew && !isOnHold;
+  // Crew card appears once we've crossed the "Crew confirmed" milestone
+  // (i.e. stepIdx is 2 or higher — booking-confirmed and searching-for-crew
+  // both sit at stepIdx=1, working toward crew confirmation).
+  const showCrew = stepIdx >= 2 && shoot.crew && !isOnHold;
   // Final assets render at the last step. Index varies by timeline length.
   const finalStepIdx = steps.length - 1;
   const showAssets = stepIdx >= finalStepIdx && shoot.finalAssetsUrl && !isOnHold;
