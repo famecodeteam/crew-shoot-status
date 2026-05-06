@@ -1,12 +1,12 @@
 // Storage dispatcher. Picks an implementation based on env:
-//   • KV_REST_API_URL set → Vercel KV (production)
-//   • otherwise           → file-backed JSON store (local dev)
+//   • REDIS_URL set → Redis-backed (production via Vercel Marketplace Redis)
+//   • otherwise     → file-backed JSON store (local dev)
 //
 // Both impls export the same interface, so callers (page, webhook handler,
 // backfill script) don't need to know which one is in use.
 //
-// The KV module is lazy-loaded so local dev doesn't pull `@vercel/kv` into
-// the dev bundle when it isn't needed.
+// The Redis module is lazy-loaded so local dev never pulls `redis` into
+// the dev runtime path when it isn't needed.
 
 import * as fileStorage from "./storage-file";
 import type { Shoot } from "./types";
@@ -26,7 +26,7 @@ let cached: StorageModule | null = null;
 
 async function getImpl(): Promise<StorageModule> {
   if (cached) return cached;
-  if (process.env.KV_REST_API_URL) {
+  if (process.env.REDIS_URL) {
     cached = (await import("./storage-kv")) as unknown as StorageModule;
   } else {
     cached = fileStorage;

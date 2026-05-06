@@ -12,11 +12,11 @@
     "register-webhook": "tsx --env-file=.env.local scripts/register-webhook.ts"
   },
   "dependencies": {
-    "@vercel/kv": "^3.0.0",
     "googleapis": "^171.4.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "redis": "^5.12.1"
   },
   "devDependencies": {
     "@types/node": "^22",

@@ -20,16 +20,16 @@ Pick "Create new project" → name it `crew-shoot-status` → confirm scope (you
 
 This writes `.vercel/project.json` (gitignored) with the project + org IDs.
 
-## 2. Provision Vercel KV
+## 2. Provision Redis
 
 In the Vercel dashboard:
 
 1. Open the new `crew-shoot-status` project → **Storage** tab
-2. Click **Create Database** → choose **KV (Upstash Redis)**
-3. Name it `crew-shoot-store`, region close to where the Trello webhook hits us (any region in EU/US is fine — we're not latency-sensitive)
-4. Click **Connect Project** → tick `crew-shoot-status` → connect to Production + Preview + Development environments
+2. Click **Create Database** → from the Marketplace section pick **Redis** (Serverless Redis from Redis Cloud)
+3. Name it `crew-shoot-store`, region in EU
+4. Click **Connect to Project** → tick `crew-shoot-status` → connect to Production + Preview + Development environments
 
-That auto-injects `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_URL`, `KV_REST_API_READ_ONLY_TOKEN` into the project's env vars. Our dispatcher in `lib/storage.ts` switches to KV automatically when `KV_REST_API_URL` is set.
+That auto-injects `REDIS_URL` into the project's env vars. Our dispatcher in `lib/storage.ts` switches to Redis automatically when `REDIS_URL` is set.
 
 ## 3. Push the rest of the secrets
 

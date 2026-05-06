@@ -1,27 +1,60 @@
-// Vercel KV-backed storage. Used in production (when KV_REST_API_URL is set).
+// Redis-backed storage. Used in production (when REDIS_URL is set).
 //
 // Layout: a single key `shoots:store` holding the full shoots map as JSON.
-// One read = one KV roundtrip; same shape as the file store. This is the
-// simplest workable layout for ≤ a few hundred shoots and lets us preserve
-// the read-modify-write semantics of the file store without per-key indexing.
-// If we outgrow this (1000+ shoots, hot writes), switch to per-card keys
-// + a slug→cardId index — but that's a future problem.
+// One read = one Redis round-trip; same shape as the file store. This is
+// the simplest workable layout for ≤ a few hundred shoots and lets us
+// preserve the read-modify-write semantics of the file store without
+// per-key indexing. If we outgrow this (1000+ shoots, hot writes), switch
+// to per-card keys + a slug→cardId index.
+//
+// Connection model: lazy-create one client and reuse it across calls
+// within the same warm function instance. Vercel reuses Node containers
+// across invocations, so the connection cost is paid once per cold start.
 
-import { kv } from "@vercel/kv";
+import { createClient, type RedisClientType } from "redis";
 import type { Shoot } from "./types";
 
 const STORE_KEY = "shoots:store";
 
 type Store = Record<string, Shoot>;
 
+let cached: RedisClientType | null = null;
+let connecting: Promise<RedisClientType> | null = null;
+
+async function client(): Promise<RedisClientType> {
+  if (cached?.isReady) return cached;
+  if (connecting) return connecting;
+
+  const url = process.env.REDIS_URL;
+  if (!url) throw new Error("REDIS_URL is not set");
+
+  connecting = (async () => {
+    const c = createClient({ url }) as RedisClientType;
+    c.on("error", (err) => console.error("[redis] error:", err));
+    await c.connect();
+    cached = c;
+    connecting = null;
+    return c;
+  })();
+
+  return connecting;
+}
+
 async function readAll(): Promise<Store> {
-  // kv.get auto-parses JSON. If the key doesn't exist yet, it returns null.
-  const data = await kv.get<Store>(STORE_KEY);
-  return data ?? {};
+  const c = await client();
+  const raw = await c.get(STORE_KEY);
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw) as Store;
+  } catch (err) {
+    console.error("[redis] failed to parse store JSON:", err);
+    return {};
+  }
 }
 
 async function writeAll(store: Store): Promise<void> {
-  await kv.set(STORE_KEY, store);
+  const c = await client();
+  await c.set(STORE_KEY, JSON.stringify(store));
 }
 
 export async function getBySlug(slug: string): Promise<Shoot | null> {
