@@ -1,6 +1,6 @@
-import type { ShootStatus } from "../app/shoots/[slug]/status";
+import type { ShootStatus } from "../app/[slug]/status";
 
-// Public data model — what /shoots/[slug] reads. One blob per Trello card.
+// Public data model — what /[slug] reads. One blob per Trello card.
 export type Shoot = {
   slug: string;
   cardId: string; // Trello card id (stable across renames)

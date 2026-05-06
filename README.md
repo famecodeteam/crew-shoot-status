@@ -15,8 +15,8 @@ cp .env.example .env.local   # then fill in TRELLO_KEY + TRELLO_TOKEN
 pnpm dev
 ```
 
-- `http://localhost:3000/shoots/demo` — static design demo (always works)
-- `http://localhost:3000/shoots/<real-slug>` — live shoot from `.data/shoots.json`
+- `http://localhost:3000/demo` — static design demo (always works)
+- `http://localhost:3000/<real-slug>` — live shoot from `.data/shoots.json`
   (run `pnpm backfill` first to populate it)
 
 ## Pulling shoots from Trello
@@ -35,9 +35,9 @@ register it once we have a public URL (M5).
 
 ## Milestones
 
-- **M0** — Visual scaffold. Static `/shoots/demo` page, brand tokens locked, no plumbing. *(in progress)*
+- **M0** — Visual scaffold. Static `/demo` page, brand tokens locked, no plumbing. *(in progress)*
 - **M1** — Trello webhook + KV upsert + backfill script.
-- **M2** — `/shoots/[slug]` reads from KV; status mapping; graceful hiding.
+- **M2** — `/[slug]` reads from KV; status mapping; graceful hiding.
 - **M3** — Attachment auto-discovery (brief / quote / final assets), reusing Crew Scout's logic.
 - **M4** — Slug generation on first sync, page lifecycle from "Won", crew reveal, on-hold copy.
 - **M5** — Deploy to Vercel + KV + DNS cutover to `shoots.fame.so`. See [DEPLOY.md](./DEPLOY.md).

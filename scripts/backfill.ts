@@ -117,7 +117,7 @@ async function main() {
   console.log("[backfill] current store:");
   for (const s of after.sort((a, b) => a.shootNumber.localeCompare(b.shootNumber))) {
     console.log(
-      `  ${s.shootNumber.padEnd(6)} ${s.clientName.padEnd(30)} ${s.trelloListName.padEnd(28)} /shoots/${s.slug}`,
+      `  ${s.shootNumber.padEnd(6)} ${s.clientName.padEnd(30)} ${s.trelloListName.padEnd(28)} /${s.slug}`,
     );
   }
 }

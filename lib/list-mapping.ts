@@ -1,7 +1,7 @@
 // Trello list name → internal ShootStatus → client-facing label.
 // Brief §"Status mapping" is the source of truth here.
 
-import type { ShootStatus } from "../app/shoots/[slug]/status";
+import type { ShootStatus } from "../app/[slug]/status";
 
 type Mapping = {
   status: ShootStatus;

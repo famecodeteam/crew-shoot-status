@@ -52,7 +52,7 @@ Don't add `GOOGLE_APPLICATION_CREDENTIALS` (that's the local file-path version; 
 pnpm dlx vercel@latest deploy --prod
 ```
 
-When it finishes you'll get a `https://crew-shoot-status-xxxx.vercel.app` URL. Test it by visiting `/shoots/demo` — the static design page works without any data and confirms the deploy + Figtree font load OK.
+When it finishes you'll get a `https://crew-shoot-status-xxxx.vercel.app` URL. Test it by visiting `/demo` — the static design page works without any data and confirms the deploy + Figtree font load OK.
 
 ## 5. Backfill the production KV
 
@@ -65,7 +65,7 @@ pnpm tsx --env-file=.env.production.local scripts/backfill.ts
 
 `vercel env pull` writes the KV connection strings + everything from step 3 into `.env.production.local` (also gitignored). The backfill then runs against KV instead of the local file.
 
-After it finishes, hit `https://<your-vercel-url>/shoots/0189-flagright-...` to confirm a real shoot renders from KV.
+After it finishes, hit `https://<your-vercel-url>/0189-flagright-...` to confirm a real shoot renders from KV.
 
 ## 6. Custom domain — `shoots.fame.so`
 
@@ -78,7 +78,7 @@ Vercel will tell you the CNAME target (usually `cname.vercel-dns.com`). In Fame'
 - **Value:** whatever Vercel gave you
 - **TTL:** default
 
-Wait a few minutes for propagation, then `https://shoots.fame.so/shoots/demo` should work and Vercel will auto-issue a TLS cert.
+Wait a few minutes for propagation, then `https://shoots.fame.so/demo` should work and Vercel will auto-issue a TLS cert.
 
 ## 7. Set the webhook callback URL + register the webhook
 
@@ -112,7 +112,7 @@ Now that the public URL is live:
 
 ## 8. End-to-end smoke test
 
-1. Open one of your real shoot pages (e.g. `https://shoots.fame.so/shoots/0189-flagright-...`).
+1. Open one of your real shoot pages (e.g. `https://shoots.fame.so/0189-flagright-...`).
 2. In Trello, move that card to a different list — e.g. Crew Booked → Ready For Shoot.
 3. Refresh the page within ~60s. The status badge should reflect the new list.
 4. In Vercel **Functions** tab, look at `/api/trello-webhook` — there should be a 200 invocation right around the time you moved the card.
