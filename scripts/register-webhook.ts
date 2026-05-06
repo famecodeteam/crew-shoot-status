@@ -31,6 +31,22 @@ function creds(): { key: string; token: string } {
   return { key, token };
 }
 
+// Trello's webhook endpoint requires a canonical (long) idModel; the board
+// shortLink we use everywhere else is rejected with 400. Resolve it once.
+async function resolveBoardId(shortOrLong: string): Promise<string> {
+  // Long IDs are 24 hex chars; shortLinks are 8 alphanumeric. Cheap heuristic.
+  if (/^[a-f0-9]{24}$/i.test(shortOrLong)) return shortOrLong;
+  const { key, token } = creds();
+  const resp = await fetch(
+    `${API}/boards/${encodeURIComponent(shortOrLong)}?fields=id&key=${key}&token=${token}`,
+  );
+  if (!resp.ok) {
+    throw new Error(`resolve board id: ${resp.status} ${await resp.text()}`);
+  }
+  const body = (await resp.json()) as { id: string };
+  return body.id;
+}
+
 async function listWebhooks(): Promise<Webhook[]> {
   const { key, token } = creds();
   const resp = await fetch(`${API}/tokens/${token}/webhooks?key=${key}&token=${token}`);
@@ -113,9 +129,13 @@ async function main(): Promise<void> {
   }
 
   // Default: register (or update existing) for the configured board + URL.
-  const idModel = process.env.TRELLO_BOARD_ID;
+  const boardRef = process.env.TRELLO_BOARD_ID;
   const callbackURL = process.env.TRELLO_WEBHOOK_CALLBACK_URL;
-  if (!idModel) throw new Error("TRELLO_BOARD_ID is unset.");
+  if (!boardRef) throw new Error("TRELLO_BOARD_ID is unset.");
+  const idModel = await resolveBoardId(boardRef);
+  if (idModel !== boardRef) {
+    console.log(`(resolved board shortLink ${boardRef} → ${idModel})`);
+  }
   if (!callbackURL) {
     throw new Error(
       "TRELLO_WEBHOOK_CALLBACK_URL is unset. Set it to the public URL Trello will POST to, e.g. https://shoots.fame.so/api/trello-webhook",
