@@ -8,6 +8,24 @@ const config: NextConfig = {
       { protocol: "https", hostname: "trello-attachments.s3.amazonaws.com" },
     ],
   },
+  async headers() {
+    // Belt-and-braces noindex on every response — applies to HTML, API
+    // routes, redirects, and any future content type. Stronger than the
+    // <meta name="robots"> alone because it covers non-HTML responses
+    // and is unambiguously honoured by Googlebot, Bing, and other major
+    // crawlers regardless of how they fetched the URL.
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow, noarchive, noimageindex",
+          },
+        ],
+      },
+    ];
+  },
   async redirects() {
     // Old URLs (/shoots/<slug>) permanently redirect to the new flat layout.
     // Cheap insurance — anyone who got an early link still lands correctly.
