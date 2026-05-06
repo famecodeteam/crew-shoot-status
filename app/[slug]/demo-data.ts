@@ -11,7 +11,7 @@ export function getDemoShoot(): Shoot {
     location: "London, UK",
     shootDate: "2026-05-15",
     status: "crew-confirmed",
-    statusLabel: "Crew confirmed — meet Alex",
+    statusLabel: "Crew confirmed - meet Alex",
     crew: {
       name: "Alex Morgan",
       bio: "Based in Berlin. 14 shoots with Fame. Specializes in conference fireside.",
