@@ -9,3 +9,5 @@ node_modules
 next-env.d.ts
 tsconfig.tsbuildinfo
 .data/
+.vercel/
+.env.production.local
