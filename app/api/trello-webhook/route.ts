@@ -13,6 +13,7 @@ import { getBoardCustomFields, getBoardLists, getCard } from "@/lib/trello";
 import { deleteByCardId, getByCardId, upsertByCardId } from "@/lib/storage";
 import { buildContext, transformCard } from "@/lib/transform";
 import { findShootDriveLinks } from "@/lib/drive";
+import { writeBackStatusUrl } from "@/lib/writeback";
 
 // Defer the route to be dynamic — we always need to handle the live POST.
 export const dynamic = "force-dynamic";
@@ -96,6 +97,19 @@ export async function POST(req: NextRequest) {
   }
 
   await upsertByCardId(cardId, () => next);
+
+  // Best-effort URL write-back so the PM sees the public URL on the card.
+  // Idempotent: if the field already matches, this is a no-op (so our own
+  // write doesn't trigger a self-perpetuating webhook loop).
+  try {
+    await writeBackStatusUrl(card, ctx, next.slug);
+  } catch (err) {
+    console.warn(
+      `[trello-webhook] url write-back failed for ${next.shootNumber}:`,
+      (err as Error).message,
+    );
+  }
+
   return NextResponse.json({ ok: true, action: "upserted", slug: next.slug });
 }
 

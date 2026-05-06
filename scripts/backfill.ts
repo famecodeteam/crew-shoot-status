@@ -13,6 +13,7 @@ import {
 import { listAll, upsertByCardId, deleteByCardId, getByCardId } from "../lib/storage";
 import { buildContext, transformCard } from "../lib/transform";
 import { findShootDriveLinks, driveServiceAccount } from "../lib/drive";
+import { writeBackStatusUrl } from "../lib/writeback";
 import type { Shoot } from "../lib/types";
 
 async function main() {
@@ -47,6 +48,9 @@ async function main() {
   let driveHits = 0;
   let driveMisses = 0;
   let driveErrors = 0;
+  let urlWrote = 0;
+  let urlSkipped = 0;
+  let urlErrors = 0;
 
   // Probe Drive auth once up front. If it fails, log loudly and skip Drive
   // enrichment entirely — backfill still produces useful pages without
@@ -86,6 +90,18 @@ async function main() {
 
     await upsertByCardId(card.id, () => next);
     written++;
+
+    // Write the public URL back to Trello if the field exists. Idempotent.
+    try {
+      const result = await writeBackStatusUrl(card, ctx, next.slug);
+      if (result === "wrote") urlWrote++;
+      else urlSkipped++;
+    } catch (err) {
+      urlErrors++;
+      console.warn(
+        `[backfill]   url write-back failed for ${next.shootNumber}: ${(err as Error).message.split("\n")[0]}`,
+      );
+    }
   }
 
   // Drop records for cards that no longer exist or moved to a non-publishable list.
@@ -106,6 +122,9 @@ async function main() {
       `[backfill] drive: ${driveHits} cards with brief/quote, ${driveMisses} folder-not-found-or-empty, ${driveErrors} errors`,
     );
   }
+  console.log(
+    `[backfill] url-writeback: ${urlWrote} wrote, ${urlSkipped} skipped (already up-to-date or no field/PUBLIC_BASE_URL), ${urlErrors} errors`,
+  );
 
   // Print a quick summary so Tom sees something useful in the terminal.
   const after = await listAll();

@@ -32,6 +32,33 @@ async function trelloGet<T>(path: string, params: Record<string, string> = {}): 
   return (await resp.json()) as T;
 }
 
+async function trelloPut<T>(path: string, body: unknown): Promise<T> {
+  const url = `${API_BASE}${path}?${authQuery()}`;
+  const resp = await fetch(url, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    throw new Error(`Trello PUT ${path} failed (${resp.status}): ${text.slice(0, 200)}`);
+  }
+  return (await resp.json()) as T;
+}
+
+// Set a text-typed custom field's value on a card. Used to write the
+// public status-page URL back to the card so PMs can share it directly.
+export function setCustomFieldText(
+  cardId: string,
+  fieldId: string,
+  text: string,
+): Promise<unknown> {
+  return trelloPut(
+    `/cards/${encodeURIComponent(cardId)}/customField/${encodeURIComponent(fieldId)}/item`,
+    { value: { text } },
+  );
+}
+
 // ---------- Types (only the fields we care about) ----------
 
 export type TrelloList = {

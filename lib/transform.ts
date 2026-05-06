@@ -24,6 +24,7 @@ export type TransformContext = {
     crewBio: string | null;
     finalAssetsUrl: string | null;
     publicSlug: string | null;
+    statusPageUrl: string | null;
   };
 };
 
@@ -64,6 +65,15 @@ export function buildContext(
       crewBio: findByName("Crew Member Bio"),
       finalAssetsUrl: findFirst("Final Asset URL", "Final Assets URL"),
       publicSlug: findByName("Public Slug"),
+      // Where the auto-generated public URL gets written back so PMs can
+      // share it from Trello directly. A handful of aliases so a future
+      // rename doesn't silently break the write-back.
+      statusPageUrl: findFirst(
+        "Status Page URL",
+        "Shoot Status URL",
+        "Status URL",
+        "Public URL",
+      ),
     },
   };
 }
