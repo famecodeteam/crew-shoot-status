@@ -18,6 +18,8 @@ export function getDemoShoot(): Shoot {
     },
     briefUrl: "https://docs.google.com/document/d/example-brief",
     quoteUrl: "https://app.betterproposals.io/example-quote",
+    depositReceiptUrl: "https://pay.stripe.com/receipts/example-deposit",
+    // balanceReceiptUrl deliberately unset — demonstrates partial-payment state.
     // No finalAssetsUrl yet — section should hide silently to demo graceful empty state.
     producerEmail: "zandro@fame.so",
     hasPostProduction: true,

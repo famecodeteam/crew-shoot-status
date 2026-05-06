@@ -151,6 +151,42 @@ function ShootView({ shoot }: { shoot: Shoot }) {
         </section>
       )}
 
+      {(shoot.depositReceiptUrl || shoot.balanceReceiptUrl) && !isOnHold && (
+        <section className="section">
+          <div className="card-h">Payments</div>
+          <div className="link-grid">
+            {shoot.depositReceiptUrl && (
+              <a
+                className="link-card"
+                href={shoot.depositReceiptUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <div>
+                  <div className="link-card-label">Deposit</div>
+                  <div className="link-card-text">View receipt</div>
+                </div>
+                <div className="link-card-arrow">→</div>
+              </a>
+            )}
+            {shoot.balanceReceiptUrl && (
+              <a
+                className="link-card"
+                href={shoot.balanceReceiptUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <div>
+                  <div className="link-card-label">Balance</div>
+                  <div className="link-card-text">View receipt</div>
+                </div>
+                <div className="link-card-arrow">→</div>
+              </a>
+            )}
+          </div>
+        </section>
+      )}
+
       {showAssets && shoot.finalAssetsUrl && (
         <section className="section">
           <div className="card-h">Delivery</div>

@@ -18,6 +18,8 @@ export type Shoot = {
   briefUrl?: string;
   quoteUrl?: string;
   finalAssetsUrl?: string;
+  depositReceiptUrl?: string;
+  balanceReceiptUrl?: string;
   producerEmail: string;
   // Whether Fame is doing post-production. Drives whether the timeline
   // includes the "In editing" step. Source: "Post Production" Trello label.

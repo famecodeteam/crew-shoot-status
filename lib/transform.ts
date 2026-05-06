@@ -23,6 +23,8 @@ export type TransformContext = {
     crewPhotoUrl: string | null;
     crewBio: string | null;
     finalAssetsUrl: string | null;
+    depositReceiptUrl: string | null;
+    balanceReceiptUrl: string | null;
     publicSlug: string | null;
     statusPageUrl: string | null;
   };
@@ -64,6 +66,12 @@ export function buildContext(
       crewPhotoUrl: findByName("Crew Member Photo URL"),
       crewBio: findByName("Crew Member Bio"),
       finalAssetsUrl: findFirst("Final Asset URL", "Final Assets URL"),
+      depositReceiptUrl: findFirst("Deposit Receipt URL", "Deposit Receipt"),
+      balanceReceiptUrl: findFirst(
+        "Balance Receipt URL",
+        "Balance Receipt",
+        "Final Receipt URL",
+      ),
       publicSlug: findByName("Public Slug"),
       // Where the auto-generated public URL gets written back so PMs can
       // share it from Trello directly. A handful of aliases so a future
@@ -177,11 +185,14 @@ export function transformCard(
     (l) => l.name.trim().toLowerCase() === "post production",
   );
 
-  // Brief / quote arrive in M3 (parsed from attachments). Final assets can
-  // come from the "Final Asset URL" custom field today; M3 will also let
-  // it come from a card attachment.
+  // Brief / quote come from Drive (M3). Final assets and the two Stripe
+  // receipts come from manual Trello custom fields — PM pastes them in.
   const finalAssetsUrl =
     readCustomFieldText(card, ctx.fieldId.finalAssetsUrl) || undefined;
+  const depositReceiptUrl =
+    readCustomFieldText(card, ctx.fieldId.depositReceiptUrl) || undefined;
+  const balanceReceiptUrl =
+    readCustomFieldText(card, ctx.fieldId.balanceReceiptUrl) || undefined;
 
   return {
     slug,
@@ -194,6 +205,8 @@ export function transformCard(
     statusLabel: statusLabel(mapping.status, crewFirstName),
     crew,
     finalAssetsUrl,
+    depositReceiptUrl,
+    balanceReceiptUrl,
     producerEmail: DEFAULT_PRODUCER_EMAIL,
     hasPostProduction,
     trelloListId: list.id,
