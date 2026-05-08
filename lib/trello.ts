@@ -112,6 +112,7 @@ export type TrelloCard = {
   dateLastActivity: string;
   labels?: TrelloLabel[];
   idLabels?: string[];
+  idMembers?: string[];
   attachments?: TrelloAttachment[];
   customFieldItems?: TrelloCustomFieldItem[];
 };
@@ -136,7 +137,7 @@ export function getBoardCards(boardId: string): Promise<TrelloCard[]> {
     customFieldItems: "true",
     attachments: "true",
     fields:
-      "name,desc,closed,idList,shortUrl,shortLink,due,dateLastActivity,labels,idLabels",
+      "name,desc,closed,idList,shortUrl,shortLink,due,dateLastActivity,labels,idLabels,idMembers",
   });
 }
 
@@ -145,7 +146,7 @@ export function getCard(cardId: string): Promise<TrelloCard> {
     customFieldItems: "true",
     attachments: "true",
     fields:
-      "name,desc,closed,idList,shortUrl,shortLink,due,dateLastActivity,labels,idLabels",
+      "name,desc,closed,idList,shortUrl,shortLink,due,dateLastActivity,labels,idLabels,idMembers",
   });
 }
 

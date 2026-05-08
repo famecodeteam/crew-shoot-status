@@ -8,9 +8,7 @@ import type {
   TrelloList,
 } from "./trello";
 import { mapList, statusLabel } from "./list-mapping";
-
-// Default producer until we add a per-shoot Trello field for it.
-const DEFAULT_PRODUCER_EMAIL = "zandro@fame.so";
+import { pickProducer } from "./producer";
 
 export type TransformContext = {
   listsById: Map<string, TrelloList>;
@@ -207,7 +205,7 @@ export function transformCard(
     finalAssetsUrl,
     depositReceiptUrl,
     balanceReceiptUrl,
-    producerEmail: DEFAULT_PRODUCER_EMAIL,
+    producerEmail: pickProducer(card.idMembers).email,
     hasPostProduction,
     trelloListId: list.id,
     trelloListName: list.name,
