@@ -75,7 +75,7 @@ export function statusLabel(status: ShootStatus, crewFirstName?: string): string
     case "crew-confirmed":
       return crewFirstName ? `Crew confirmed - meet ${crewFirstName}` : "Crew confirmed";
     case "ready-for-shoot":
-      return "Ready for shoot day";
+      return "Ready for shoot";
     case "shoot-complete":
       return "Footage captured";
     case "in-editing":
