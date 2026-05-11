@@ -60,8 +60,18 @@ function ShootView({ shoot }: { shoot: Shoot }) {
         <div className="hero-shoot-no">Shoot {shoot.shootNumber}</div>
         <h1 className="hero-title">{shoot.clientName}</h1>
         <div className="hero-meta">
-          <span>{shoot.location}</span>
-          <span className="hero-meta-sep">·</span>
+          {shoot.shootType && (
+            <>
+              <span>{shoot.shootType}</span>
+              <span className="hero-meta-sep">·</span>
+            </>
+          )}
+          {shoot.location && (
+            <>
+              <span>{shoot.location}</span>
+              <span className="hero-meta-sep">·</span>
+            </>
+          )}
           <span>{formatDate(shoot.shootDate)}</span>
           {countdown && (
             <>

@@ -8,6 +8,7 @@ export function getDemoShoot(): Shoot {
     cardId: "demo-card-id",
     shootNumber: "#0190",
     clientName: "genOway",
+    shootType: "Conference",
     location: "London, UK",
     shootDate: "2026-05-15",
     status: "crew-confirmed",

@@ -213,6 +213,13 @@ export function transformCard(
     (l) => l.name.trim().toLowerCase() === "post production",
   );
 
+  // Shoot type = the first label on the card that isn't "Post Production".
+  // Trello allows multiple labels — Podcast, Conference, Event, Corporate,
+  // Photography, Social — and we display whichever is listed first.
+  const shootType = (card.labels ?? [])
+    .map((l) => l.name.trim())
+    .find((n) => n && n.toLowerCase() !== "post production");
+
   // Past milestone dates from action history (if provided). For webhooks
   // and backfills we pass the actions through; if absent we just leave
   // the map empty — the page falls back gracefully.
@@ -239,6 +246,7 @@ export function transformCard(
     cardId: card.id,
     shootNumber,
     clientName,
+    shootType: shootType || undefined,
     location,
     shootDate,
     status: mapping.status,
