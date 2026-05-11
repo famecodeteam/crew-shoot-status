@@ -9,6 +9,7 @@ import {
   getBoardCards,
   getBoardCustomFields,
   getBoardLists,
+  getCardActions,
 } from "../lib/trello";
 import { listAll, upsertByCardId, deleteByCardId, getByCardId } from "../lib/storage";
 import { buildContext, transformCard } from "../lib/transform";
@@ -67,7 +68,20 @@ async function main() {
 
   for (const card of cards) {
     const existing = await getByCardId(card.id);
-    const next = transformCard(card, ctx, existing?.slug);
+
+    // Fetch action history per card to derive past milestone dates.
+    // ~100ms extra per call; backfill is occasional so the slight slowdown
+    // is acceptable.
+    let actions;
+    try {
+      actions = await getCardActions(card.id);
+    } catch (err) {
+      console.warn(
+        `[backfill]   action history fetch failed for ${card.name}: ${(err as Error).message.split("\n")[0]}`,
+      );
+    }
+
+    const next = transformCard(card, ctx, existing?.slug, actions);
     if (!next) {
       skipped++;
       continue;

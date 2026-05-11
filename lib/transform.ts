@@ -9,6 +9,12 @@ import type {
 } from "./trello";
 import { mapList, statusLabel } from "./list-mapping";
 import { pickProducer } from "./producer";
+import {
+  deriveMilestoneDates,
+  projectDeliveredDate,
+  type MilestoneDates,
+} from "./milestone-dates";
+import type { TrelloAction } from "./trello";
 
 export type TransformContext = {
   listsById: Map<string, TrelloList>;
@@ -148,6 +154,7 @@ export function transformCard(
   card: TrelloCard,
   ctx: TransformContext,
   existingSlug?: string,
+  actions?: TrelloAction[],
 ): Shoot | null {
   const list = ctx.listsById.get(card.idList);
   if (!list || card.closed) return null;
@@ -183,6 +190,17 @@ export function transformCard(
     (l) => l.name.trim().toLowerCase() === "post production",
   );
 
+  // Past milestone dates from action history (if provided). For webhooks
+  // and backfills we pass the actions through; if absent we just leave
+  // the map empty — the page falls back gracefully.
+  const milestoneDates: MilestoneDates = actions
+    ? deriveMilestoneDates(actions)
+    : {};
+
+  const projectedDeliveredDate = milestoneDates.delivered
+    ? undefined
+    : projectDeliveredDate(shootDate, hasPostProduction);
+
   // Brief / quote come from Drive (M3). Final assets and the two Stripe
   // receipts come from manual Trello custom fields — PM pastes them in.
   const finalAssetsUrl =
@@ -207,6 +225,8 @@ export function transformCard(
     balanceReceiptUrl,
     producerEmail: pickProducer(card.idMembers).email,
     hasPostProduction,
+    milestoneDates,
+    projectedDeliveredDate,
     trelloListId: list.id,
     trelloListName: list.name,
     updatedAt: new Date().toISOString(),

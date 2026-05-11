@@ -9,7 +9,12 @@
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { getBoardCustomFields, getBoardLists, getCard } from "@/lib/trello";
+import {
+  getBoardCustomFields,
+  getBoardLists,
+  getCard,
+  getCardActions,
+} from "@/lib/trello";
 import { deleteByCardId, getByCardId, upsertByCardId } from "@/lib/storage";
 import { buildContext, transformCard } from "@/lib/transform";
 import { findShootDriveLinks } from "@/lib/drive";
@@ -61,18 +66,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "TRELLO_BOARD_ID unset" }, { status: 500 });
   }
 
-  // Fetch the live card + a fresh context. Webhooks are infrequent enough
-  // that re-fetching lists + customFields per event is fine — keeps the
-  // logic simple and avoids stale-context bugs after a board edit.
-  const [card, lists, customFields] = await Promise.all([
+  // Fetch the live card + a fresh context + the card's action history
+  // (for deriving past milestone dates). Webhooks are infrequent enough
+  // that re-fetching everything per event is fine — keeps the logic simple
+  // and avoids stale-context bugs after a board edit.
+  const [card, lists, customFields, actions] = await Promise.all([
     getCard(cardId),
     getBoardLists(boardId),
     getBoardCustomFields(boardId),
+    getCardActions(cardId).catch((err) => {
+      console.warn(
+        `[trello-webhook] action history fetch failed for ${cardId}:`,
+        (err as Error).message,
+      );
+      return undefined;
+    }),
   ]);
 
   const ctx = buildContext(lists, customFields);
   const existing = await getByCardId(cardId);
-  const next = transformCard(card, ctx, existing?.slug);
+  const next = transformCard(card, ctx, existing?.slug, actions);
 
   if (!next) {
     // Card moved to a non-publishable list (or was archived). Drop it.

@@ -23,6 +23,13 @@ export function getDemoShoot(): Shoot {
     // No finalAssetsUrl yet — section should hide silently to demo graceful empty state.
     producerEmail: "zandro@fame.so",
     hasPostProduction: true,
+    milestoneDates: {
+      bookingConfirmed: "2026-04-22T10:00:00.000Z",
+      crewConfirmed: "2026-05-01T14:00:00.000Z",
+    },
+    // Demo is in "crew-confirmed" state pre-shoot; projected delivery is
+    // Shoot day (2026-05-15) + 5 business days = 2026-05-22.
+    projectedDeliveredDate: "2026-05-22",
     trelloListId: "demo",
     trelloListName: "Crew Booked",
     updatedAt: new Date().toISOString(),

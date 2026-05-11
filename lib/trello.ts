@@ -153,3 +153,23 @@ export function getCard(cardId: string): Promise<TrelloCard> {
 export function getList(listId: string): Promise<TrelloList> {
   return trelloGet<TrelloList>(`/lists/${encodeURIComponent(listId)}`);
 }
+
+// Card history: createCard + list-move actions. Used to derive when each
+// milestone was reached.
+export type TrelloAction = {
+  id: string;
+  type: string; // "createCard" | "updateCard" | ...
+  date: string; // ISO timestamp
+  data?: {
+    list?: { id: string; name: string };
+    listAfter?: { id: string; name: string };
+    listBefore?: { id: string; name: string };
+  };
+};
+
+export function getCardActions(cardId: string): Promise<TrelloAction[]> {
+  return trelloGet<TrelloAction[]>(`/cards/${encodeURIComponent(cardId)}/actions`, {
+    filter: "createCard,updateCard:idList",
+    limit: "1000",
+  });
+}

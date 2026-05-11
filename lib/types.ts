@@ -1,4 +1,5 @@
 import type { ShootStatus } from "../app/[slug]/status";
+import type { MilestoneDates } from "./milestone-dates";
 
 // Public data model — what /[slug] reads. One blob per Trello card.
 export type Shoot = {
@@ -24,6 +25,13 @@ export type Shoot = {
   // Whether Fame is doing post-production. Drives whether the timeline
   // includes the "In editing" step. Source: "Post Production" Trello label.
   hasPostProduction: boolean;
+  // Dates each milestone was reached, derived from Trello action history.
+  // Missing entries = not yet reached (or card skipped that list).
+  milestoneDates: MilestoneDates;
+  // Projected Delivered date (Shoot day + 5 business days for PP shoots,
+  // +1 calendar day for crew-only). Only used when delivered hasn't been
+  // reached yet — the UI prefers the actual milestoneDates.delivered.
+  projectedDeliveredDate?: string; // YYYY-MM-DD
   // Bookkeeping
   trelloListId: string;
   trelloListName: string;

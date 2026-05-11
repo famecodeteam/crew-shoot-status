@@ -92,17 +92,21 @@ function ShootView({ shoot }: { shoot: Shoot }) {
             className="timeline"
             style={{ gridTemplateColumns: `repeat(${steps.length}, 1fr)` }}
           >
-            {steps.map((label, i) => (
-              <li
-                key={label}
-                className={
-                  "step " + (i < stepIdx ? "done" : i === stepIdx ? "current" : "")
-                }
-              >
-                <div className="step-dot">{i < stepIdx ? "✓" : i + 1}</div>
-                <div className="step-label">{label}</div>
-              </li>
-            ))}
+            {steps.map((label, i) => {
+              const stepDate = formatStepDate(shoot, i, steps.length);
+              return (
+                <li
+                  key={label}
+                  className={
+                    "step " + (i < stepIdx ? "done" : i === stepIdx ? "current" : "")
+                  }
+                >
+                  <div className="step-dot">{i < stepIdx ? "✓" : i + 1}</div>
+                  <div className="step-label">{label}</div>
+                  {stepDate && <div className="step-date">{stepDate}</div>}
+                </li>
+              );
+            })}
           </ol>
         </section>
       )}
@@ -221,6 +225,56 @@ function formatDate(iso: string): string {
     month: "long",
     year: "numeric",
   });
+}
+
+// Short date for the timeline ("5 May" or "5 May 2027" if cross-year).
+function formatShortDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    ...(sameYear ? {} : { year: "numeric" }),
+  });
+}
+
+// Decide which date string (if any) sits under each timeline step.
+// totalSteps differs for PP shoots (5) vs crew-only (4) — the meaning of
+// each index shifts when "In editing" is absent.
+function formatStepDate(shoot: Shoot, idx: number, totalSteps: number): string {
+  const pp = totalSteps === 5;
+  const m = shoot.milestoneDates;
+
+  // Step 0: Booking confirmed (always)
+  if (idx === 0) return m.bookingConfirmed ? formatShortDate(m.bookingConfirmed) : "";
+
+  // Step 1: Crew confirmed (always)
+  if (idx === 1) return m.crewConfirmed ? formatShortDate(m.crewConfirmed) : "";
+
+  // Step 2: Shoot day — the shoot date custom field, past or future.
+  if (idx === 2) return shoot.shootDate ? formatShortDate(shoot.shootDate) : "";
+
+  if (pp) {
+    // Step 3 (PP): In editing — past date only; no future ETA shown.
+    if (idx === 3) return m.inEditing ? formatShortDate(m.inEditing) : "";
+    // Step 4 (PP): Delivered — actual date if reached, else projected ETA.
+    if (idx === 4) {
+      if (m.delivered) return formatShortDate(m.delivered);
+      if (shoot.projectedDeliveredDate)
+        return `Expected ${formatShortDate(shoot.projectedDeliveredDate)}`;
+      return "";
+    }
+  } else {
+    // Step 3 (non-PP): Delivered — same logic.
+    if (idx === 3) {
+      if (m.delivered) return formatShortDate(m.delivered);
+      if (shoot.projectedDeliveredDate)
+        return `Expected ${formatShortDate(shoot.projectedDeliveredDate)}`;
+      return "";
+    }
+  }
+  return "";
 }
 
 function formatCountdown(iso: string, delivered: boolean): string | null {
