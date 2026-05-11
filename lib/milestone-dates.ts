@@ -58,26 +58,32 @@ export function deriveMilestoneDates(actions: TrelloAction[]): MilestoneDates {
 
 // Project the Delivered date for shoots that haven't been delivered yet.
 // shootDate is "YYYY-MM-DD"; returns same shape.
+//
+// turnaroundOverride: per-shoot override from the "Post Prod Turnaround"
+// custom field. When set:
+//   - PP shoot     → override is in BUSINESS days
+//   - Crew-only    → override is in CALENDAR days
+// When unset, the defaults are 5 business / 1 calendar respectively.
 export function projectDeliveredDate(
   shootDate: string,
   hasPostProduction: boolean,
+  turnaroundOverride?: number,
 ): string | undefined {
   if (!shootDate) return undefined;
   const d = new Date(shootDate + "T00:00:00Z");
   if (Number.isNaN(d.getTime())) return undefined;
 
   if (hasPostProduction) {
-    // +5 business days, skipping Sat/Sun.
+    const days = turnaroundOverride && turnaroundOverride > 0 ? turnaroundOverride : 5;
     let added = 0;
-    while (added < 5) {
+    while (added < days) {
       d.setUTCDate(d.getUTCDate() + 1);
       const dow = d.getUTCDay();
       if (dow !== 0 && dow !== 6) added++;
     }
   } else {
-    // Crew-only: footage handed over the day after the shoot, regardless
-    // of whether it falls on a weekend.
-    d.setUTCDate(d.getUTCDate() + 1);
+    const days = turnaroundOverride && turnaroundOverride > 0 ? turnaroundOverride : 1;
+    d.setUTCDate(d.getUTCDate() + days);
   }
   return d.toISOString().slice(0, 10);
 }

@@ -31,6 +31,7 @@ export type TransformContext = {
     balanceReceiptUrl: string | null;
     publicSlug: string | null;
     statusPageUrl: string | null;
+    turnaroundDays: string | null;
   };
 };
 
@@ -86,6 +87,16 @@ export function buildContext(
         "Status URL",
         "Public URL",
       ),
+      // Per-shoot override for the projected delivery date.
+      // Number custom field — when set, replaces the default
+      // (5 business days for PP shoots / 1 calendar day for crew-only).
+      turnaroundDays: findFirst(
+        "Post Prod Turnaround",
+        "Turnaround Days",
+        "Post-Prod Turnaround",
+        "Days to Deliver",
+        "Delivery Turnaround",
+      ),
     },
   };
 }
@@ -111,6 +122,18 @@ function readCustomFieldText(
   if (!fieldId) return "";
   const item = card.customFieldItems?.find((x) => x.idCustomField === fieldId);
   return item?.value?.text?.trim() ?? "";
+}
+
+function readCustomFieldNumber(
+  card: TrelloCard,
+  fieldId: string | null,
+): number | undefined {
+  if (!fieldId) return undefined;
+  const item = card.customFieldItems?.find((x) => x.idCustomField === fieldId);
+  const raw = item?.value?.number;
+  if (!raw) return undefined;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : undefined;
 }
 
 function readCustomFieldDate(
@@ -197,9 +220,10 @@ export function transformCard(
     ? deriveMilestoneDates(actions)
     : {};
 
+  const turnaroundOverride = readCustomFieldNumber(card, ctx.fieldId.turnaroundDays);
   const projectedDeliveredDate = milestoneDates.delivered
     ? undefined
-    : projectDeliveredDate(shootDate, hasPostProduction);
+    : projectDeliveredDate(shootDate, hasPostProduction, turnaroundOverride);
 
   // Brief / quote come from Drive (M3). Final assets and the two Stripe
   // receipts come from manual Trello custom fields — PM pastes them in.
