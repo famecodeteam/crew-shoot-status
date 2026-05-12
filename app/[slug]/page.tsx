@@ -220,7 +220,15 @@ function ShootView({ shoot }: { shoot: Shoot }) {
       <footer className="footer">
         <div>
           Questions? Email{" "}
-          <a href={`mailto:${shoot.producerEmail}`}>{shoot.producerEmail}</a>.
+          <a href={`mailto:${shoot.producerEmail}`}>{shoot.producerEmail}</a>
+          {shoot.clientWhatsappUrl && (
+            <>
+              {" "}or{" "}
+              <a href={shoot.clientWhatsappUrl} target="_blank" rel="noreferrer">
+                message us on WhatsApp
+              </a>
+            </>
+          )}.
         </div>
         <div>Fame Crew</div>
       </footer>

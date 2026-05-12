@@ -24,6 +24,10 @@ export type Shoot = {
   finalAssetsUrl?: string;
   depositReceiptUrl?: string;
   balanceReceiptUrl?: string;
+  // WhatsApp group invite URL shared with the client — set on the
+  // Trello card so it can be surfaced as "where comms happens" during
+  // shoot week.
+  clientWhatsappUrl?: string;
   producerEmail: string;
   // Whether Fame is doing post-production. Drives whether the timeline
   // includes the "In editing" step. Source: "Post Production" Trello label.

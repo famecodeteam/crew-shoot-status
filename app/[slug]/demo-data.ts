@@ -22,6 +22,7 @@ export function getDemoShoot(): Shoot {
     depositReceiptUrl: "https://pay.stripe.com/receipts/example-deposit",
     // balanceReceiptUrl deliberately unset — demonstrates partial-payment state.
     // No finalAssetsUrl yet — section should hide silently to demo graceful empty state.
+    clientWhatsappUrl: "https://chat.whatsapp.com/example-group-invite",
     producerEmail: "zandro@fame.so",
     hasPostProduction: true,
     milestoneDates: {

@@ -32,6 +32,7 @@ export type TransformContext = {
     publicSlug: string | null;
     statusPageUrl: string | null;
     turnaroundDays: string | null;
+    clientWhatsappUrl: string | null;
   };
 };
 
@@ -96,6 +97,14 @@ export function buildContext(
         "Post-Prod Turnaround",
         "Days to Deliver",
         "Delivery Turnaround",
+      ),
+      // Client-facing WhatsApp group invite link.
+      // Surfaced in the footer; the separate "Crew WhatsApp Group" field
+      // is internal and intentionally not exposed here.
+      clientWhatsappUrl: findFirst(
+        "Client WhatsApp Group",
+        "Client Whatsapp Group",
+        "Client WhatsApp",
       ),
     },
   };
@@ -240,6 +249,8 @@ export function transformCard(
     readCustomFieldText(card, ctx.fieldId.depositReceiptUrl) || undefined;
   const balanceReceiptUrl =
     readCustomFieldText(card, ctx.fieldId.balanceReceiptUrl) || undefined;
+  const clientWhatsappUrl =
+    readCustomFieldText(card, ctx.fieldId.clientWhatsappUrl) || undefined;
 
   return {
     slug,
@@ -255,6 +266,7 @@ export function transformCard(
     finalAssetsUrl,
     depositReceiptUrl,
     balanceReceiptUrl,
+    clientWhatsappUrl,
     producerEmail: pickProducer(card.idMembers).email,
     hasPostProduction,
     milestoneDates,
