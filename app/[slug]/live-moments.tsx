@@ -123,7 +123,7 @@ export function LiveMoments({
 
   const header = isShootDayToday(shootDate)
     ? "Live from your shoot — happening now"
-    : "Moments from your shoot day";
+    : "Moments from the shoot";
 
   return (
     <section className="section">
@@ -151,8 +151,21 @@ function MomentCard({
   moment: LiveMoment;
   onOpen: () => void;
 }) {
+  // <a download> nested inside <button> is invalid HTML, so the outer
+  // container is a div with role=button.
   return (
-    <button type="button" className="moment-card" onClick={onOpen}>
+    <div
+      className="moment-card"
+      onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+    >
       <div className="moment-thumb-wrap">
         {moment.hasThumbnail ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -177,6 +190,15 @@ function MomentCard({
             )}
           </>
         )}
+        <a
+          className="moment-download"
+          href={downloadUrl(moment)}
+          onClick={(e) => e.stopPropagation()}
+          aria-label={`Download ${moment.type}`}
+          title="Download"
+        >
+          <DownloadIcon />
+        </a>
       </div>
       {moment.caption && <div className="moment-caption">{moment.caption}</div>}
       <div className="moment-meta">
@@ -184,7 +206,7 @@ function MomentCard({
         {moment.crewName && " · "}
         {relativeTime(moment.capturedAt)}
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -239,8 +261,36 @@ function Lightbox({
         {moment.caption && (
           <div className="lightbox-caption">{moment.caption}</div>
         )}
+        <a
+          className="lightbox-download"
+          href={downloadUrl(moment)}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DownloadIcon />
+          <span>Download</span>
+        </a>
       </div>
     </div>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
   );
 }
 
@@ -314,4 +364,12 @@ function sameDate(a: Date, b: Date): boolean {
 // to the original URL if the param isn't there.
 function highResImageUrl(m: LiveMoment): string {
   return m.thumbnailUrl.replace(/sz=w\d+/, "sz=w2000");
+}
+
+// Drive's "force download" URL — Content-Disposition: attachment lands
+// the file in the browser's download tray rather than opening a viewer.
+// Files >100MB show Drive's virus-scan confirmation page once; clients
+// click through. Files under that size download silently.
+function downloadUrl(m: LiveMoment): string {
+  return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(m.driveFileId)}`;
 }

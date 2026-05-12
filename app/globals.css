@@ -234,6 +234,29 @@ img {
   font-variant-numeric: tabular-nums;
 }
 
+.moment-download {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.moment-download:hover,
+.moment-download:focus-visible {
+  background: var(--pink);
+  transform: scale(1.05);
+  outline: none;
+}
+
 .moment-caption {
   font-size: 13px;
   font-style: italic;
@@ -314,6 +337,26 @@ img {
   text-align: center;
   max-width: 600px;
   font-size: 14px;
+}
+
+.lightbox-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.lightbox-download:hover {
+  background: var(--pink);
+  border-color: var(--pink);
 }
 
 /* ---------- Live crew-status banner (M7) ---------- */
