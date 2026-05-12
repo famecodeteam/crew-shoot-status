@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getBySlug } from "@/lib/storage";
 import type { Shoot } from "@/lib/types";
 import { getDemoShoot } from "./demo-data";
+import { LiveMoments } from "./live-moments";
 import { currentStepIndex, timelineSteps } from "./status";
 
 // Re-fetch on every request — we want ≤60s lag from a Trello move.
@@ -141,6 +142,10 @@ function ShootView({ shoot }: { shoot: Shoot }) {
             })}
           </ol>
         </section>
+      )}
+
+      {!isOnHold && (
+        <LiveMoments slug={shoot.slug} shootDate={shoot.shootDate} />
       )}
 
       {showCrew && shoot.crew && (

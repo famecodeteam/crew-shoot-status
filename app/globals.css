@@ -145,6 +145,177 @@ img {
   background: #ca8a04;
 }
 
+/* ---------- Live moments grid + lightbox ---------- */
+
+.moments-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .moments-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .moments-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.moment-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.moment-card:hover {
+  border-color: var(--pink);
+  transform: translateY(-1px);
+}
+
+.moment-thumb-wrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--pink-light);
+  overflow: hidden;
+}
+
+.moment-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* Honour EXIF orientation from phone photos so portraits don't render sideways. */
+  image-orientation: from-image;
+}
+
+.moment-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 32px;
+  color: var(--pink);
+}
+
+.moment-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.18);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.moment-duration {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.72);
+  color: white;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.moment-caption {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text);
+  padding: 10px 12px 2px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.moment-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 6px 12px 12px;
+}
+
+/* Lightbox */
+
+.lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: transparent;
+  color: white;
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 6px 12px;
+}
+
+.lightbox-close:hover {
+  color: var(--pink);
+}
+
+.lightbox-content {
+  max-width: 92vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.lightbox-content img {
+  max-width: 100%;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  image-orientation: from-image;
+}
+
+.lightbox-content iframe {
+  width: min(92vw, 1280px);
+  aspect-ratio: 16 / 9;
+  max-height: 82vh;
+  border: 0;
+  border-radius: var(--radius);
+  background: black;
+}
+
+.lightbox-caption {
+  color: rgba(255, 255, 255, 0.92);
+  font-style: italic;
+  text-align: center;
+  max-width: 600px;
+  font-size: 14px;
+}
+
 /* ---------- Live crew-status banner (M7) ---------- */
 
 .live-banner {
