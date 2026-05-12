@@ -25,6 +25,7 @@ export function getDemoShoot(): Shoot {
     clientWhatsappUrl: "https://chat.whatsapp.com/example-group-invite",
     producerEmail: "zandro@fame.so",
     hasPostProduction: true,
+    crewStatus: "On site",
     milestoneDates: {
       bookingConfirmed: "2026-04-22T10:00:00.000Z",
       crewConfirmed: "2026-05-01T14:00:00.000Z",

@@ -1,6 +1,16 @@
 import type { ShootStatus } from "../app/[slug]/status";
 import type { MilestoneDates } from "./milestone-dates";
 
+// Options on the Trello "Crew Status" single-select list field. Crew tap
+// these via member.fame.so; the client page reads them via the same
+// Trello card the rest of the pipeline reads from.
+export type CrewStatus =
+  | "Confirmed"
+  | "On the way"
+  | "On site"
+  | "Wrapping"
+  | "Wrapped";
+
 // Public data model — what /[slug] reads. One blob per Trello card.
 export type Shoot = {
   slug: string;
@@ -32,6 +42,11 @@ export type Shoot = {
   // Whether Fame is doing post-production. Drives whether the timeline
   // includes the "In editing" step. Source: "Post Production" Trello label.
   hasPostProduction: boolean;
+  // Live crew status set via the "Crew Status" list custom field on the
+  // Trello card (M7 feed-through from the separate crew page at
+  // member.fame.so). One of: "Confirmed" | "On the way" | "On site" |
+  // "Wrapping" | "Wrapped" | undefined when unset.
+  crewStatus?: CrewStatus;
   // Dates each milestone was reached, derived from Trello action history.
   // Missing entries = not yet reached (or card skipped that list).
   milestoneDates: MilestoneDates;

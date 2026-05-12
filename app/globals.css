@@ -145,6 +145,58 @@ img {
   background: #ca8a04;
 }
 
+/* ---------- Live crew-status banner (M7) ---------- */
+
+.live-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--pink-light);
+  color: var(--pink);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 28px;
+}
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--pink);
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Pulsing ripple around the dot — communicates "live". */
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--pink);
+  opacity: 0.5;
+  animation: live-pulse 1.8s ease-out infinite;
+}
+
+@keyframes live-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot::after {
+    animation: none;
+  }
+}
+
 /* ---------- Timeline ---------- */
 
 .section {

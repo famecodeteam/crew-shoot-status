@@ -1,7 +1,7 @@
 // Trello card + board context → Shoot record.
 // Pure transform (no I/O) so it's easy to unit-test against fixture cards.
 
-import type { Shoot } from "./types";
+import type { CrewStatus, Shoot } from "./types";
 import type {
   TrelloCard,
   TrelloCustomField,
@@ -33,6 +33,7 @@ export type TransformContext = {
     statusPageUrl: string | null;
     turnaroundDays: string | null;
     clientWhatsappUrl: string | null;
+    crewStatus: string | null;
   };
 };
 
@@ -106,6 +107,11 @@ export function buildContext(
         "Client Whatsapp Group",
         "Client WhatsApp",
       ),
+      // Live crew status (M7 feed-through). Single-select list field
+      // written by the crew page when freelancers tap the "I'm on site"
+      // etc. buttons. Resolved by NAME per the hand-off spec so a future
+      // re-create of the field on the board doesn't break the read.
+      crewStatus: findByName("Crew Status"),
     },
   };
 }
@@ -143,6 +149,21 @@ function readCustomFieldNumber(
   if (!raw) return undefined;
   const n = Number(raw);
   return Number.isFinite(n) ? n : undefined;
+}
+
+// List-type fields store the selected option ID on customFieldItems[i].idValue.
+// Look up the human label via the field's options.
+function readCustomFieldListOption(
+  card: TrelloCard,
+  fieldId: string | null,
+  customFieldsById: Map<string, TrelloCustomField>,
+): string {
+  if (!fieldId) return "";
+  const item = card.customFieldItems?.find((x) => x.idCustomField === fieldId);
+  if (!item?.idValue) return "";
+  const field = customFieldsById.get(fieldId);
+  const opt = field?.options?.find((o) => o.id === item.idValue);
+  return opt?.value?.text?.trim() ?? "";
 }
 
 function readCustomFieldDate(
@@ -252,6 +273,16 @@ export function transformCard(
   const clientWhatsappUrl =
     readCustomFieldText(card, ctx.fieldId.clientWhatsappUrl) || undefined;
 
+  // Crew Status: typed as union for downstream safety, but anything is
+  // accepted at runtime — an unknown option just won't trigger a UI
+  // branch, which is the right failure mode.
+  const crewStatusRaw = readCustomFieldListOption(
+    card,
+    ctx.fieldId.crewStatus,
+    ctx.customFieldsById,
+  );
+  const crewStatus = (crewStatusRaw || undefined) as CrewStatus | undefined;
+
   return {
     slug,
     cardId: card.id,
@@ -269,6 +300,7 @@ export function transformCard(
     clientWhatsappUrl,
     producerEmail: pickProducer(card.idMembers).email,
     hasPostProduction,
+    crewStatus,
     milestoneDates,
     projectedDeliveredDate,
     trelloListId: list.id,

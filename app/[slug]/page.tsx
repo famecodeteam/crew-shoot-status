@@ -50,6 +50,21 @@ function ShootView({ shoot }: { shoot: Shoot }) {
   const showAssets = stepIdx >= finalStepIdx && shoot.finalAssetsUrl && !isOnHold;
   const countdown = formatCountdown(shoot.shootDate, isDelivered);
 
+  // M7 feed-through: live crew status from member.fame.so taps.
+  const liveBanner = pickLiveBanner(shoot, isOnHold);
+  // "Shoot wrapped" supersedes the list-derived badge BETWEEN shoot day and
+  // the first delivery state. Once the card moves into editing/delivered,
+  // the existing badge text takes over.
+  const wrappedOverridesBadge =
+    shoot.crewStatus === "Wrapped" &&
+    !isOnHold &&
+    (shoot.status === "booking-confirmed" ||
+      shoot.status === "searching-for-crew" ||
+      shoot.status === "crew-confirmed" ||
+      shoot.status === "ready-for-shoot" ||
+      shoot.status === "shoot-complete");
+  const badgeText = wrappedOverridesBadge ? "Shoot wrapped" : shoot.statusLabel;
+
   return (
     <main className="shell">
       <header className="hero">
@@ -85,9 +100,16 @@ function ShootView({ shoot }: { shoot: Shoot }) {
             "status-badge" + (isDelivered ? " delivered" : isOnHold ? " on-hold" : "")
           }
         >
-          {shoot.statusLabel}
+          {badgeText}
         </span>
       </header>
+
+      {liveBanner && (
+        <div className="live-banner" role="status" aria-live="polite">
+          <span className="live-dot" aria-hidden="true" />
+          <span>{liveBanner}</span>
+        </div>
+      )}
 
       {isOnHold ? (
         <section className="section">
@@ -243,6 +265,37 @@ function formatDate(iso: string): string {
     month: "long",
     year: "numeric",
   });
+}
+
+// Crew-status banner copy. Returns null when no banner should render —
+// includes the empty-status, on-hold, and "Wrapped" cases (Wrapped is
+// surfaced via the badge override, not here).
+function pickLiveBanner(shoot: Shoot, isOnHold: boolean): string | null {
+  if (isOnHold) return null;
+  switch (shoot.crewStatus) {
+    case "On site":
+      return shoot.location
+        ? `Your crew is on site at ${shoot.location}`
+        : "Your crew is on site";
+    case "Wrapping":
+      return "Your crew is wrapping up";
+    case "On the way":
+      // Recommended display says "pre-shoot-day shoots: hide" — only show
+      // when the shoot date is today.
+      return isShootDayToday(shoot.shootDate) ? "Your crew is on the way" : null;
+    default:
+      return null;
+  }
+}
+
+function isShootDayToday(shootDate: string): boolean {
+  if (!shootDate) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(shootDate + "T00:00:00");
+  if (Number.isNaN(target.getTime())) return false;
+  target.setHours(0, 0, 0, 0);
+  return today.getTime() === target.getTime();
 }
 
 // Short date for the timeline ("5 May" or "5 May 2027" if cross-year).
