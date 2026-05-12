@@ -43,6 +43,13 @@ function escapeQuery(s: string): string {
 /**
  * Find a single shoot's brief + quote URLs.
  * Returns an empty object if the folder isn't found or files are missing.
+ *
+ * Multiple folders named "#NNNN" can exist in the SA's view (e.g. an empty
+ * placeholder under the client folder + the real one elsewhere). We list
+ * the children of each candidate and return the first folder whose
+ * contents actually match the brief/quote criteria. If none of the
+ * candidates have matching files, we fall through to the first folder's
+ * URL so we at least surface *a* shoot folder link.
  */
 export async function findShootDriveLinks(shootNumber: string): Promise<ShootDriveLinks> {
   const stripped = shootNumber.replace(/^#/, "").trim();
@@ -51,59 +58,72 @@ export async function findShootDriveLinks(shootNumber: string): Promise<ShootDri
 
   const d = drive();
 
-  // 1. Find the folder. Search across all drives the SA has access to,
-  //    so this works whether the folder lives in a shared drive or not.
+  // 1. Find all folders matching the name.
   const folderResp = await d.files.list({
     q:
       `name = '${escapeQuery(folderName)}' and ` +
       `mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
     fields: "files(id, name, webViewLink)",
-    pageSize: 5,
+    pageSize: 10,
     supportsAllDrives: true,
     includeItemsFromAllDrives: true,
   });
 
-  const folder = folderResp.data.files?.[0];
-  if (!folder?.id) return {};
+  const folders = folderResp.data.files ?? [];
+  if (folders.length === 0) return {};
 
-  const out: ShootDriveLinks = {
-    shootFolderUrl: folder.webViewLink ?? undefined,
-  };
+  // 2. For each candidate folder, list children and look for brief / quote.
+  //    Return as soon as we find one that has at least one matching file.
+  for (const folder of folders) {
+    if (!folder.id) continue;
+    const filesResp = await d.files.list({
+      q:
+        `'${folder.id}' in parents and trashed = false and (` +
+        `mimeType = 'application/vnd.google-apps.document' or ` +
+        `mimeType = 'application/pdf')`,
+      fields: "files(id, name, mimeType, webViewLink, modifiedTime)",
+      orderBy: "modifiedTime desc",
+      pageSize: 100,
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true,
+    });
+    const files = filesResp.data.files ?? [];
 
-  // 2. List children: Google Docs (for brief) + PDFs (for quote).
-  //    One query for both — saves a round trip.
-  const filesResp = await d.files.list({
-    q:
-      `'${folder.id}' in parents and trashed = false and (` +
-      `mimeType = 'application/vnd.google-apps.document' or ` +
-      `mimeType = 'application/pdf')`,
-    fields: "files(id, name, mimeType, webViewLink, modifiedTime)",
-    orderBy: "modifiedTime desc",
-    pageSize: 100,
-    supportsAllDrives: true,
-    includeItemsFromAllDrives: true,
-  });
-
-  const files = filesResp.data.files ?? [];
-
-  for (const f of files) {
-    const name = (f.name ?? "").toLowerCase();
-    if (
-      !out.briefUrl &&
-      f.mimeType === "application/vnd.google-apps.document" &&
-      name.includes("brief")
-    ) {
-      out.briefUrl = f.webViewLink ?? undefined;
-      out.briefName = f.name ?? undefined;
+    let briefUrl: string | undefined;
+    let briefName: string | undefined;
+    let quoteUrl: string | undefined;
+    let quoteName: string | undefined;
+    for (const f of files) {
+      const name = (f.name ?? "").toLowerCase();
+      if (
+        !briefUrl &&
+        f.mimeType === "application/vnd.google-apps.document" &&
+        name.includes("brief")
+      ) {
+        briefUrl = f.webViewLink ?? undefined;
+        briefName = f.name ?? undefined;
+      }
+      if (!quoteUrl && f.mimeType === "application/pdf" && name.includes("quote")) {
+        quoteUrl = f.webViewLink ?? undefined;
+        quoteName = f.name ?? undefined;
+      }
+      if (briefUrl && quoteUrl) break;
     }
-    if (!out.quoteUrl && f.mimeType === "application/pdf" && name.includes("quote")) {
-      out.quoteUrl = f.webViewLink ?? undefined;
-      out.quoteName = f.name ?? undefined;
+
+    if (briefUrl || quoteUrl) {
+      return {
+        shootFolderUrl: folder.webViewLink ?? undefined,
+        briefUrl,
+        briefName,
+        quoteUrl,
+        quoteName,
+      };
     }
-    if (out.briefUrl && out.quoteUrl) break;
   }
 
-  return out;
+  // No candidate had a matching brief or quote. Still surface the first
+  // folder's URL so we link to *something* sensible.
+  return { shootFolderUrl: folders[0].webViewLink ?? undefined };
 }
 
 // Useful for diagnostics in the backfill log.
