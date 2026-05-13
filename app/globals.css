@@ -754,13 +754,14 @@ img {
 }
 
 .asset-notes summary::before {
-  content: "▸ ";
+  content: "▸";
   display: inline-block;
+  margin-right: 8px;
   transition: transform 0.15s;
 }
 
 .asset-notes[open] summary::before {
-  content: "▾ ";
+  content: "▾";
 }
 
 .asset-notes p {
@@ -1190,9 +1191,28 @@ img {
 .approval-state {
   border-radius: var(--radius);
   padding: 14px 18px;
-  margin: 20px 0 0;
+  margin: 20px 0 28px;
   font-size: 14px;
   font-weight: 600;
+}
+
+.approval-state-undo {
+  display: block;
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  font-style: italic;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.75;
+  text-decoration: underline;
+}
+
+.approval-state-undo:hover {
+  opacity: 1;
 }
 
 .approval-state.approved {

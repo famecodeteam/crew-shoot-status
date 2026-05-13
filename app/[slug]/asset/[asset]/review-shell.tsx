@@ -86,6 +86,8 @@ export function ReviewShell({ asset }: { asset: Asset }) {
   const showApprovalBar =
     !!latest && approval?.status !== "approved" && approval?.status !== "changes_requested";
 
+  const onApprovalCleared = useCallback(() => setApproval(null), []);
+
   return (
     <>
       <Player
@@ -100,7 +102,12 @@ export function ReviewShell({ asset }: { asset: Asset }) {
         currentTime={currentTime}
         onAdd={onAddCommentClick}
       />
-      <ApprovalState approval={approval} version={version} />
+      <ApprovalState
+        approval={approval}
+        version={version}
+        assetSlug={asset.slug}
+        onCleared={onApprovalCleared}
+      />
       <CommentThread
         comments={comments}
         onSeek={seekTo}
@@ -613,11 +620,46 @@ function CommentItem({
 function ApprovalState({
   approval,
   version,
+  assetSlug,
+  onCleared,
 }: {
   approval: Asset["approval"];
   version: number;
+  assetSlug: string;
+  onCleared: () => void;
 }) {
+  const [busy, setBusy] = useState(false);
+
+  async function reset() {
+    const name =
+      window.localStorage.getItem(NAME_KEY) ?? prompt("Your name (for the audit log):");
+    if (!name || !name.trim()) return;
+    if (!confirm("Change your decision? Your editor will be notified.")) return;
+    setBusy(true);
+    try {
+      const resp = await fetch(
+        `/api/asset/${encodeURIComponent(assetSlug)}/reset-approval`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ authorName: name.trim() }),
+        },
+      );
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        throw new Error(body.error ?? `HTTP ${resp.status}`);
+      }
+      window.localStorage.setItem(NAME_KEY, name.trim());
+      onCleared();
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!approval) return null;
+
   if (approval.status === "approved") {
     return (
       <div className="approval-state approved">
@@ -629,6 +671,14 @@ function ApprovalState({
         })}
         {approval.authorName && ` by ${approval.authorName}`}
         {approval.onVersion !== version && ` (on v${approval.onVersion})`}
+        <button
+          type="button"
+          className="approval-state-undo"
+          onClick={reset}
+          disabled={busy}
+        >
+          {busy ? "Updating…" : "Change my decision"}
+        </button>
       </div>
     );
   }
@@ -639,6 +689,14 @@ function ApprovalState({
         {approval.changeRequestText && (
           <div className="approval-quote">“{approval.changeRequestText}”</div>
         )}
+        <button
+          type="button"
+          className="approval-state-undo"
+          onClick={reset}
+          disabled={busy}
+        >
+          {busy ? "Updating…" : "Change my decision"}
+        </button>
       </div>
     );
   }
