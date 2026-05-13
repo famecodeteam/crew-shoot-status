@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { getBySlug } from "@/lib/storage";
-import type { Shoot } from "@/lib/types";
+import { getAssetsForShoot } from "@/lib/asset-storage";
+import type { Asset, Shoot } from "@/lib/types";
 import { getDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
 import { currentStepIndex, timelineSteps } from "./status";
@@ -34,10 +36,22 @@ export default async function ShootPage({ params }: { params: Promise<{ slug: st
   const shoot = await loadShoot(slug);
   if (!shoot) notFound();
 
-  return <ShootView shoot={shoot} />;
+  // Assets — empty unless the editor has pushed at least one finished
+  // version. Skip the lookup for the demo slug (no real cardId).
+  const assets = slug === "demo" ? [] : await getAssetsForShoot(shoot.cardId);
+
+  return <ShootView shoot={shoot} assets={assets} shootSlug={slug} />;
 }
 
-function ShootView({ shoot }: { shoot: Shoot }) {
+function ShootView({
+  shoot,
+  assets,
+  shootSlug,
+}: {
+  shoot: Shoot;
+  assets: Asset[];
+  shootSlug: string;
+}) {
   const steps = timelineSteps(shoot.hasPostProduction);
   const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
   const isOnHold = shoot.status === "on-hold";
@@ -142,6 +156,10 @@ function ShootView({ shoot }: { shoot: Shoot }) {
             })}
           </ol>
         </section>
+      )}
+
+      {!isOnHold && assets.length > 0 && (
+        <FinalAssetsSection assets={assets} shootSlug={shootSlug} />
       )}
 
       {!isOnHold && (
@@ -269,6 +287,118 @@ function formatDate(iso: string): string {
     day: "numeric",
     month: "long",
     year: "numeric",
+  });
+}
+
+// ---------- "Your final assets" section ----------
+
+function FinalAssetsSection({
+  assets,
+  shootSlug,
+}: {
+  assets: Asset[];
+  shootSlug: string;
+}) {
+  const summary = summarizeAssets(assets);
+  const total = assets.length;
+  // Show progress segments for approved + changes-requested. Pending bar
+  // is the remaining track colour (intentionally muted).
+  const approvedPct = total ? (summary.approved / total) * 100 : 0;
+  const changesPct = total ? (summary.changesRequested / total) * 100 : 0;
+
+  return (
+    <section className="section">
+      <div className="card-h">Your final assets</div>
+      <div className="assets-summary">
+        <div className="assets-summary-line">
+          {total} {total === 1 ? "asset" : "assets"}
+          {summary.approved > 0 && ` · ${summary.approved} approved`}
+          {summary.changesRequested > 0 &&
+            ` · ${summary.changesRequested} changes requested`}
+          {summary.pending > 0 && ` · ${summary.pending} pending`}
+        </div>
+        <div className="assets-progress" aria-hidden="true">
+          <div
+            className="assets-progress-bar approved"
+            style={{ width: `${approvedPct}%` }}
+          />
+          <div
+            className="assets-progress-bar changes"
+            style={{ width: `${changesPct}%` }}
+          />
+        </div>
+      </div>
+      <div className="assets-list">
+        {assets.map((a) => (
+          <AssetCard key={a.slug} asset={a} shootSlug={shootSlug} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
+  const latest = asset.versions.length
+    ? asset.versions[asset.versions.length - 1]
+    : null;
+  const pill = pickAssetPill(asset);
+  return (
+    <Link className="asset-card" href={`/${shootSlug}/asset/${asset.slug}`}>
+      <div className="asset-card-name">{asset.name}</div>
+      <div className="asset-card-meta">
+        {latest
+          ? `v${latest.n} · uploaded ${formatShortDateOrToday(latest.uploadedAt)}`
+          : "Pending upload"}
+      </div>
+      <span className={`asset-card-pill ${pill.cls}`}>{pill.label}</span>
+    </Link>
+  );
+}
+
+function pickAssetPill(a: Asset): { label: string; cls: string } {
+  if (a.versions.length === 0) {
+    return { label: "Pending upload", cls: "pending" };
+  }
+  switch (a.approval?.status) {
+    case "approved":
+      return { label: "Approved", cls: "approved" };
+    case "changes_requested":
+      return { label: "Changes requested", cls: "changes-requested" };
+    case "comments_open":
+      return { label: "Comments open", cls: "comments-open" };
+    case "pending":
+    default:
+      return { label: "Pending review", cls: "pending" };
+  }
+}
+
+function summarizeAssets(assets: Asset[]) {
+  let approved = 0;
+  let changesRequested = 0;
+  let pending = 0;
+  for (const a of assets) {
+    const s = a.approval?.status;
+    if (s === "approved") approved++;
+    else if (s === "changes_requested") changesRequested++;
+    else pending++;
+  }
+  return { approved, changesRequested, pending };
+}
+
+function formatShortDateOrToday(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const today = new Date();
+  const sameDay =
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate();
+  if (sameDay) return "today";
+  const sameYear = d.getFullYear() === today.getFullYear();
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    ...(sameYear ? {} : { year: "numeric" }),
   });
 }
 

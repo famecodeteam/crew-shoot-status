@@ -11,6 +11,68 @@ export type CrewStatus =
   | "Wrapping"
   | "Wrapped";
 
+// ---------- Asset model (client video review + editor handoff) ----------
+// The asset model is shared with the member.fame.so codebase. Both repos
+// read and write the same KV keys. The hand-off doc spells out the
+// contract; the types here are the canonical source.
+
+export type AssetVersion = {
+  n: number; // 1-indexed
+  driveFileId: string;
+  uploadedAt: string; // ISO
+  uploadedBy: string | null;
+  sizeBytes: number | null;
+  durationSeconds: number | null;
+  filename: string | null; // e.g. "v2.mp4"
+};
+
+export type AssetApprovalStatus =
+  | "pending" // no client interaction yet
+  | "comments_open" // at least one comment, no decision
+  | "approved"
+  | "changes_requested";
+
+export type AssetApproval = {
+  status: AssetApprovalStatus;
+  onVersion: number; // version that this status applies to
+  authorName: string | null; // captured on approve / request-changes
+  decidedAt: string | null; // ISO
+  changeRequestText: string | null;
+};
+
+export type Asset = {
+  slug: string;
+  name: string;
+  notes: string | null;
+  shootCardId: string;
+  // Raw file bundle (from editor handoff). May be empty if the asset was
+  // created by a flow that doesn't bundle raw files.
+  rawFileIds: string[];
+  // Finished video versions (the client-review side of the asset).
+  // Newest version = versions[versions.length - 1]. Empty = no upload yet.
+  versions: AssetVersion[];
+  // Current approval state, applies to the latest version unless the
+  // client switches in the version selector. Null until the client
+  // interacts (comments / approves / requests changes).
+  approval: AssetApproval | null;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string | null;
+};
+
+export type Comment = {
+  id: string; // "cmt_<short>"
+  authorName: string;
+  authorToken: string; // server-issued; stored client-side in localStorage
+  authorIp: string | null;
+  authorUa: string | null;
+  text: string;
+  timestampSeconds: number; // position in the video
+  createdAt: string;
+  updatedAt: string;
+  resolved: boolean;
+};
+
 // Public data model — what /[slug] reads. One blob per Trello card.
 export type Shoot = {
   slug: string;
