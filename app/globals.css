@@ -1259,6 +1259,16 @@ img {
   margin-bottom: 14px;
 }
 
+.modal-help {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: -8px 0 14px;
+  padding: 10px 12px;
+  background: var(--pink-light);
+  border-radius: 8px;
+}
+
 .modal-label {
   display: block;
   font-size: 12px;

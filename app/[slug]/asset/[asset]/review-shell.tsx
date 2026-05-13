@@ -910,6 +910,10 @@ function ChangesModal({
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Request changes on {assetName} (v{version})</h2>
+        <p className="modal-help">
+          Use timestamped comments above for specifics — this note is just an
+          overall direction for the editor.
+        </p>
         <label className="modal-label">
           Your name
           <input
@@ -921,13 +925,13 @@ function ChangesModal({
           />
         </label>
         <label className="modal-label">
-          What needs changing?
+          Overall direction
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            rows={5}
+            rows={4}
             maxLength={4000}
-            placeholder="Describe the changes you'd like"
+            placeholder="e.g. tighten the intro, swap the b-roll at the end"
             autoFocus={!!name}
           />
         </label>
