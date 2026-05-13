@@ -780,7 +780,6 @@ function ApproveModal({
     if (typeof window === "undefined") return "";
     return window.localStorage.getItem(NAME_KEY) ?? "";
   });
-  const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -798,7 +797,7 @@ function ApproveModal({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ authorName: n, note: note.trim(), onVersion: version }),
+          body: JSON.stringify({ authorName: n, onVersion: version }),
         },
       );
       if (!resp.ok) {
@@ -827,16 +826,6 @@ function ApproveModal({
             onChange={(e) => setName(e.target.value)}
             maxLength={80}
             autoFocus={!name}
-          />
-        </label>
-        <label className="modal-label">
-          Optional note
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={2}
-            maxLength={500}
-            placeholder="e.g. love it"
           />
         </label>
         {err && <p className="modal-error">{err}</p>}
