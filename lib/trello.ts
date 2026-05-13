@@ -59,6 +59,43 @@ export function setCustomFieldText(
   );
 }
 
+// Post a comment to a Trello card. Used by the client-video-review
+// feature to log first-comments / approvals / change requests, which
+// double as the PM's notification channel until email lands.
+export async function addCardComment(cardId: string, text: string): Promise<void> {
+  const { key, token } = creds();
+  const params = new URLSearchParams({ key, token, text });
+  const resp = await fetch(
+    `${API_BASE}/cards/${encodeURIComponent(cardId)}/actions/comments`,
+    { method: "POST", body: params },
+  );
+  if (!resp.ok) {
+    const body = await resp.text().catch(() => "");
+    throw new Error(
+      `Trello addCardComment failed (${resp.status}): ${body.slice(0, 200)}`,
+    );
+  }
+}
+
+// Move a card to a different list. Used by the auto-card-movement
+// behaviour: card jumps to "Assets Approved By Client" when all assets
+// are approved, and reverts to "Assets Shared With Client" if any asset
+// regresses.
+export async function moveCardToList(cardId: string, listId: string): Promise<void> {
+  const { key, token } = creds();
+  const params = new URLSearchParams({ key, token, idList: listId });
+  const resp = await fetch(
+    `${API_BASE}/cards/${encodeURIComponent(cardId)}?${params.toString()}`,
+    { method: "PUT" },
+  );
+  if (!resp.ok) {
+    const body = await resp.text().catch(() => "");
+    throw new Error(
+      `Trello moveCardToList failed (${resp.status}): ${body.slice(0, 200)}`,
+    );
+  }
+}
+
 // ---------- Types (only the fields we care about) ----------
 
 export type TrelloList = {

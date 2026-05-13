@@ -945,3 +945,340 @@ img {
   background: #fee2e2;
   color: #991b1b;
 }
+
+/* ---------- Comments + composer + approval (asset review) ---------- */
+
+.asset-player {
+  position: relative;
+}
+
+.comment-markers {
+  position: absolute;
+  /* Hover just above the native scrub bar — most browsers put it about
+     14px above the bottom edge of the player, with some variance. The
+     position works "well enough" without per-browser tuning. */
+  left: 0;
+  right: 0;
+  bottom: 38px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.comment-marker {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: var(--pink);
+  transform: translateX(-50%);
+  pointer-events: auto;
+  cursor: pointer;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3);
+  padding: 0;
+  transition: transform 0.1s;
+}
+
+.comment-marker:hover {
+  transform: translateX(-50%) scale(1.25);
+}
+
+.comment-marker.resolved {
+  background: #94a3b8;
+}
+
+.comment-bar {
+  margin-bottom: 20px;
+}
+
+.comment-add {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: var(--text);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.comment-add:hover {
+  border-color: var(--pink);
+  background: var(--pink-light);
+}
+
+.comment-add strong {
+  color: var(--pink);
+  font-variant-numeric: tabular-nums;
+}
+
+.comment-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0;
+}
+
+.comment-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.comment-item.resolved {
+  opacity: 0.55;
+}
+
+.comment-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.comment-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pink);
+  background: var(--pink-light);
+  border: none;
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.comment-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.comment-posted {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.comment-edited {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.comment-text {
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  margin: 4px 0 8px;
+}
+
+.comment-edit-textarea {
+  width: 100%;
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin: 6px 0;
+  resize: vertical;
+}
+
+.comment-edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+.comment-actions-row {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.comment-action-link {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.comment-action-link:hover {
+  color: var(--pink);
+  text-decoration: underline;
+}
+
+.comment-action-link.danger:hover {
+  color: var(--red);
+}
+
+.comment-empty {
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Approval bar / state */
+
+.approval-bar {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  padding: 14px 0 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  margin-top: 28px;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-outline {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.btn-primary {
+  background: var(--pink);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #e63d6e;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  border-color: var(--pink);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--text);
+}
+
+.btn-outline:hover {
+  background: var(--text);
+  color: white;
+}
+
+.approval-state {
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin: 20px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.approval-state.approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.approval-state.changes-requested {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.approval-quote {
+  font-style: italic;
+  font-weight: 400;
+  margin-top: 8px;
+}
+
+/* Modal — reused for composer, approve, request-changes */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.modal {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+.modal h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.modal-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.modal-label input,
+.modal-label textarea {
+  display: block;
+  width: 100%;
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 4px;
+  resize: vertical;
+}
+
+.modal-label input:focus,
+.modal-label textarea:focus {
+  outline: none;
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px var(--pink-light);
+}
+
+.modal-error {
+  color: var(--red);
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}

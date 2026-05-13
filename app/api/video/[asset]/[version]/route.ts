@@ -11,8 +11,7 @@
 import { google } from "googleapis";
 import type { NextRequest } from "next/server";
 import { googleAuth } from "@/lib/google-auth";
-import { getAssetsForShoot } from "@/lib/asset-storage";
-import { listAll } from "@/lib/storage";
+import { findAssetBySlug } from "@/lib/asset-lookup";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,20 +33,6 @@ async function getAccessToken(): Promise<string> {
   throw new Error("No Google access token returned");
 }
 
-// Asset slugs are globally unique. We find the asset by scanning every
-// shoot's assets map until we hit a match. With ~50 shoots × ~5 assets,
-// this is cheap and we avoid maintaining a second slug→cardId index. If
-// volume grows materially we can add one.
-async function findAsset(slug: string) {
-  const shoots = await listAll();
-  for (const shoot of shoots) {
-    const assets = await getAssetsForShoot(shoot.cardId);
-    const a = assets.find((x) => x.slug === slug);
-    if (a) return a;
-  }
-  return null;
-}
-
 export async function GET(
   req: NextRequest,
   ctx: { params: Promise<{ asset: string; version: string }> },
@@ -62,10 +47,10 @@ export async function GET(
     return new Response("Bad version", { status: 400 });
   }
 
-  const asset = await findAsset(assetSlug);
-  if (!asset) return new Response("Unknown asset", { status: 404 });
+  const lookup = await findAssetBySlug(assetSlug);
+  if (!lookup) return new Response("Unknown asset", { status: 404 });
 
-  const v = asset.versions.find((x) => x.n === version);
+  const v = lookup.asset.versions.find((x) => x.n === version);
   if (!v) return new Response("Unknown version", { status: 404 });
 
   let accessToken: string;

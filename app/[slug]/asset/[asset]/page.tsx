@@ -18,7 +18,7 @@ import Link from "next/link";
 import { getBySlug } from "@/lib/storage";
 import { getAsset } from "@/lib/asset-storage";
 import type { Asset } from "@/lib/types";
-import { AssetPlayer } from "./player";
+import { ReviewShell } from "./review-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -78,11 +78,7 @@ export default async function AssetReviewPage({
         )}
       </header>
 
-      {latest ? (
-        <AssetPlayer asset={asset} initialVersion={latest.n} />
-      ) : (
-        <PendingUploadState />
-      )}
+      {latest ? <ReviewShell asset={asset} /> : <PendingUploadState />}
 
       <footer className="footer" style={{ marginTop: 56 }}>
         <div>
