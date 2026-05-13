@@ -171,9 +171,10 @@ function MomentCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             className="moment-thumb"
-            src={moment.thumbnailUrl}
+            src={publicThumbUrl(moment, 600)}
             alt={moment.caption ?? "Moment"}
             loading="lazy"
+            referrerPolicy="no-referrer"
           />
         ) : (
           <div className="moment-placeholder" aria-hidden="true">
@@ -256,7 +257,11 @@ function Lightbox({
           />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={highResImageUrl(moment)} alt={moment.caption ?? "Photo"} />
+          <img
+            src={publicThumbUrl(moment, 2000)}
+            alt={moment.caption ?? "Photo"}
+            referrerPolicy="no-referrer"
+          />
         )}
         {moment.caption && (
           <div className="lightbox-caption">{moment.caption}</div>
@@ -359,11 +364,14 @@ function sameDate(a: Date, b: Date): boolean {
   );
 }
 
-// Drive thumbnail URLs are of the form ".../thumbnail?id=...&sz=w800".
-// Bump the size param so the lightbox shows a sharper image. Falls back
-// to the original URL if the param isn't there.
-function highResImageUrl(m: LiveMoment): string {
-  return m.thumbnailUrl.replace(/sz=w\d+/, "sz=w2000");
+// Drive's /thumbnail endpoint requires session cookies, which mobile
+// Safari + Chrome (Intelligent Tracking Prevention) block by default.
+// lh3.googleusercontent.com is the public CDN equivalent — no auth, no
+// cookie required, works cross-origin on mobile. We construct it from
+// driveFileId rather than parsing the API's thumbnailUrl, so the size
+// is exactly what we want for each surface (card vs lightbox).
+function publicThumbUrl(m: LiveMoment, size: number): string {
+  return `https://lh3.googleusercontent.com/d/${encodeURIComponent(m.driveFileId)}=w${size}`;
 }
 
 // Drive's "force download" URL — Content-Disposition: attachment lands
