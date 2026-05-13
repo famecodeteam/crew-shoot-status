@@ -305,6 +305,7 @@ function FinalAssetsSection({
   // is the remaining track colour (intentionally muted).
   const approvedPct = total ? (summary.approved / total) * 100 : 0;
   const changesPct = total ? (summary.changesRequested / total) * 100 : 0;
+  const changesNoun = summary.changesRequested === 1 ? "change" : "changes";
 
   return (
     <section className="section">
@@ -314,7 +315,7 @@ function FinalAssetsSection({
           {total} {total === 1 ? "asset" : "assets"}
           {summary.approved > 0 && ` · ${summary.approved} approved`}
           {summary.changesRequested > 0 &&
-            ` · ${summary.changesRequested} changes requested`}
+            ` · ${summary.changesRequested} ${changesNoun} requested`}
           {summary.pending > 0 && ` · ${summary.pending} pending`}
         </div>
         <div className="assets-progress" aria-hidden="true">
@@ -358,6 +359,13 @@ function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
 function pickAssetPill(a: Asset): { label: string; cls: string } {
   if (a.versions.length === 0) {
     return { label: "Pending upload", cls: "pending" };
+  }
+  // Stale decision: a newer version has landed since the client's last
+  // approve / request-changes decision. Surface it as "new version ready"
+  // rather than the now-outdated "Approved" / "Changes requested".
+  const latest = a.versions[a.versions.length - 1];
+  if (a.approval && latest.n > a.approval.onVersion) {
+    return { label: "New version ready", cls: "comments-open" };
   }
   switch (a.approval?.status) {
     case "approved":

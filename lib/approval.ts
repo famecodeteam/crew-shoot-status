@@ -44,7 +44,7 @@ function summarizeAssetsForField(assets: Asset[]): string {
   }
   const parts: string[] = [`${total} ${total === 1 ? "asset" : "assets"}`];
   if (approved) parts.push(`${approved} approved`);
-  if (changes) parts.push(`${changes} changes requested`);
+  if (changes) parts.push(`${changes} ${changes === 1 ? "change" : "changes"} requested`);
   if (pending) parts.push(`${pending} pending`);
   return parts.join(" · ");
 }
@@ -161,30 +161,27 @@ export async function syncTrelloForShoot(
     }
   }
 
-  // ---- Auto-card-movement ----
-  const allApproved =
-    assets.length > 0 && assets.every((a) => a.approval?.status === "approved");
-  const sharedList = lists.find(
-    (l) => l.name.trim().toLowerCase() === SHARED_WITH_CLIENT,
-  );
-  const approvedList = lists.find(
-    (l) => l.name.trim().toLowerCase() === APPROVED_BY_CLIENT,
-  );
-  // Use the first asset's view of the card list to infer current
-  // position (we don't have a fresh `idList` on the card object here;
-  // fetch it as cheap as possible). Reading any one card's metadata
-  // works because lists are scoped to the card itself.
-  // For simplicity we skip the "is this a no-op?" check and just call
-  // the API — Trello tolerates moving a card to its current list.
-  try {
-    if (allApproved && approvedList) {
-      await moveCardToList(cardId, approvedList.id);
-    } else if (!allApproved && sharedList) {
-      await moveCardToList(cardId, sharedList.id);
-    }
-  } catch (err) {
-    console.warn("[approval] card move failed:", (err as Error).message);
-  }
+  // ---- Auto-card-movement (disabled per Tom's request) ----
+  // The forward move (all approved → Assets Approved By Client) used to
+  // run automatically here. Tom disabled it because more assets may
+  // still be added to a shoot after the initial round is approved, and
+  // moving the card prematurely creates noise. Card placement stays
+  // manual; this function still updates the comment + custom fields.
+  //
+  // The revert is also disabled — without the forward move there's
+  // nothing for it to revert from in normal flow, and a blanket
+  // "move to Shared" on every regression risks pulling the card out
+  // of whatever list the PM has placed it in manually.
+  //
+  // If you want the revert back when a card sits in Approved-By-Client
+  // and an asset regresses, re-enable selectively:
+  //   const card = await getCard(cardId);
+  //   if (card.idList === approvedList?.id && !allApproved && sharedList) {
+  //     await moveCardToList(cardId, sharedList.id);
+  //   }
+  void SHARED_WITH_CLIENT;
+  void APPROVED_BY_CLIENT;
+  void lists;
 }
 
 async function readCardCustomFieldText(

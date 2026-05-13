@@ -1189,6 +1189,18 @@ img {
   color: #991b1b;
 }
 
+.approval-state.new-version {
+  background: var(--pink-light);
+  color: var(--pink);
+}
+
+.approval-state-cta {
+  margin-top: 8px;
+  font-weight: 500;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
 .approval-quote {
   font-style: italic;
   font-weight: 400;
@@ -1242,6 +1254,15 @@ img {
   color: var(--text-muted);
   margin-top: 12px;
   margin-bottom: 4px;
+}
+
+.modal-optional {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 .modal-label input,

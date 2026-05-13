@@ -83,8 +83,16 @@ export function ReviewShell({ asset }: { asset: Asset }) {
     setComposerOpen(false);
   }, []);
 
+  // Approval bar is visible when there's no decision yet, OR when the
+  // current decision is stale (a newer version has landed than the one
+  // the decision was made against) AND the user is viewing that latest
+  // version.
+  const decisionIsStale =
+    !!latest && !!approval && latest.n > approval.onVersion;
   const showApprovalBar =
-    !!latest && approval?.status !== "approved" && approval?.status !== "changes_requested";
+    !!latest &&
+    (!approval ||
+      (decisionIsStale && version === latest.n));
 
   const onApprovalCleared = useCallback(() => setApproval(null), []);
 
@@ -105,6 +113,7 @@ export function ReviewShell({ asset }: { asset: Asset }) {
       <ApprovalState
         approval={approval}
         version={version}
+        latestVersionN={latest.n}
         assetSlug={asset.slug}
         onCleared={onApprovalCleared}
       />
@@ -620,11 +629,13 @@ function CommentItem({
 function ApprovalState({
   approval,
   version,
+  latestVersionN,
   assetSlug,
   onCleared,
 }: {
   approval: Asset["approval"];
   version: number;
+  latestVersionN: number;
   assetSlug: string;
   onCleared: () => void;
 }) {
@@ -659,6 +670,24 @@ function ApprovalState({
   }
 
   if (!approval) return null;
+
+  // Stale decision — a newer version has landed than the one the
+  // decision was made against. Only show the new-version banner when
+  // we're actually viewing that latest version; otherwise (viewing the
+  // version the decision applied to) show the normal approved /
+  // changes-requested state below.
+  const isStale = latestVersionN > approval.onVersion;
+  if (isStale && version === latestVersionN) {
+    return (
+      <div className="approval-state new-version">
+        Here is your new version.
+        {approval.changeRequestText && (
+          <div className="approval-quote">“{approval.changeRequestText}”</div>
+        )}
+        <div className="approval-state-cta">Ready to approve below.</div>
+      </div>
+    );
+  }
 
   if (approval.status === "approved") {
     return (
@@ -866,8 +895,8 @@ function ChangesModal({
   async function submit() {
     const n = name.trim();
     const t = text.trim();
-    if (!n || !t) {
-      setErr("Name and change description are both required");
+    if (!n) {
+      setErr("Name is required");
       return;
     }
     setBusy(true);
@@ -914,7 +943,7 @@ function ChangesModal({
           />
         </label>
         <label className="modal-label">
-          Overall direction
+          Overall direction <span className="modal-optional">(optional)</span>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}

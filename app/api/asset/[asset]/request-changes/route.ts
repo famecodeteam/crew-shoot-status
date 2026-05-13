@@ -31,8 +31,8 @@ export async function POST(
   if (!authorName || authorName.length > 80) {
     return Response.json({ error: "authorName required (≤80 chars)" }, { status: 400 });
   }
-  if (!text || text.length > 4000) {
-    return Response.json({ error: "text required (≤4000 chars)" }, { status: 400 });
+  if (text.length > 4000) {
+    return Response.json({ error: "text must be ≤4000 chars" }, { status: 400 });
   }
   const onVersion = Number(body.onVersion);
   if (!Number.isInteger(onVersion) || onVersion < 1) {
@@ -49,7 +49,7 @@ export async function POST(
     status: "changes_requested",
     onVersion,
     authorName,
-    changeRequestText: text,
+    changeRequestText: text || null,
   });
   const updated = await applyApprovalToAsset({
     cardId: lookup.shoot.cardId,
@@ -58,8 +58,9 @@ export async function POST(
   });
 
   const reviewUrl = clientReviewUrl(lookup.shoot.slug, slug);
-  const trelloText =
-    `[${authorName}] requested changes on ${lookup.asset.name} (v${onVersion}): ${text}\n${reviewUrl}`;
+  const trelloText = text
+    ? `[${authorName}] requested changes on ${lookup.asset.name} (v${onVersion}): ${text}\n${reviewUrl}`
+    : `[${authorName}] requested changes on ${lookup.asset.name} (v${onVersion}). See comments on the review page.\n${reviewUrl}`;
 
   try {
     await addCardComment(lookup.shoot.cardId, trelloText);
