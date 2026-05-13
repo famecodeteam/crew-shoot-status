@@ -734,42 +734,6 @@ img {
 
 /* ---------- Asset review page ---------- */
 
-.asset-notes {
-  background: var(--pink-light);
-  border-radius: var(--radius);
-  padding: 12px 16px;
-  margin: 8px 0 20px;
-  font-size: 14px;
-}
-
-.asset-notes summary {
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--pink);
-  list-style: none;
-}
-
-.asset-notes summary::-webkit-details-marker {
-  display: none;
-}
-
-.asset-notes summary::before {
-  content: "▸";
-  display: inline-block;
-  margin-right: 8px;
-  transition: transform 0.15s;
-}
-
-.asset-notes[open] summary::before {
-  content: "▾";
-}
-
-.asset-notes p {
-  margin-top: 8px;
-  color: var(--text);
-  white-space: pre-wrap;
-}
-
 .asset-player {
   background: black;
   border-radius: var(--radius);

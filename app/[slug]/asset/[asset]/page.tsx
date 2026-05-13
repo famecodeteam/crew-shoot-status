@@ -70,12 +70,6 @@ export default async function AssetReviewPage({
           </Link>
         </div>
         <h1 className="hero-title">{asset.name}</h1>
-        {asset.notes && (
-          <details className="asset-notes">
-            <summary>Editor notes</summary>
-            <p>{asset.notes}</p>
-          </details>
-        )}
       </header>
 
       {latest ? <ReviewShell asset={asset} /> : <PendingUploadState />}
