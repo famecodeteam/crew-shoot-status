@@ -1,4 +1,4 @@
-// STEP 0 POC harness — picks up ?id=DRIVE_FILE_ID from the URL and drops
+// STEP 0 POC harness - picks up ?id=DRIVE_FILE_ID from the URL and drops
 // it into a plain HTML5 <video src=...>. Validates that the Drive proxy
 // route streams cleanly + supports seek in mobile Safari.
 //

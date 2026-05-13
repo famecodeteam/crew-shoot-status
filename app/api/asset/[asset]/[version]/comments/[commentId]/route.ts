@@ -65,7 +65,7 @@ export async function PATCH(
 
   const updates: Partial<Comment> = {};
 
-  // Text edit — author-only, within edit window.
+  // Text edit - author-only, within edit window.
   if (typeof body.text === "string") {
     if (!body.authorToken || body.authorToken !== existing.authorToken) {
       return Response.json({ error: "forbidden" }, { status: 403 });
@@ -81,10 +81,10 @@ export async function PATCH(
     updates.updatedAt = new Date().toISOString();
   }
 
-  // Resolved toggle — anyone with the URL can flip this.
+  // Resolved toggle - anyone with the URL can flip this.
   if (typeof body.resolved === "boolean") {
     updates.resolved = body.resolved;
-    // Don't bump updatedAt for resolve toggles — the "(edited)" marker
+    // Don't bump updatedAt for resolve toggles - the "(edited)" marker
     // only appears for text edits.
   }
 

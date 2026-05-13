@@ -29,7 +29,7 @@ async function main() {
     console.log(`  ❌ NOT accessible: ${msg}`);
   }
 
-  // 1. Try the exact "#NNNN" pattern Crew Scout assumes — see if any match.
+  // 1. Try the exact "#NNNN" pattern Crew Scout assumes - see if any match.
   console.log("\n--- 1. Folders matching `name contains '#0'` ---");
   const exactProbe = await drive.files.list({
     q: "name contains '#0' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",

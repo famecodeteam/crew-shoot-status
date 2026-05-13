@@ -7,7 +7,7 @@
 // shoot-level sync so the card snaps back to "Assets Shared With Client"
 // if it had been auto-moved to Approved.
 //
-// No author-token requirement — the same trust model as the
+// No author-token requirement - the same trust model as the
 // approve / request-changes endpoints (anonymous + unguessable URL).
 
 import type { NextRequest } from "next/server";
@@ -38,7 +38,7 @@ export async function POST(
   const lookup = await findAssetBySlug(slug);
   if (!lookup) return Response.json({ error: "unknown asset" }, { status: 404 });
   if (!lookup.asset.approval) {
-    // Already cleared — idempotent no-op.
+    // Already cleared - idempotent no-op.
     return Response.json({ asset: lookup.asset });
   }
 

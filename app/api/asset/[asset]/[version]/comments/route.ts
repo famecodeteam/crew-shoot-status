@@ -29,7 +29,7 @@ function parseVersion(raw: string): number | null {
   return Number.isInteger(n) && n >= 1 ? n : null;
 }
 
-// What we send to the client — note authorToken is stripped (only the
+// What we send to the client - note authorToken is stripped (only the
 // original author has it; we never echo it to subsequent readers).
 type ClientComment = Omit<Comment, "authorToken" | "authorIp" | "authorUa">;
 function strip(c: Comment): ClientComment {
@@ -104,7 +104,7 @@ export async function POST(
   await appendComment(slug, version, comment);
 
   // First-comment write-back to the Trello card. Best-effort: if Trello
-  // is down, the comment is still saved — the PM might just miss the
+  // is down, the comment is still saved - the PM might just miss the
   // notification. (Email fallback is deferred per the brief.)
   if (isFirst) {
     const reviewUrl = reviewUrlFor(lookup.shoot.slug, slug);

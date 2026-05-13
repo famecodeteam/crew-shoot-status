@@ -99,7 +99,7 @@ function PendingUploadState() {
     <section className="section">
       <div className="card asset-pending">
         <h2>Your editor is preparing this asset</h2>
-        <p>Check back soon — we&apos;ll send you the review link as soon as it&apos;s ready.</p>
+        <p>Check back soon - we&apos;ll send you the review link as soon as it&apos;s ready.</p>
       </div>
     </section>
   );

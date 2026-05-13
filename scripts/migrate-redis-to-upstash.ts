@@ -1,12 +1,12 @@
 // One-shot migration: copy every key we care about from the legacy
 // Redis Cloud instance (REDIS_URL) to the shared Upstash KV instance
-// (UPSTASH_KV_REST_API_URL / UPSTASH_KV_REST_API_TOKEN). Idempotent —
+// (UPSTASH_KV_REST_API_URL / UPSTASH_KV_REST_API_TOKEN). Idempotent -
 // re-running just overwrites the destination, which is what we want.
 //
 // Keys migrated:
 //   shoots:store
-//   assets:<cardId>           — for every cardId in shoots:store
-//   comments:<slug>:v<n>      — discovered via the asset records
+//   assets:<cardId>           - for every cardId in shoots:store
+//   comments:<slug>:v<n>      - discovered via the asset records
 //
 // Run with both URL/token sets present in .env.production.local (after
 // `vercel env pull --environment production`):
@@ -39,7 +39,7 @@ async function main() {
   // 1. shoots:store
   const shootsRaw = await src.get("shoots:store");
   if (!shootsRaw) {
-    console.log("[migrate] no shoots:store in source — nothing to migrate");
+    console.log("[migrate] no shoots:store in source - nothing to migrate");
     await src.disconnect();
     return;
   }
@@ -67,7 +67,7 @@ async function main() {
     `[migrate] assets:<cardId>: ${assetSlugs.length} keys, ${assetCount} total assets`,
   );
 
-  // 3. comments:<slug>:v<n> — we don't know the version range; scan a
+  // 3. comments:<slug>:v<n> - we don't know the version range; scan a
   //    small bounded range (v1..v20). With our scale that's plenty.
   let commentKeyCount = 0;
   let commentCount = 0;

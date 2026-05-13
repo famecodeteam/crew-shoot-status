@@ -74,7 +74,7 @@ export async function upsertByCardId(
   cardId: string,
   updater: (existing: Shoot | null) => Shoot,
 ): Promise<Shoot> {
-  // No optimistic locking — single-writer model (backfill is one-shot,
+  // No optimistic locking - single-writer model (backfill is one-shot,
   // webhook is sequential per Trello's delivery). Good enough for v1.
   const store = await readAll();
   const next = updater(store[cardId] ?? null);

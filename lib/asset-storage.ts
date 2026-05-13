@@ -2,7 +2,7 @@
 //   - Dev (no REDIS_URL): file-backed JSON in .data/
 //   - Prod (REDIS_URL set): Redis keys (shared with the member.fame.so repo)
 //
-// KV key layout (canonical — also documented in the hand-off doc):
+// KV key layout (canonical - also documented in the hand-off doc):
 //   assets:<cardId>            → JSON object  { [assetSlug]: Asset }
 //   comments:<assetSlug>:v<n>  → JSON array   Comment[]
 //

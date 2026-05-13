@@ -2,7 +2,7 @@
 // sync with the public URL the page is actually served at.
 //
 // Idempotent. Reads the current field value first; only PUTs if it differs.
-// That makes this safe to call on every webhook event — when our own write
+// That makes this safe to call on every webhook event - when our own write
 // triggers another webhook, the next pass sees the field already correct
 // and short-circuits, so we don't loop.
 

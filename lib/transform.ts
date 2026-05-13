@@ -53,7 +53,7 @@ export function buildContext(
     return null;
   }
 
-  // Fallback aliases — accept either name so a future Trello rename
+  // Fallback aliases - accept either name so a future Trello rename
   // doesn't silently break the page.
   function findFirst(...names: string[]): string | null {
     for (const n of names) {
@@ -90,7 +90,7 @@ export function buildContext(
         "Public URL",
       ),
       // Per-shoot override for the projected delivery date.
-      // Number custom field — when set, replaces the default
+      // Number custom field - when set, replaces the default
       // (5 business days for PP shoots / 1 calendar day for crew-only).
       turnaroundDays: findFirst(
         "Post Prod Turnaround",
@@ -121,7 +121,7 @@ export function buildContext(
 // split-day shoots) since those exist on the live board.
 export function parseTitle(name: string): { shootNumber: string; clientName: string } {
   const trimmed = (name || "").trim();
-  // Match e.g. "#0190 - genOway", "#0190 — genOway" (em-dash), "#0171a - Ascom (Sydney)".
+  // Match e.g. "#0190 - genOway", "#0190 – genOway" (en-dash), "#0190 — genOway" (em-dash), "#0171a - Ascom (Sydney)".
   const m = trimmed.match(/^(#\d{3,5}[a-z]?)\s*[-–—]\s*(.+)$/i);
   if (m) return { shootNumber: m[1], clientName: m[2].trim() };
   // Loose: number anywhere at start, no dash separator.
@@ -244,15 +244,15 @@ export function transformCard(
   );
 
   // Shoot type = the first label on the card that isn't "Post Production".
-  // Trello allows multiple labels — Podcast, Conference, Event, Corporate,
-  // Photography, Social — and we display whichever is listed first.
+  // Trello allows multiple labels - Podcast, Conference, Event, Corporate,
+  // Photography, Social - and we display whichever is listed first.
   const shootType = (card.labels ?? [])
     .map((l) => l.name.trim())
     .find((n) => n && n.toLowerCase() !== "post production");
 
   // Past milestone dates from action history (if provided). For webhooks
   // and backfills we pass the actions through; if absent we just leave
-  // the map empty — the page falls back gracefully.
+  // the map empty - the page falls back gracefully.
   const milestoneDates: MilestoneDates = actions
     ? deriveMilestoneDates(actions)
     : {};
@@ -263,7 +263,7 @@ export function transformCard(
     : projectDeliveredDate(shootDate, hasPostProduction, turnaroundOverride);
 
   // Brief / quote come from Drive (M3). Final assets and the two Stripe
-  // receipts come from manual Trello custom fields — PM pastes them in.
+  // receipts come from manual Trello custom fields - PM pastes them in.
   const finalAssetsUrl =
     readCustomFieldText(card, ctx.fieldId.finalAssetsUrl) || undefined;
   const depositReceiptUrl =
@@ -274,7 +274,7 @@ export function transformCard(
     readCustomFieldText(card, ctx.fieldId.clientWhatsappUrl) || undefined;
 
   // Crew Status: typed as union for downstream safety, but anything is
-  // accepted at runtime — an unknown option just won't trigger a UI
+  // accepted at runtime - an unknown option just won't trigger a UI
   // branch, which is the right failure mode.
   const crewStatusRaw = readCustomFieldListOption(
     card,

@@ -60,7 +60,7 @@ export async function POST(
   });
   const trelloText =
     `[${authorName}] approved ${lookup.asset.name} (v${onVersion}) on ${todayHuman}` +
-    (body.note?.trim() ? ` — note: ${body.note.trim()}` : "");
+    (body.note?.trim() ? ` - note: ${body.note.trim()}` : "");
 
   // Trello fan-out (best-effort, can't roll back the approval if Trello fails).
   try {

@@ -1,4 +1,4 @@
-// STEP 0 POC — proxies a Google Drive video to an HTML5 <video> tag.
+// STEP 0 POC - proxies a Google Drive video to an HTML5 <video> tag.
 // Authenticates with the shared service account, forwards the incoming
 // Range header to Drive's `/files/FILE_ID?alt=media` endpoint, streams
 // the byte range back as 206 Partial Content.
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
       authorization: `Bearer ${accessToken}`,
       ...(range ? { range } : {}),
     },
-    // Disable Next's data cache for the response stream — we proxy 1:1.
+    // Disable Next's data cache for the response stream - we proxy 1:1.
     cache: "no-store",
   });
 

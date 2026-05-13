@@ -1,7 +1,7 @@
 // Map a Trello card's assigned members to the producer whose email
 // shows on the public status page.
 //
-// Priority order — first match in this list wins. So if Zandro is on the
+// Priority order - first match in this list wins. So if Zandro is on the
 // card, the page shows zandro@; otherwise if Tom is on it, tom@; and only
 // if Clay is the only one of the three on the card does it show clay@.
 //
@@ -9,7 +9,7 @@
 // the default producer for Fame Crew.
 //
 // IDs come from the Crew Delivery board's member list, captured 2026-05-07.
-// They're stable across username/display-name changes — the IDs only
+// They're stable across username/display-name changes - the IDs only
 // change if the underlying Trello account is deleted, which won't happen
 // silently.
 

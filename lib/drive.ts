@@ -5,9 +5,9 @@
  *   2. Brief = first Google Doc in that folder whose name contains "brief".
  *   3. Quote = first PDF in that folder whose name contains "quote".
  *      (The signed quote lives as PDF; the raw quote lives as a Google Doc.
- *       Crew Scout returns the signed PDF — that's what clients should see.)
+ *       Crew Scout returns the signed PDF - that's what clients should see.)
  *
- * Final assets URL is NOT sourced from Drive — it comes from the
+ * Final assets URL is NOT sourced from Drive - it comes from the
  * "Final Asset URL" Trello custom field. This module only provides
  * brief + quote.
  */
@@ -35,7 +35,7 @@ function drive() {
   return driveClient;
 }
 
-// Drive query escaping — single quotes need to be doubled.
+// Drive query escaping - single quotes need to be doubled.
 function escapeQuery(s: string): string {
   return s.replace(/'/g, "\\'");
 }

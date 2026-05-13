@@ -41,7 +41,7 @@ export async function GET(
   // URL shape: /api/video/<asset-slug>/v<n>. The leading "v" is a literal
   // prefix inside the path segment, so the version param arrives as "v1",
   // "v2", etc. Next.js doesn't support literal-prefix dynamic segments
-  // at the folder level — we strip the prefix here.
+  // at the folder level - we strip the prefix here.
   const version = Number(vRaw.replace(/^v/, ""));
   if (!Number.isInteger(version) || version < 1) {
     return new Response("Bad version", { status: 400 });

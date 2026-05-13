@@ -1,4 +1,4 @@
-// File-backed JSON store. M1 only — swapped for Vercel KV in M5.
+// File-backed JSON store. M1 only - swapped for Vercel KV in M5.
 //
 // Shape on disk:
 //   { "<cardId>": Shoot, ... }
@@ -44,7 +44,7 @@ export async function getByCardId(cardId: string): Promise<Shoot | null> {
 }
 
 // Read-modify-write. The updater receives the existing record (or null) and
-// returns the new one — lets callers preserve the slug on subsequent syncs.
+// returns the new one - lets callers preserve the slug on subsequent syncs.
 export async function upsertByCardId(
   cardId: string,
   updater: (existing: Shoot | null) => Shoot,

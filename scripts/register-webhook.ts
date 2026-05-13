@@ -1,15 +1,15 @@
 // Trello webhook registration CLI.
 //
-//   pnpm register-webhook              — register against TRELLO_BOARD_ID + TRELLO_WEBHOOK_CALLBACK_URL (idempotent)
-//   pnpm register-webhook --list       — list existing webhooks for this token
-//   pnpm register-webhook --delete <id>— delete a webhook by id
+//   pnpm register-webhook              - register against TRELLO_BOARD_ID + TRELLO_WEBHOOK_CALLBACK_URL (idempotent)
+//   pnpm register-webhook --list       - list existing webhooks for this token
+//   pnpm register-webhook --delete <id>- delete a webhook by id
 //
 // Idempotency: if a webhook for the same (idModel, callbackURL) pair already
 // exists, we re-PUT it (re-actives + bumps the description) rather than
 // creating a duplicate.
 //
 // On creation, Trello immediately HEADs the callback URL to verify it. Our
-// /api/trello-webhook route returns 200 on HEAD, so this should succeed —
+// /api/trello-webhook route returns 200 on HEAD, so this should succeed -
 // if it doesn't, double-check the deployment is live and the URL is correct.
 
 const API = "https://api.trello.com/1";

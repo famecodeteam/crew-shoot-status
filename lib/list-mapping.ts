@@ -30,7 +30,7 @@ const LISTS: Record<string, Mapping> = {
     publishable: true,
     showTimeline: true,
   },
-  // Live board has the misspelling "Recieved" — match both so a future
+  // Live board has the misspelling "Recieved" - match both so a future
   // typo-fix on Trello doesn't break this mapping.
   "assets recieved from crew": {
     status: "in-editing",
@@ -53,7 +53,7 @@ const LISTS: Record<string, Mapping> = {
     showTimeline: true,
   },
   // CRITICAL: "Awaiting Payment" is internal-only. Externally we say
-  // "Delivered ✓" — never leak this list name to clients.
+  // "Delivered ✓" - never leak this list name to clients.
   "awaiting payment": { status: "delivered", publishable: true, showTimeline: true },
   closed: { status: "delivered", publishable: true, showTimeline: true },
   "on hold": { status: "on-hold", publishable: true, showTimeline: false },

@@ -383,7 +383,7 @@ img {
   position: relative;
 }
 
-/* Pulsing ripple around the dot — communicates "live". */
+/* Pulsing ripple around the dot - communicates "live". */
 .live-dot::after {
   content: "";
   position: absolute;
@@ -419,7 +419,7 @@ img {
 
 .timeline {
   display: grid;
-  /* grid-template-columns is set inline per shoot — 4 or 5 columns
+  /* grid-template-columns is set inline per shoot - 4 or 5 columns
      depending on whether the shoot includes post-production. */
   gap: 0;
   position: relative;
@@ -919,7 +919,7 @@ img {
 
 .comment-markers {
   position: absolute;
-  /* Hover just above the native scrub bar — most browsers put it about
+  /* Hover just above the native scrub bar - most browsers put it about
      14px above the bottom edge of the player, with some variance. The
      position works "well enough" without per-browser tuning. */
   left: 0;
@@ -1207,7 +1207,7 @@ img {
   margin-top: 8px;
 }
 
-/* Modal — reused for composer, approve, request-changes */
+/* Modal - reused for composer, approve, request-changes */
 
 .modal-backdrop {
   position: fixed;

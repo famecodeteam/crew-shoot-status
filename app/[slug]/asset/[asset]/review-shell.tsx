@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Asset, AssetApprovalStatus, AssetVersion } from "@/lib/types";
 
-// Client view of a comment — server strips the author secrets before
+// Client view of a comment - server strips the author secrets before
 // returning to readers.
 type ClientComment = {
   id: string;
@@ -427,7 +427,7 @@ function CommentThread({
       <div className="card-h">Comments {comments.length > 0 && `(${comments.length})`}</div>
       {sorted.length === 0 ? (
         <div className="comment-empty">
-          Have feedback on this version? Leave a comment — your editor will see it.
+          Have feedback on this version? Leave a comment - your editor will see it.
         </div>
       ) : (
         <ul className="comment-list">
@@ -671,7 +671,7 @@ function ApprovalState({
 
   if (!approval) return null;
 
-  // Stale decision — a newer version has landed than the one the
+  // Stale decision - a newer version has landed than the one the
   // decision was made against. Only show the new-version banner when
   // we're actually viewing that latest version; otherwise (viewing the
   // version the decision applied to) show the normal approved /
@@ -929,7 +929,7 @@ function ChangesModal({
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Request changes on {assetName} (v{version})</h2>
         <p className="modal-help">
-          Use timestamped comments above for specifics — this note is just an
+          Use timestamped comments above for specifics - this note is just an
           overall direction for the editor.
         </p>
         <label className="modal-label">
@@ -989,6 +989,6 @@ function relativePostedAt(iso: string): string {
   });
 }
 
-// Silence unused-import for the AssetApprovalStatus type — referenced
+// Silence unused-import for the AssetApprovalStatus type - referenced
 // indirectly via Asset["approval"]["status"] in the children.
 export type _Unused = AssetApprovalStatus;

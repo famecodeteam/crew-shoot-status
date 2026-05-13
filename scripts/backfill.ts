@@ -1,4 +1,4 @@
-// pnpm backfill — pulls every card from the Crew Delivery board, runs
+// pnpm backfill - pulls every card from the Crew Delivery board, runs
 // the same transform the webhook will use, and writes one Shoot record
 // per card to .data/shoots.json.
 //
@@ -54,7 +54,7 @@ async function main() {
   let urlErrors = 0;
 
   // Probe Drive auth once up front. If it fails, log loudly and skip Drive
-  // enrichment entirely — backfill still produces useful pages without
+  // enrichment entirely - backfill still produces useful pages without
   // brief/quote URLs.
   let driveAvailable = true;
   try {
@@ -62,7 +62,7 @@ async function main() {
   } catch (err) {
     driveAvailable = false;
     console.warn(
-      `[backfill] drive: auth not available — brief/quote lookup skipped (${(err as Error).message.split("\n")[0]})`,
+      `[backfill] drive: auth not available - brief/quote lookup skipped (${(err as Error).message.split("\n")[0]})`,
     );
   }
 
@@ -155,7 +155,7 @@ async function main() {
   }
 }
 
-// Mutates `shoot` in place — we know the type and Drive returns optional fields.
+// Mutates `shoot` in place - we know the type and Drive returns optional fields.
 function applyDriveLinks(
   shoot: Shoot,
   links: { briefUrl?: string; quoteUrl?: string },

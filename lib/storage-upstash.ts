@@ -1,4 +1,4 @@
-// Upstash KV (Vercel Marketplace) — shared store with member.fame.so.
+// Upstash KV (Vercel Marketplace) - shared store with member.fame.so.
 // Uses the REST endpoint via @upstash/redis. Serverless-native (no TCP
 // connection pooling), correct shape for cross-repo coordination.
 //

@@ -14,7 +14,7 @@
 //
 // We re-fetch lists at decision time to keep the logic resilient to
 // list-name typo fixes on the board. Best-effort: a Trello failure
-// doesn't roll back the KV write — comments and status survive.
+// doesn't roll back the KV write - comments and status survive.
 
 import {
   addCardComment,
@@ -51,26 +51,26 @@ function summarizeAssetsForField(assets: Asset[]): string {
 
 // Mutates the Asset URLs Trello field so each asset's row carries the
 // client URL part. Tolerant of the old single-URL format from the
-// editor-handoff feature (rows that read "[Name] — [URL]" without an
+// editor-handoff feature (rows that read "[Name] - [URL]" without an
 // "Editor:" / "Client:" prefix); those are preserved with the client
 // URL appended on the right.
 function asUrlRow(name: string, editorUrl: string | null, clientUrl: string): string {
   const left = editorUrl ? `Editor: ${editorUrl}` : null;
   const right = `Client: ${clientUrl}`;
-  return left ? `${name} — ${left} · ${right}` : `${name} — ${right}`;
+  return left ? `${name} - ${left} · ${right}` : `${name} - ${right}`;
 }
 
 // Parse one row, return { name, editorUrl, clientUrl }. Tolerant of:
-//   "Name — Editor: X · Client: Y"     (new)
-//   "Name — Editor: X"                 (partial)
-//   "Name — Client: Y"                 (partial)
-//   "Name — X"                         (old single-URL editor format)
+//   "Name - Editor: X · Client: Y"     (new)
+//   "Name - Editor: X"                 (partial)
+//   "Name - Client: Y"                 (partial)
+//   "Name - X"                         (old single-URL editor format)
 function parseUrlRow(row: string): {
   name: string;
   editorUrl: string | null;
   clientUrl: string | null;
 } {
-  const m = row.match(/^(.*?)\s+—\s+(.*)$/);
+  const m = row.match(/^(.*?)\s+-\s+(.*)$/);
   if (!m) return { name: row.trim(), editorUrl: null, clientUrl: null };
   const name = m[1].trim();
   const rest = m[2];
@@ -83,7 +83,7 @@ function parseUrlRow(row: string): {
       clientUrl: client ? client[1] : null,
     };
   }
-  // Old single-URL row — treat the bare URL as editor URL (since the
+  // Old single-URL row - treat the bare URL as editor URL (since the
   // legacy feature only wrote editor URLs).
   const urlMatch = rest.match(/(\S+)/);
   return {
@@ -114,7 +114,7 @@ export async function syncTrelloForShoot(
   const assets = await getAssetsForShoot(cardId);
   const boardId = process.env.TRELLO_BOARD_ID;
   if (!boardId) {
-    console.warn("[approval] TRELLO_BOARD_ID unset — skipping Trello sync");
+    console.warn("[approval] TRELLO_BOARD_ID unset - skipping Trello sync");
     return;
   }
 
@@ -145,7 +145,7 @@ export async function syncTrelloForShoot(
     // clobbering editor URLs we don't know. Fetch the card's custom field
     // items to read the current text.
     // For brevity we re-fetch via the board lookup the caller already
-    // ran is overkill here — accept one extra Trello round-trip per
+    // ran is overkill here - accept one extra Trello round-trip per
     // approval. Approvals are infrequent.
     const existing = await readCardCustomFieldText(cardId, urlsField.id);
     const rewritten = rewriteAssetUrlsField(existing, assets, {
@@ -168,7 +168,7 @@ export async function syncTrelloForShoot(
   // moving the card prematurely creates noise. Card placement stays
   // manual; this function still updates the comment + custom fields.
   //
-  // The revert is also disabled — without the forward move there's
+  // The revert is also disabled - without the forward move there's
   // nothing for it to revert from in normal flow, and a blanket
   // "move to Shared" on every regression risks pulling the card out
   // of whatever list the PM has placed it in manually.

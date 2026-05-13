@@ -2,7 +2,7 @@
 // Delivered ETA from the Shoot Date when delivery hasn't happened yet.
 //
 // Past dates: actual moment each list-move happened. If a card skipped
-// a milestone list (rare but possible), that milestone shows no date —
+// a milestone list (rare but possible), that milestone shows no date -
 // we don't fabricate past dates we don't have evidence for.
 //
 // Future delivered date is a turnaround heuristic:

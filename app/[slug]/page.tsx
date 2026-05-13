@@ -8,7 +8,7 @@ import { getDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
 import { currentStepIndex, timelineSteps } from "./status";
 
-// Re-fetch on every request — we want ≤60s lag from a Trello move.
+// Re-fetch on every request - we want ≤60s lag from a Trello move.
 // (When we add Vercel KV in M5, swap to `revalidate = 30` for ISR.)
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ export default async function ShootPage({ params }: { params: Promise<{ slug: st
   const shoot = await loadShoot(slug);
   if (!shoot) notFound();
 
-  // Assets — empty unless the editor has pushed at least one finished
+  // Assets - empty unless the editor has pushed at least one finished
   // version. Skip the lookup for the demo slug (no real cardId).
   const assets = slug === "demo" ? [] : await getAssetsForShoot(shoot.cardId);
 
@@ -57,7 +57,7 @@ function ShootView({
   const isOnHold = shoot.status === "on-hold";
   const isDelivered = shoot.status === "delivered";
   // Crew card appears once we've crossed the "Crew confirmed" milestone
-  // (i.e. stepIdx is 2 or higher — booking-confirmed and searching-for-crew
+  // (i.e. stepIdx is 2 or higher - booking-confirmed and searching-for-crew
   // both sit at stepIdx=1, working toward crew confirmation).
   const showCrew = stepIdx >= 2 && shoot.crew && !isOnHold;
   // Final assets render at the last step. Index varies by timeline length.
@@ -410,7 +410,7 @@ function formatShortDateOrToday(iso: string): string {
   });
 }
 
-// Crew-status banner copy. Returns null when no banner should render —
+// Crew-status banner copy. Returns null when no banner should render -
 // includes the empty-status, on-hold, and "Wrapped" cases (Wrapped is
 // surfaced via the badge override, not here).
 function pickLiveBanner(shoot: Shoot, isOnHold: boolean): string | null {
@@ -423,7 +423,7 @@ function pickLiveBanner(shoot: Shoot, isOnHold: boolean): string | null {
     case "Wrapping":
       return "Your crew is wrapping up";
     case "On the way":
-      // Recommended display says "pre-shoot-day shoots: hide" — only show
+      // Recommended display says "pre-shoot-day shoots: hide" - only show
       // when the shoot date is today.
       return isShootDayToday(shoot.shootDate) ? "Your crew is on the way" : null;
     default:
@@ -454,7 +454,7 @@ function formatShortDate(iso: string): string {
 }
 
 // Decide which date string (if any) sits under each timeline step.
-// totalSteps differs for PP shoots (5) vs crew-only (4) — the meaning of
+// totalSteps differs for PP shoots (5) vs crew-only (4) - the meaning of
 // each index shifts when "In editing" is absent.
 function formatStepDate(shoot: Shoot, idx: number, totalSteps: number): string {
   const pp = totalSteps === 5;
@@ -466,13 +466,13 @@ function formatStepDate(shoot: Shoot, idx: number, totalSteps: number): string {
   // Step 1: Crew confirmed (always)
   if (idx === 1) return m.crewConfirmed ? formatShortDate(m.crewConfirmed) : "";
 
-  // Step 2: Shoot day — the shoot date custom field, past or future.
+  // Step 2: Shoot day - the shoot date custom field, past or future.
   if (idx === 2) return shoot.shootDate ? formatShortDate(shoot.shootDate) : "";
 
   if (pp) {
-    // Step 3 (PP): In editing — past date only; no future ETA shown.
+    // Step 3 (PP): In editing - past date only; no future ETA shown.
     if (idx === 3) return m.inEditing ? formatShortDate(m.inEditing) : "";
-    // Step 4 (PP): Delivered — actual date if reached, else projected ETA.
+    // Step 4 (PP): Delivered - actual date if reached, else projected ETA.
     if (idx === 4) {
       if (m.delivered) return formatShortDate(m.delivered);
       if (shoot.projectedDeliveredDate)
@@ -480,7 +480,7 @@ function formatStepDate(shoot: Shoot, idx: number, totalSteps: number): string {
       return "";
     }
   } else {
-    // Step 3 (non-PP): Delivered — same logic.
+    // Step 3 (non-PP): Delivered - same logic.
     if (idx === 3) {
       if (m.delivered) return formatShortDate(m.delivered);
       if (shoot.projectedDeliveredDate)

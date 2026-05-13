@@ -20,7 +20,7 @@ import { buildContext, transformCard } from "@/lib/transform";
 import { findShootDriveLinks } from "@/lib/drive";
 import { writeBackStatusUrl } from "@/lib/writeback";
 
-// Defer the route to be dynamic — we always need to handle the live POST.
+// Defer the route to be dynamic - we always need to handle the live POST.
 export const dynamic = "force-dynamic";
 
 export async function HEAD() {
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
   } else {
     console.warn(
-      "[trello-webhook] TRELLO_WEBHOOK_SECRET or TRELLO_WEBHOOK_CALLBACK_URL unset — skipping signature check (dev only).",
+      "[trello-webhook] TRELLO_WEBHOOK_SECRET or TRELLO_WEBHOOK_CALLBACK_URL unset - skipping signature check (dev only).",
     );
   }
 
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
   const cardId = payload.action?.data?.card?.id;
   if (!cardId) {
-    // Non-card events (board edits etc.) — ack and move on.
+    // Non-card events (board edits etc.) - ack and move on.
     return NextResponse.json({ ok: true, ignored: "no card id" });
   }
 
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
   // Fetch the live card + a fresh context + the card's action history
   // (for deriving past milestone dates). Webhooks are infrequent enough
-  // that re-fetching everything per event is fine — keeps the logic simple
+  // that re-fetching everything per event is fine - keeps the logic simple
   // and avoids stale-context bugs after a board edit.
   const [card, lists, customFields, actions] = await Promise.all([
     getCard(cardId),
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, action: "deleted", cardId });
   }
 
-  // Enrich with brief / quote from Drive. Best-effort — if Drive is down or
+  // Enrich with brief / quote from Drive. Best-effort - if Drive is down or
   // the SA isn't configured, we still upsert the card with empty link slots
   // and the page just hides those sections.
   if (next.shootNumber) {

@@ -1,6 +1,6 @@
 "use client";
 
-// "Live from your shoot" — polls the read-only API on member.fame.so for
+// "Live from your shoot" - polls the read-only API on member.fame.so for
 // photo/video moments captured by the crew during the shoot. Hides the
 // whole section until at least one moment exists (no empty-state tease).
 //
@@ -62,7 +62,7 @@ export function LiveMoments({
     try {
       const resp = await fetch(`${API_BASE}/${encodeURIComponent(slug)}/live-moments`);
       if (resp.status === 404) {
-        // Slug unknown to the member side — render nothing.
+        // Slug unknown to the member side - render nothing.
         setMoments([]);
         setErrored(false);
         return;
@@ -122,7 +122,7 @@ export function LiveMoments({
   if (errored || moments.length === 0) return null;
 
   const header = isShootDayToday(shootDate)
-    ? "Live from your shoot — happening now"
+    ? "Live from your shoot - happening now"
     : "Moments from the shoot";
 
   return (
@@ -366,7 +366,7 @@ function sameDate(a: Date, b: Date): boolean {
 
 // Drive's /thumbnail endpoint requires session cookies, which mobile
 // Safari + Chrome (Intelligent Tracking Prevention) block by default.
-// lh3.googleusercontent.com is the public CDN equivalent — no auth, no
+// lh3.googleusercontent.com is the public CDN equivalent - no auth, no
 // cookie required, works cross-origin on mobile. We construct it from
 // driveFileId rather than parsing the API's thumbnailUrl, so the size
 // is exactly what we want for each surface (card vs lightbox).
@@ -374,7 +374,7 @@ function publicThumbUrl(m: LiveMoment, size: number): string {
   return `https://lh3.googleusercontent.com/d/${encodeURIComponent(m.driveFileId)}=w${size}`;
 }
 
-// Drive's "force download" URL — Content-Disposition: attachment lands
+// Drive's "force download" URL - Content-Disposition: attachment lands
 // the file in the browser's download tray rather than opening a viewer.
 // Files >100MB show Drive's virus-scan confirmation page once; clients
 // click through. Files under that size download silently.

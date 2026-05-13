@@ -73,7 +73,7 @@ export type Comment = {
   resolved: boolean;
 };
 
-// Public data model — what /[slug] reads. One blob per Trello card.
+// Public data model - what /[slug] reads. One blob per Trello card.
 export type Shoot = {
   slug: string;
   cardId: string; // Trello card id (stable across renames)
@@ -96,7 +96,7 @@ export type Shoot = {
   finalAssetsUrl?: string;
   depositReceiptUrl?: string;
   balanceReceiptUrl?: string;
-  // WhatsApp group invite URL shared with the client — set on the
+  // WhatsApp group invite URL shared with the client - set on the
   // Trello card so it can be surfaced as "where comms happens" during
   // shoot week.
   clientWhatsappUrl?: string;
@@ -114,7 +114,7 @@ export type Shoot = {
   milestoneDates: MilestoneDates;
   // Projected Delivered date (Shoot day + 5 business days for PP shoots,
   // +1 calendar day for crew-only). Only used when delivered hasn't been
-  // reached yet — the UI prefers the actual milestoneDates.delivered.
+  // reached yet - the UI prefers the actual milestoneDates.delivered.
   projectedDeliveredDate?: string; // YYYY-MM-DD
   // Bookkeeping
   trelloListId: string;

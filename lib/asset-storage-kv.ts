@@ -1,7 +1,7 @@
 // Production: Redis. Same client/connection caching pattern as the
 // shoots store in lib/storage-kv.ts.
 //
-// Key layout (shared with member.fame.so — see hand-off doc):
+// Key layout (shared with member.fame.so - see hand-off doc):
 //   assets:<cardId>            JSON { [assetSlug]: Asset }
 //   comments:<assetSlug>:v<n>  JSON Comment[]
 

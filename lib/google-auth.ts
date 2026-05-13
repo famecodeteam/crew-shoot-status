@@ -1,11 +1,11 @@
 /**
- * Shared Google service-account auth — adapted from meeting-agenda.
+ * Shared Google service-account auth - adapted from meeting-agenda.
  * Reuses the HAM Dashboard service account
  *   ham-dashboard-runner@fame-ham-dashboard.iam.gserviceaccount.com
  *
  * Two ways to provide credentials:
- *   • GOOGLE_SERVICE_ACCOUNT_JSON — full JSON content as a single-line string (CI).
- *   • GOOGLE_APPLICATION_CREDENTIALS — path to the .json file on disk (local).
+ *   • GOOGLE_SERVICE_ACCOUNT_JSON - full JSON content as a single-line string (CI).
+ *   • GOOGLE_APPLICATION_CREDENTIALS - path to the .json file on disk (local).
  * If both are set, GOOGLE_SERVICE_ACCOUNT_JSON wins.
  */
 
