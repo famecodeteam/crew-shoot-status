@@ -26,7 +26,12 @@ let cached: StorageModule | null = null;
 
 async function getImpl(): Promise<StorageModule> {
   if (cached) return cached;
-  if (process.env.REDIS_URL) {
+  // Prefer the shared Upstash KV when available (cross-repo store with
+  // member.fame.so). Fall back to the legacy Redis Cloud connection
+  // during the migration window, then to local file storage in dev.
+  if (process.env.UPSTASH_KV_REST_API_URL && process.env.UPSTASH_KV_REST_API_TOKEN) {
+    cached = (await import("./storage-upstash")) as unknown as StorageModule;
+  } else if (process.env.REDIS_URL) {
     cached = (await import("./storage-kv")) as unknown as StorageModule;
   } else {
     cached = fileStorage;

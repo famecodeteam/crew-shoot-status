@@ -24,7 +24,9 @@ let cached: AssetStorageImpl | null = null;
 
 async function impl(): Promise<AssetStorageImpl> {
   if (cached) return cached;
-  if (process.env.REDIS_URL) {
+  if (process.env.UPSTASH_KV_REST_API_URL && process.env.UPSTASH_KV_REST_API_TOKEN) {
+    cached = await import("./asset-storage-upstash");
+  } else if (process.env.REDIS_URL) {
     cached = await import("./asset-storage-kv");
   } else {
     cached = await import("./asset-storage-file");
