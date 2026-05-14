@@ -52,15 +52,16 @@ export async function POST(
     approval,
   });
 
-  const reviewUrl = clientReviewUrl(lookup.shoot.slug, slug);
   const todayHuman = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
+  const reviewUrl = clientReviewUrl(lookup.shoot.slug, slug);
   const trelloText =
     `[${authorName}] approved ${lookup.asset.name} (v${onVersion}) on ${todayHuman}` +
-    (body.note?.trim() ? ` - note: ${body.note.trim()}` : "");
+    (body.note?.trim() ? ` - note: ${body.note.trim()}` : "") +
+    `\n${reviewUrl}`;
 
   // Trello fan-out (best-effort, can't roll back the approval if Trello fails).
   try {
@@ -68,11 +69,7 @@ export async function POST(
   } catch (err) {
     console.warn("[approve] Trello card comment failed:", (err as Error).message);
   }
-  await syncTrelloForShoot({
-    cardId: lookup.shoot.cardId,
-    changedAssetSlug: slug,
-    clientUrlForChangedAsset: reviewUrl,
-  });
+  await syncTrelloForShoot({ cardId: lookup.shoot.cardId });
 
   return Response.json({ asset: updated });
 }

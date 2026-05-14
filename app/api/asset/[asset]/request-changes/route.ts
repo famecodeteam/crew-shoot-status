@@ -67,11 +67,7 @@ export async function POST(
   } catch (err) {
     console.warn("[request-changes] Trello card comment failed:", (err as Error).message);
   }
-  await syncTrelloForShoot({
-    cardId: lookup.shoot.cardId,
-    changedAssetSlug: slug,
-    clientUrlForChangedAsset: reviewUrl,
-  });
+  await syncTrelloForShoot({ cardId: lookup.shoot.cardId });
 
   return Response.json({ asset: updated });
 }
