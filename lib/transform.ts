@@ -26,7 +26,6 @@ export type TransformContext = {
     crewName: string | null;
     crewPhotoUrl: string | null;
     crewBio: string | null;
-    finalAssetsUrl: string | null;
     depositReceiptUrl: string | null;
     balanceReceiptUrl: string | null;
     publicSlug: string | null;
@@ -72,7 +71,6 @@ export function buildContext(
       crewName: findByName("Crew Member Name"),
       crewPhotoUrl: findByName("Crew Member Photo URL"),
       crewBio: findByName("Crew Member Bio"),
-      finalAssetsUrl: findFirst("Final Asset URL", "Final Assets URL"),
       depositReceiptUrl: findFirst("Deposit Receipt URL", "Deposit Receipt"),
       balanceReceiptUrl: findFirst(
         "Balance Receipt URL",
@@ -262,10 +260,10 @@ export function transformCard(
     ? undefined
     : projectDeliveredDate(shootDate, hasPostProduction, turnaroundOverride);
 
-  // Brief / quote come from Drive (M3). Final assets and the two Stripe
-  // receipts come from manual Trello custom fields - PM pastes them in.
-  const finalAssetsUrl =
-    readCustomFieldText(card, ctx.fieldId.finalAssetsUrl) || undefined;
+  // Brief / quote come from Drive (M3). The two Stripe receipts come
+  // from manual Trello custom fields - PM pastes them in. (Finished
+  // video deliverables are the per-asset video-review feature now, not
+  // a single "Final Asset URL" field.)
   const depositReceiptUrl =
     readCustomFieldText(card, ctx.fieldId.depositReceiptUrl) || undefined;
   const balanceReceiptUrl =
@@ -294,7 +292,6 @@ export function transformCard(
     status: mapping.status,
     statusLabel: statusLabel(mapping.status, crewFirstName),
     crew,
-    finalAssetsUrl,
     depositReceiptUrl,
     balanceReceiptUrl,
     clientWhatsappUrl,

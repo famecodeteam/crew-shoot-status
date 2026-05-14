@@ -93,7 +93,6 @@ export type Shoot = {
   };
   briefUrl?: string;
   quoteUrl?: string;
-  finalAssetsUrl?: string;
   depositReceiptUrl?: string;
   balanceReceiptUrl?: string;
   // WhatsApp group invite URL shared with the client - set on the

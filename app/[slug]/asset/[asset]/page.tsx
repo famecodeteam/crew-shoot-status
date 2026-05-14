@@ -37,7 +37,10 @@ export async function generateMetadata({
   if (!asset) {
     return { title: `Fame Crew - Shoot Status - ${shoot.shootNumber}` };
   }
-  return { title: `${asset.name} · Fame Crew` };
+  return {
+    title: `${asset.name} · ${shoot.clientName} · Fame Crew`,
+    description: `Review and approve ${asset.name} for ${shoot.clientName}'s shoot (${shoot.shootNumber}).`,
+  };
 }
 
 export default async function AssetReviewPage({

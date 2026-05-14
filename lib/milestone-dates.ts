@@ -21,13 +21,20 @@ export type MilestoneDates = {
 // Lowercased Trello list name → which milestone it satisfies.
 // (List name spellings here mirror the canonical mapping in list-mapping.ts,
 // including the live board's "Recieved" typo.)
+//
+// "Assets Shared With Client" deliberately maps to NOTHING. Sharing
+// assets for review is not the same as delivery — the client-facing
+// label for that list is "Assets ready for review", not "Delivered".
+// Treating it as `delivered` was a bug: it baked an actual delivered
+// date into the record, which short-circuits the projected-ETA path
+// and stops the "Post Prod Turnaround" override from ever applying.
+// The genuine `delivered` milestone is only the post-approval lists.
 const LIST_TO_MILESTONE: Record<string, keyof MilestoneDates> = {
   won: "bookingConfirmed",
   "crew booked": "crewConfirmed",
   "assets received from crew": "inEditing",
   "assets recieved from crew": "inEditing",
   "assets in production": "inEditing",
-  "assets shared with client": "delivered",
   "assets approved by client": "delivered",
   "awaiting payment": "delivered",
   closed: "delivered",

@@ -60,9 +60,6 @@ function ShootView({
   // (i.e. stepIdx is 2 or higher - booking-confirmed and searching-for-crew
   // both sit at stepIdx=1, working toward crew confirmation).
   const showCrew = stepIdx >= 2 && shoot.crew && !isOnHold;
-  // Final assets render at the last step. Index varies by timeline length.
-  const finalStepIdx = steps.length - 1;
-  const showAssets = stepIdx >= finalStepIdx && shoot.finalAssetsUrl && !isOnHold;
   const countdown = formatCountdown(shoot.shootDate, isDelivered);
 
   // M7 feed-through: live crew status from member.fame.so taps.
@@ -246,19 +243,6 @@ function ShootView({
               </a>
             )}
           </div>
-        </section>
-      )}
-
-      {showAssets && shoot.finalAssetsUrl && (
-        <section className="section">
-          <div className="card-h">Delivery</div>
-          <a className="assets-cta" href={shoot.finalAssetsUrl} target="_blank" rel="noreferrer">
-            <div>
-              <div className="assets-cta-title">Your assets are ready</div>
-              <div className="assets-cta-sub">Open your final video files</div>
-            </div>
-            <div className="assets-cta-arrow">→</div>
-          </a>
         </section>
       )}
 

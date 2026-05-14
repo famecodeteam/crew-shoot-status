@@ -663,40 +663,6 @@ img {
   flex-shrink: 0;
 }
 
-/* ---------- Final assets CTA ---------- */
-
-.assets-cta {
-  background: var(--pink);
-  color: var(--card);
-  border-radius: var(--radius);
-  padding: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  transition: transform 0.15s;
-}
-
-.assets-cta:hover {
-  transform: translateY(-1px);
-}
-
-.assets-cta-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.assets-cta-sub {
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-.assets-cta-arrow {
-  font-size: 28px;
-  flex-shrink: 0;
-}
-
 /* ---------- On-hold notice ---------- */
 
 .on-hold-notice {
