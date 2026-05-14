@@ -11,6 +11,7 @@ import { mapList, statusLabel } from "./list-mapping";
 import { pickProducer } from "./producer";
 import {
   deriveMilestoneDates,
+  capMilestonesToStatus,
   projectDeliveredDate,
   type MilestoneDates,
 } from "./milestone-dates";
@@ -251,8 +252,13 @@ export function transformCard(
   // Past milestone dates from action history (if provided). For webhooks
   // and backfills we pass the actions through; if absent we just leave
   // the map empty - the page falls back gracefully.
+  //
+  // capMilestonesToStatus drops any date that's ahead of the card's
+  // CURRENT list - a card that bounced backward (e.g. briefly dragged
+  // into "Assets Approved By Client" then back to editing) must not keep
+  // a delivered date, which would also block the projected-ETA path.
   const milestoneDates: MilestoneDates = actions
-    ? deriveMilestoneDates(actions)
+    ? capMilestonesToStatus(deriveMilestoneDates(actions), mapping.status)
     : {};
 
   const turnaroundOverride = readCustomFieldNumber(card, ctx.fieldId.turnaroundDays);

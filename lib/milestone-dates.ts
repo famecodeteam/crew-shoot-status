@@ -10,6 +10,7 @@
 //   - Crew-only shoot (no Post Production label) → Shoot day + 1 calendar day
 
 import type { TrelloAction } from "./trello";
+import type { ShootStatus } from "../app/[slug]/status";
 
 export type MilestoneDates = {
   bookingConfirmed?: string; // ISO timestamp
@@ -59,6 +60,54 @@ export function deriveMilestoneDates(actions: TrelloAction[]): MilestoneDates {
     const milestone = LIST_TO_MILESTONE[listName];
     if (!milestone) continue;
     if (!out[milestone]) out[milestone] = action.date;
+  }
+  return out;
+}
+
+// Linear pipeline rank for a status - higher = further along the
+// Won → ... → Delivered flow.
+const STATUS_RANK: Record<ShootStatus, number> = {
+  "booking-confirmed": 1,
+  "searching-for-crew": 2,
+  "crew-confirmed": 3,
+  "ready-for-shoot": 4,
+  "shoot-complete": 5,
+  "in-editing": 6,
+  "assets-ready": 7,
+  delivered: 8,
+  "on-hold": 0, // timeline hidden anyway; see early-return below
+};
+
+// Which status each milestone represents "having reached".
+const MILESTONE_STATUS: Record<keyof MilestoneDates, ShootStatus> = {
+  bookingConfirmed: "booking-confirmed",
+  crewConfirmed: "crew-confirmed",
+  inEditing: "in-editing",
+  delivered: "delivered",
+};
+
+// Drop any milestone date that sits AHEAD of where the card actually is
+// now. deriveMilestoneDates records the FIRST time a list was touched,
+// which goes stale when a card moves BACKWARD - e.g. a PM drags a card
+// into "Assets Approved By Client" by mistake and then back to editing.
+// The forward move stays in the action history forever, so the card
+// keeps a "delivered" date it no longer warrants (and that date also
+// short-circuits the projected-ETA path). Capping to the current status
+// keeps milestone dates consistent with the timeline's own tick/highlight
+// state, which is already current-status-driven (see currentStepIndex).
+export function capMilestonesToStatus(
+  milestones: MilestoneDates,
+  status: ShootStatus,
+): MilestoneDates {
+  // on-hold: timeline is hidden and the card's real pipeline position is
+  // unknown - leave the derived dates untouched.
+  if (status === "on-hold") return milestones;
+  const rank = STATUS_RANK[status];
+  const out: MilestoneDates = {};
+  for (const key of Object.keys(milestones) as (keyof MilestoneDates)[]) {
+    if (rank >= STATUS_RANK[MILESTONE_STATUS[key]]) {
+      out[key] = milestones[key];
+    }
   }
   return out;
 }
