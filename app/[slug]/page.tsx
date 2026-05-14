@@ -75,7 +75,28 @@ function ShootView({
       shoot.status === "crew-confirmed" ||
       shoot.status === "ready-for-shoot" ||
       shoot.status === "shoot-complete");
-  const badgeText = wrappedOverridesBadge ? "Shoot wrapped" : shoot.statusLabel;
+  // Asset-aware hero badge: once a shoot has real (uploaded) assets, the
+  // aggregate review state is the truth - it supersedes both the Trello
+  // status label and the "Shoot wrapped" override. on-hold keeps its own
+  // dedicated badge + styling and is never overridden.
+  const assetBadge = isOnHold ? null : assetReviewBadge(assets);
+  const badgeText = assetBadge
+    ? assetBadge.label
+    : wrappedOverridesBadge
+      ? "Shoot wrapped"
+      : shoot.statusLabel;
+
+  let badgeClass = "status-badge";
+  if (isOnHold) {
+    badgeClass += " on-hold";
+  } else if (assetBadge) {
+    // "All assets approved" gets the green done-state styling; the active
+    // states ("Awaiting your review" / "Changes in progress") keep the
+    // default pink attention badge.
+    if (assetBadge.tone === "done") badgeClass += " delivered";
+  } else if (isDelivered) {
+    badgeClass += " delivered";
+  }
 
   return (
     <main className="shell">
@@ -107,13 +128,7 @@ function ShootView({
             </>
           )}
         </div>
-        <span
-          className={
-            "status-badge" + (isDelivered ? " delivered" : isOnHold ? " on-hold" : "")
-          }
-        >
-          {badgeText}
-        </span>
+        <span className={badgeClass}>{badgeText}</span>
       </header>
 
       {liveBanner && (
@@ -365,6 +380,64 @@ function pickAssetPill(a: Asset): { label: string; cls: string } {
       // "Pending upload" (which is on the editor, not the client).
       return { label: "Pending review", cls: "needs-review" };
   }
+}
+
+// Aggregate the per-asset review states into a single hero-badge signal.
+// Once a shoot has real (uploaded) assets, this supersedes the Trello-list
+// status label: the list reflects the project phase the PM controls, but
+// the badge should tell the client the truth about where review actually
+// stands - otherwise it can claim "Assets ready for review" while the
+// client has already requested changes.
+//
+// Action-first priority (per the product call): anything that needs the
+// client wins, then anything Fame is revising, then the all-approved end
+// state. Returns null when the assets can't speak for the badge yet (none
+// uploaded), so the caller falls back to the Trello status label.
+function assetReviewBadge(
+  assets: Asset[],
+): { label: string; tone: "action" | "progress" | "done" } | null {
+  if (assets.length === 0) return null;
+
+  let needsClient = 0; // pending review, new version ready, or comments open
+  let changesRequested = 0;
+  let approved = 0;
+  let pendingUpload = 0;
+
+  for (const a of assets) {
+    if (a.versions.length === 0) {
+      pendingUpload++;
+      continue;
+    }
+    const latest = a.versions[a.versions.length - 1];
+    if (a.approval && latest.n > a.approval.onVersion) {
+      // A newer cut landed since the client's last decision - back to them.
+      needsClient++;
+      continue;
+    }
+    switch (a.approval?.status) {
+      case "approved":
+        approved++;
+        break;
+      case "changes_requested":
+        changesRequested++;
+        break;
+      case "comments_open":
+      case "pending":
+      default:
+        needsClient++;
+        break;
+    }
+  }
+
+  if (needsClient > 0) return { label: "Awaiting your review", tone: "action" };
+  if (changesRequested > 0)
+    return { label: "Changes in progress", tone: "progress" };
+  // Nothing waiting on the client, nothing being revised. Only call it
+  // "approved" when every asset is uploaded AND approved - a mix of
+  // approved + not-yet-uploaded is still mid-delivery, so defer to Trello.
+  if (approved > 0 && pendingUpload === 0)
+    return { label: "All assets approved", tone: "done" };
+  return null;
 }
 
 function summarizeAssets(assets: Asset[]) {
