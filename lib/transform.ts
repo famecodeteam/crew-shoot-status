@@ -235,8 +235,18 @@ export function transformCard(
   const crewFirstName = crew ? crew.name.split(/\s+/)[0] : undefined;
 
   // Slug: prefer existing (from store), else the Trello custom field, else generate.
+  //
+  // Exception: a "card-..." slug is provisional. generateSlug falls back to
+  // the literal "card" when the title has no "#NNNN" shoot number yet (e.g.
+  // a raw intake-form card synced before a PM tidied the title). Once the
+  // title carries a number, regenerate so the public URL gets the proper
+  // "NNNN-client-hash" shape instead of being stuck as "card-..." forever.
   const fieldSlug = readCustomFieldText(card, ctx.fieldId.publicSlug);
-  const slug = existingSlug || fieldSlug || generateSlug(shootNumber, clientName);
+  const existingIsProvisional = existingSlug?.startsWith("card-") ?? false;
+  const slug =
+    existingIsProvisional && shootNumber
+      ? generateSlug(shootNumber, clientName)
+      : existingSlug || fieldSlug || generateSlug(shootNumber, clientName);
 
   const hasPostProduction = (card.labels ?? []).some(
     (l) => l.name.trim().toLowerCase() === "post production",
