@@ -1,15 +1,18 @@
 /**
  * Drive lookup for per-shoot brief + quote URLs.
- * Mirrors fame_crew_scout-v0.6.9.gs scoutFindShootDrive_:
- *   1. Find the folder titled exactly "#NNNN".
- *   2. Brief = first Google Doc in that folder whose name contains "brief".
- *   3. Quote = first PDF in that folder whose name contains "quote".
- *      (The signed quote lives as PDF; the raw quote lives as a Google Doc.
- *       Crew Scout returns the signed PDF - that's what clients should see.)
  *
- * Final assets URL is NOT sourced from Drive - it comes from the
- * "Final Asset URL" Trello custom field. This module only provides
- * brief + quote.
+ *   Brief - the client brief is named "Brief #NNNN - Client - ...", so we
+ *           match on the SHOOT NUMBER, not just the word "brief". A "#NNNN"
+ *           folder can hold several "brief"-named docs (editor briefs, VE
+ *           briefs, ...) and the client brief sometimes lives outside the
+ *           "#NNNN" folder entirely - the number is the only reliable anchor.
+ *   Quote - first PDF named "...quote..." inside the "#NNNN" folder. Quote
+ *           PDFs aren't named with the shoot number, so they can only be
+ *           found by folder. (The signed quote lives as a PDF - that's what
+ *           clients should see.)
+ *
+ * This module only provides brief + quote. Finished video deliverables are
+ * the per-asset video-review feature now, not a Drive link.
  */
 
 import { google } from "googleapis";
@@ -42,14 +45,11 @@ function escapeQuery(s: string): string {
 
 /**
  * Find a single shoot's brief + quote URLs.
- * Returns an empty object if the folder isn't found or files are missing.
  *
- * Multiple folders named "#NNNN" can exist in the SA's view (e.g. an empty
- * placeholder under the client folder + the real one elsewhere). We list
- * the children of each candidate and return the first folder whose
- * contents actually match the brief/quote criteria. If none of the
- * candidates have matching files, we fall through to the first folder's
- * URL so we at least surface *a* shoot folder link.
+ * Brief lookup is anchored on the shoot NUMBER (see the module header):
+ * the doc that has both the "#NNNN" token and the word "brief" in its
+ * name is the client brief, wherever it lives. The quote and the
+ * shoot-folder link still come from the "#NNNN" folder.
  */
 export async function findShootDriveLinks(shootNumber: string): Promise<ShootDriveLinks> {
   const stripped = shootNumber.replace(/^#/, "").trim();
@@ -58,7 +58,8 @@ export async function findShootDriveLinks(shootNumber: string): Promise<ShootDri
 
   const d = drive();
 
-  // 1. Find all folders matching the name.
+  // 1. Find all folders named exactly "#NNNN". Used for the quote PDF
+  //    (whose filename carries no shoot number) and the shoot-folder link.
   const folderResp = await d.files.list({
     q:
       `name = '${escapeQuery(folderName)}' and ` +
@@ -68,12 +69,49 @@ export async function findShootDriveLinks(shootNumber: string): Promise<ShootDri
     supportsAllDrives: true,
     includeItemsFromAllDrives: true,
   });
-
   const folders = folderResp.data.files ?? [];
-  if (folders.length === 0) return {};
+  const folderIds = new Set(
+    folders.map((f) => f.id).filter((id): id is string => Boolean(id)),
+  );
 
-  // 2. For each candidate folder, list children and look for brief / quote.
-  //    Return as soon as we find one that has at least one matching file.
+  // 2. BRIEF - anchored on the shoot number. The client brief is named
+  //    "Brief #NNNN - ...", so a doc with BOTH the "#NNNN" token and the
+  //    word "brief" is the real one - even if it lives outside the "#NNNN"
+  //    folder, and regardless of how many other "brief"-named docs (editor
+  //    / VE briefs) share that folder. Drive's `contains` is loose, so
+  //    query by the bare number and tighten the match in code.
+  let briefUrl: string | undefined;
+  let briefName: string | undefined;
+  const briefResp = await d.files.list({
+    q:
+      `name contains '${escapeQuery(stripped)}' and ` +
+      `mimeType = 'application/vnd.google-apps.document' and trashed = false`,
+    fields: "files(id, name, parents, webViewLink)",
+    pageSize: 50,
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+  });
+  const briefCandidates = (briefResp.data.files ?? []).filter((f) => {
+    const name = f.name ?? "";
+    return name.includes(folderName) && name.toLowerCase().includes("brief");
+  });
+  if (briefCandidates.length) {
+    // If several match, prefer one that sits inside the "#NNNN" folder.
+    const inFolder = briefCandidates.find((f) =>
+      (f.parents ?? []).some((p) => folderIds.has(p)),
+    );
+    const chosen = inFolder ?? briefCandidates[0];
+    briefUrl = chosen.webViewLink ?? undefined;
+    briefName = chosen.name ?? undefined;
+  }
+
+  // 3. QUOTE (+ brief fallback) - scan the "#NNNN" folder(s). Multiple
+  //    folders named "#NNNN" can exist (an empty placeholder + the real
+  //    one); the one carrying the quote PDF is the real one. If the
+  //    number-anchored brief search above came up empty, fall back to the
+  //    first "brief"-named doc in the folder.
+  let quoteUrl: string | undefined;
+  let quoteName: string | undefined;
   for (const folder of folders) {
     if (!folder.id) continue;
     const filesResp = await d.files.list({
@@ -88,11 +126,6 @@ export async function findShootDriveLinks(shootNumber: string): Promise<ShootDri
       includeItemsFromAllDrives: true,
     });
     const files = filesResp.data.files ?? [];
-
-    let briefUrl: string | undefined;
-    let briefName: string | undefined;
-    let quoteUrl: string | undefined;
-    let quoteName: string | undefined;
     for (const f of files) {
       const name = (f.name ?? "").toLowerCase();
       if (
@@ -107,23 +140,18 @@ export async function findShootDriveLinks(shootNumber: string): Promise<ShootDri
         quoteUrl = f.webViewLink ?? undefined;
         quoteName = f.name ?? undefined;
       }
-      if (briefUrl && quoteUrl) break;
     }
-
-    if (briefUrl || quoteUrl) {
-      return {
-        shootFolderUrl: folder.webViewLink ?? undefined,
-        briefUrl,
-        briefName,
-        quoteUrl,
-        quoteName,
-      };
-    }
+    // A folder that yielded the quote PDF is the real one - stop here.
+    if (quoteUrl) break;
   }
 
-  // No candidate had a matching brief or quote. Still surface the first
-  // folder's URL so we link to *something* sensible.
-  return { shootFolderUrl: folders[0].webViewLink ?? undefined };
+  return {
+    shootFolderUrl: folders[0]?.webViewLink ?? undefined,
+    briefUrl,
+    briefName,
+    quoteUrl,
+    quoteName,
+  };
 }
 
 // Useful for diagnostics in the backfill log.
