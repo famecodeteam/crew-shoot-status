@@ -26,11 +26,13 @@
   --warning-fg: #6f5a1e; /* deep amber, AA on the pale yellow */
   --warning-line: #f0d488; /* mid yellow - borders */
 
-  /* "Changes requested" state - brand orchid. (Tried periwinkle; orchid
-     preferred after comparing both live.) */
-  --review-bg: #ecd9ea; /* pale tint of brand orchid */
-  --review-fg: #6d3a6a; /* deep orchid, AA on the pale orchid */
-  --review-accent: var(--orchid);
+  /* "Changes requested" state - amber. Intentionally OUTSIDE the brand
+     palette: orchid read as an off-pink against the brand pink, and
+     periwinkle read as dull - both tried live. Amber is the universal
+     "in progress" colour and harmonizes with the warm palette. */
+  --review-bg: #fbe3cd; /* pale amber */
+  --review-fg: #8a4a16; /* deep amber-brown, AA on the pale amber */
+  --review-accent: #f0843c; /* amber - the bar / solid accent */
 
   /* ---- Functional / neutral (intentionally not brand colours) ---- */
   --card: #ffffff;
