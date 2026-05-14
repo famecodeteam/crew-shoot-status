@@ -26,11 +26,11 @@
   --warning-fg: #6f5a1e; /* deep amber, AA on the pale yellow */
   --warning-line: #f0d488; /* mid yellow - borders */
 
-  /* "Changes requested" state - brand periwinkle (orchid read as an
-     off-pink against the brand pink, especially as a full-width bar). */
-  --review-bg: #ddd9ea; /* pale tint of brand periwinkle */
-  --review-fg: #4e4f6c; /* deep periwinkle, AA on the pale tint */
-  --review-accent: var(--periwinkle);
+  /* "Changes requested" state - brand orchid. (Tried periwinkle; orchid
+     preferred after comparing both live.) */
+  --review-bg: #ecd9ea; /* pale tint of brand orchid */
+  --review-fg: #6d3a6a; /* deep orchid, AA on the pale orchid */
+  --review-accent: var(--orchid);
 
   /* ---- Functional / neutral (intentionally not brand colours) ---- */
   --card: #ffffff;
