@@ -360,7 +360,10 @@ function pickAssetPill(a: Asset): { label: string; cls: string } {
       return { label: "Comments open", cls: "comments-open" };
     case "pending":
     default:
-      return { label: "Pending review", cls: "pending" };
+      // Client hasn't engaged yet - this pill is a call to action, so it
+      // gets the bold "needs-review" treatment, not the muted grey of
+      // "Pending upload" (which is on the editor, not the client).
+      return { label: "Pending review", cls: "needs-review" };
   }
 }
 

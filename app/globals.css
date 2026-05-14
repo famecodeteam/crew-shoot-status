@@ -862,6 +862,13 @@ img {
   color: var(--text-muted);
 }
 
+/* Client has something to review - solid pink so it reads as a clear
+   "your turn" call to action, louder than the soft tinted pills. */
+.asset-card-pill.needs-review {
+  background: var(--pink);
+  color: #fff;
+}
+
 .asset-card-pill.comments-open {
   background: var(--pink-light);
   color: var(--pink);
