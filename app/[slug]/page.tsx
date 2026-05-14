@@ -108,25 +108,17 @@ function ShootView({
         <div className="hero-shoot-no">Shoot {shoot.shootNumber}</div>
         <h1 className="hero-title">{shoot.clientName}</h1>
         <div className="hero-meta">
-          {shoot.shootType && (
-            <>
-              <span>{shoot.shootType}</span>
-              <span className="hero-meta-sep">·</span>
-            </>
-          )}
-          {shoot.location && (
-            <>
-              <span>{shoot.location}</span>
-              <span className="hero-meta-sep">·</span>
-            </>
-          )}
-          <span>{formatDate(shoot.shootDate)}</span>
-          {countdown && (
-            <>
-              <span className="hero-meta-sep">·</span>
-              <span>{countdown}</span>
-            </>
-          )}
+          {/* Build from whichever parts exist, then join with separators -
+              so a missing shoot date doesn't leave a stray "·" or an
+              "Invalid Date" segment. */}
+          {[shoot.shootType, shoot.location, formatDate(shoot.shootDate), countdown]
+            .filter((part): part is string => Boolean(part))
+            .map((part, i) => (
+              <span key={i}>
+                {i > 0 && <span className="hero-meta-sep">·</span>}
+                {part}
+              </span>
+            ))}
         </div>
         <span className={badgeClass}>{badgeText}</span>
       </header>
@@ -281,7 +273,11 @@ function ShootView({
 }
 
 function formatDate(iso: string): string {
+  // Shoots can have no date yet (e.g. an on-hold card). Return "" rather
+  // than letting `new Date("T00:00:00")` render the literal "Invalid Date".
+  if (!iso) return "";
   const d = new Date(iso + "T00:00:00");
+  if (Number.isNaN(d.getTime())) return "";
   return d.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
@@ -553,9 +549,12 @@ function formatStepDate(shoot: Shoot, idx: number, totalSteps: number): string {
 
 function formatCountdown(iso: string, delivered: boolean): string | null {
   if (delivered) return "completed";
+  // No date set yet - no countdown to show (don't render "NaN days ago").
+  if (!iso) return null;
+  const target = new Date(iso + "T00:00:00");
+  if (Number.isNaN(target.getTime())) return null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const target = new Date(iso + "T00:00:00");
   const diffDays = Math.round((target.getTime() - today.getTime()) / 86400000);
   if (diffDays === 0) return "today";
   if (diffDays === 1) return "tomorrow";
