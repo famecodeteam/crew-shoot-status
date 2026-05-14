@@ -1,14 +1,43 @@
 :root {
+  /* ---- Brand palette (fame-brandguidelines.pdf) ---- */
+  /* Primary */
   --pink: #ff467c;
-  --pink-light: #ffe0eb;
-  --green: #22c55e;
-  --yellow: #eab308;
-  --red: #ef4444;
-  --bg: #f8f1eb;
+  --dark: #292a25;
+  --bg: #f8f1eb; /* cream */
+  /* Secondary */
+  --mint: #cee8e0;
+  --pink-light: #f9d2e3; /* brand "light pink" - soft badge backgrounds */
+  --periwinkle: #7778b8;
+  --orchid: #b373b0;
+  --green: #71be46;
+  --yellow: #f6cd67;
+
+  /* ---- Derived from the brand palette ---- */
+  --pink-hover: #e63d6e; /* darkened brand pink - button hover */
+
+  /* Semantic state colours: pale bg / readable fg / solid accent, all
+     derived from the brand secondaries. fg values lean dark enough to
+     clear WCAG AA on their paired bg. */
+  --success-bg: var(--mint);
+  --success-fg: #3f6b2c; /* deep green, AA on mint */
+  --success-accent: var(--green);
+
+  --warning-bg: #fbeac4; /* pale tint of brand yellow */
+  --warning-fg: #6f5a1e; /* deep amber, AA on the pale yellow */
+  --warning-line: #f0d488; /* mid yellow - borders */
+
+  --review-bg: #ecd9ea; /* pale tint of brand orchid */
+  --review-fg: #6d3a6a; /* deep orchid, AA on the pale orchid */
+  --review-accent: var(--orchid);
+
+  /* ---- Functional / neutral (intentionally not brand colours) ---- */
   --card: #ffffff;
   --border: #e5e7eb;
-  --text: #2e2e2e;
+  --text: var(--dark);
   --text-muted: #6b7280;
+  --marker-muted: #94a3b8; /* resolved comment markers */
+  --red: #c0392b; /* errors + destructive actions only - brand has no red */
+
   --radius: 12px;
 }
 
@@ -128,21 +157,21 @@ img {
 }
 
 .status-badge.delivered {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--success-bg);
+  color: var(--success-fg);
 }
 
 .status-badge.delivered::before {
-  background: #16a34a;
+  background: var(--success-fg);
 }
 
 .status-badge.on-hold {
-  background: #fef9c3;
-  color: #854d0e;
+  background: var(--warning-bg);
+  color: var(--warning-fg);
 }
 
 .status-badge.on-hold::before {
-  background: #ca8a04;
+  background: var(--warning-fg);
 }
 
 /* ---------- Live moments grid + lightbox ---------- */
@@ -666,12 +695,12 @@ img {
 /* ---------- On-hold notice ---------- */
 
 .on-hold-notice {
-  background: #fef9c3;
-  border: 1px solid #fde68a;
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-line);
   border-radius: var(--radius);
   padding: 20px 24px;
   font-size: 15px;
-  color: #854d0e;
+  color: var(--warning-fg);
   text-align: center;
 }
 
@@ -802,11 +831,11 @@ img {
 }
 
 .assets-progress-bar.approved {
-  background: #22c55e;
+  background: var(--success-accent);
 }
 
 .assets-progress-bar.changes {
-  background: #ef4444;
+  background: var(--review-accent);
 }
 
 .assets-list {
@@ -875,13 +904,13 @@ img {
 }
 
 .asset-card-pill.approved {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--success-bg);
+  color: var(--success-fg);
 }
 
 .asset-card-pill.changes-requested {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--review-bg);
+  color: var(--review-fg);
 }
 
 /* ---------- Comments + composer + approval (asset review) ---------- */
@@ -922,7 +951,7 @@ img {
 }
 
 .comment-marker.resolved {
-  background: #94a3b8;
+  background: var(--marker-muted);
 }
 
 .comment-bar {
@@ -1096,7 +1125,7 @@ img {
 }
 
 .btn-primary:hover {
-  background: #e63d6e;
+  background: var(--pink-hover);
 }
 
 .btn-primary:disabled {
@@ -1153,13 +1182,13 @@ img {
 }
 
 .approval-state.approved {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--success-bg);
+  color: var(--success-fg);
 }
 
 .approval-state.changes-requested {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--review-bg);
+  color: var(--review-fg);
 }
 
 .approval-state.new-version {
