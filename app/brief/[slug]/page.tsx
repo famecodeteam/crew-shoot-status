@@ -318,7 +318,9 @@ function isStatusPageRedirect(s: Section): boolean {
   const t = s.title.toLowerCase();
   return (
     /pre.?event communications/.test(t) ||
-    /shoot status/.test(t) ||
+    // Match "shoot status" + "shooting status" + "shoot status timeline"
+    // and the various phrasings producers use here.
+    /shoot(?:ing)? status/.test(t) ||
     /communications timeline/.test(t) ||
     /project status/.test(t) ||
     /^status$/.test(t)
