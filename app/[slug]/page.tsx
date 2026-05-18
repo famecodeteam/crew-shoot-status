@@ -211,19 +211,31 @@ function ShootView({
         </section>
       )}
 
-      {(briefHref || shoot.quoteUrl) && (
-        <section className="section">
-          <div className="card-h">Documents</div>
-          <div className="link-grid">
-            {briefHref && (
-              <a className="link-card" href={briefHref} target="_blank" rel="noopener">
-                <div>
-                  <div className="link-card-label">Brief</div>
-                  <div className="link-card-text">View your brief</div>
-                </div>
-                <div className="link-card-arrow">→</div>
-              </a>
-            )}
+      {/*
+        Brief link href, with graceful fallback:
+        - If a synced BriefRecord exists, link to the new /brief/[slug]
+          page (briefHref is set by the page loader).
+        - Otherwise, fall back to the Google Doc URL detected by
+          findShootDriveLinks during the Trello webhook. The new page
+          will take over automatically on the next cron tick once the
+          brief is registered + synced.
+      */}
+      {(() => {
+        const linkHref = briefHref ?? shoot.briefUrl ?? null;
+        if (!linkHref && !shoot.quoteUrl) return null;
+        return (
+          <section className="section">
+            <div className="card-h">Documents</div>
+            <div className="link-grid">
+              {linkHref && (
+                <a className="link-card" href={linkHref} target="_blank" rel="noopener">
+                  <div>
+                    <div className="link-card-label">Brief</div>
+                    <div className="link-card-text">View your brief</div>
+                  </div>
+                  <div className="link-card-arrow">→</div>
+                </a>
+              )}
             {shoot.quoteUrl && (
               <a className="link-card" href={shoot.quoteUrl} target="_blank" rel="noreferrer">
                 <div>
@@ -233,9 +245,10 @@ function ShootView({
                 <div className="link-card-arrow">→</div>
               </a>
             )}
-          </div>
-        </section>
-      )}
+            </div>
+          </section>
+        );
+      })()}
 
       {(shoot.depositReceiptUrl || shoot.balanceReceiptUrl) && !isOnHold && (
         <section className="section">
