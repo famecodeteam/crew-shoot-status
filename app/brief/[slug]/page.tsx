@@ -201,8 +201,8 @@ function PendingView({ slug, rec }: { slug: string; rec: BriefRecord }) {
         <div className="brief-lock-card">
           <h2 className="brief-lock-title">Brief is being prepared</h2>
           <p className="brief-lock-hint">
-            We&apos;re syncing this brief from the source document — usually a
-            minute or two. Refresh the page to check.
+            We&apos;re syncing this brief from the source document. Usually
+            a minute or two. Refresh the page to check.
           </p>
         </div>
         <BriefFooter rec={rec} statusUrl={statusUrl} />
@@ -230,7 +230,7 @@ function StatusPageCTA({ statusUrl }: { statusUrl: string }) {
         </div>
         <div className="brief-status-cta-hint">
           Progress through every milestone, crew details, and final
-          deliverables — all in one place.
+          deliverables, all in one place.
         </div>
       </div>
       <div className="brief-status-cta-arrow" aria-hidden="true">
@@ -266,7 +266,7 @@ function BriefFooter({
       <a href={statusUrl}>View live status →</a>
       {showSyncError && (
         <span className="brief-sync-error">
-          Sync paused — please notify Fame.
+          Sync paused. Please notify Fame.
         </span>
       )}
     </footer>
@@ -352,7 +352,10 @@ function isSectionEmpty(s: Section): boolean {
 
 function heroTitle(parsed: ParsedBrief): string {
   const { clientName, eventName } = parsed.header;
-  if (clientName && eventName) return `${clientName} — ${eventName}`;
+  // Middle dot matches the Fame brand separator used elsewhere
+  // (status page hero pills, link cards) and avoids the em-dash that
+  // reads as AI-generated copy.
+  if (clientName && eventName) return `${clientName} · ${eventName}`;
   return eventName || clientName || "Brief";
 }
 
