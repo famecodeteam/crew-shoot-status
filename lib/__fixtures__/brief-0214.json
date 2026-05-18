@@ -1,0 +1,4100 @@
+{
+  "title": "Brief #0214 - TikTok - LA Events",
+  "body": {
+    "content": [
+      {
+        "endIndex": 1,
+        "sectionBreak": {
+          "sectionStyle": {
+            "columnSeparatorStyle": "NONE",
+            "contentDirection": "LEFT_TO_RIGHT",
+            "sectionType": "CONTINUOUS"
+          }
+        }
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 34,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 1,
+              "endIndex": 33,
+              "textRun": {
+                "content": "Brief #0214 - TikTok - LA Events",
+                "textStyle": {
+                  "bold": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.99607843,
+                        "green": 0.27450982,
+                        "blue": 0.4862745
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 15,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 33,
+              "endIndex": 34,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "headingId": "h.vpv5kj1ry65d",
+            "namedStyleType": "HEADING_2",
+            "alignment": "CENTER",
+            "lineSpacing": 140,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 21,
+              "unit": "PT"
+            },
+            "keepLinesTogether": false,
+            "keepWithNext": false
+          }
+        }
+      },
+      {
+        "startIndex": 34,
+        "endIndex": 71,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 34,
+              "endIndex": 35,
+              "textRun": {
+                "content": "\u000b",
+                "textStyle": {
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 35,
+              "endIndex": 58,
+              "textRun": {
+                "content": "This brief is based on ",
+                "textStyle": {
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 58,
+              "endIndex": 69,
+              "textRun": {
+                "content": "Quote #0214",
+                "textStyle": {
+                  "bold": true,
+                  "underline": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.06666667,
+                        "green": 0.33333334,
+                        "blue": 0.8
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  },
+                  "link": {
+                    "url": "https://drive.google.com/file/d/1oIPMS-QCAThfT507x1yhqP4-CRCZKs-i/view?usp=sharing"
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 69,
+              "endIndex": 71,
+              "textRun": {
+                "content": ".\n",
+                "textStyle": {
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 12,
+              "unit": "PT"
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 71,
+        "endIndex": 91,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 71,
+              "endIndex": 91,
+              "textRun": {
+                "content": "1. Project Overview\n",
+                "textStyle": {
+                  "bold": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {}
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "headingId": "h.onad515ttwd",
+            "namedStyleType": "HEADING_3",
+            "lineSpacing": 150,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 21,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "keepLinesTogether": false,
+            "keepWithNext": false
+          }
+        }
+      },
+      {
+        "startIndex": 91,
+        "endIndex": 125,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 91,
+              "endIndex": 97,
+              "textRun": {
+                "content": "Client",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 97,
+              "endIndex": 124,
+              "textRun": {
+                "content": ": TikTok Australia Pty Ltd.",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 124,
+              "endIndex": 125,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.w2ga5fhgpo4j",
+            "textStyle": {
+              "backgroundColor": {},
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Arial",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 125,
+        "endIndex": 157,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 125,
+              "endIndex": 140,
+              "textRun": {
+                "content": "Primary Contact",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 140,
+              "endIndex": 156,
+              "textRun": {
+                "content": ": Jemma Stevens.",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 156,
+              "endIndex": 157,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.w2ga5fhgpo4j",
+            "textStyle": {
+              "backgroundColor": {},
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Arial",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 157,
+        "endIndex": 168,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 157,
+              "endIndex": 166,
+              "textRun": {
+                "content": "Locations",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 166,
+              "endIndex": 168,
+              "textRun": {
+                "content": ":\n",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.w2ga5fhgpo4j",
+            "textStyle": {
+              "backgroundColor": {},
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Arial",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 168,
+        "endIndex": 247,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 168,
+              "endIndex": 196,
+              "textRun": {
+                "content": "Monday 11th (10:00–11:30 am)",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 196,
+              "endIndex": 246,
+              "textRun": {
+                "content": ": TikTok LA HQ, 5800 Bristol Parkway, Culver City.",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 246,
+              "endIndex": 247,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 30.75,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 48.75,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.gzxf7mgr713f",
+            "nestingLevel": 1,
+            "textStyle": {
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 247,
+        "endIndex": 319,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 247,
+              "endIndex": 273,
+              "textRun": {
+                "content": "Monday 11th (6:00–7:00 pm)",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 273,
+              "endIndex": 319,
+              "textRun": {
+                "content": ": Kassi Restaurant, 1697 Pacific Ave, Venice.\n",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 30.75,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 48.75,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.gzxf7mgr713f",
+            "nestingLevel": 1,
+            "textStyle": {
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 319,
+        "endIndex": 409,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 319,
+              "endIndex": 346,
+              "textRun": {
+                "content": "Tuesday 12th (3:30–5:00 pm)",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 346,
+              "endIndex": 408,
+              "textRun": {
+                "content": ": Outlandish Digital, 1228 3rd Street Promenade, Santa Monica.",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 408,
+              "endIndex": 409,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 30.75,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 48.75,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.gzxf7mgr713f",
+            "nestingLevel": 1,
+            "textStyle": {
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 409,
+        "endIndex": 437,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 409,
+              "endIndex": 437,
+              "textRun": {
+                "content": "2. Shoot Objectives & Style\n",
+                "textStyle": {
+                  "bold": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {}
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "headingId": "h.itur61br9x5b",
+            "namedStyleType": "HEADING_3",
+            "lineSpacing": 150,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 21,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "keepLinesTogether": false,
+            "keepWithNext": false
+          }
+        }
+      },
+      {
+        "startIndex": 437,
+        "endIndex": 549,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 437,
+              "endIndex": 446,
+              "textRun": {
+                "content": "Core Goal",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 446,
+              "endIndex": 548,
+              "textRun": {
+                "content": ": Capture a content library of images and video for two LinkedIn-optimized sizzle reels (one per day).",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 548,
+              "endIndex": 549,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.12zavacmjpqv",
+            "textStyle": {
+              "backgroundColor": {},
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Arial",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 549,
+        "endIndex": 631,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 549,
+              "endIndex": 558,
+              "textRun": {
+                "content": "Tone/Vibe",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 558,
+              "endIndex": 630,
+              "textRun": {
+                "content": ": High-end corporate aesthetic; professional, polished, and unobtrusive.",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 630,
+              "endIndex": 631,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.12zavacmjpqv",
+            "textStyle": {
+              "backgroundColor": {},
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Arial",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 631,
+        "endIndex": 743,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 631,
+              "endIndex": 653,
+              "textRun": {
+                "content": "Technical Requirements",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 653,
+              "endIndex": 742,
+              "textRun": {
+                "content": ": 4K cinema cameras (Sony FX-series preferred), pro audio kit, and studio lighting setup.",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 742,
+              "endIndex": 743,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 12,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            }
+          },
+          "bullet": {
+            "listId": "kix.12zavacmjpqv",
+            "textStyle": {
+              "backgroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                  }
+                }
+              },
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 743,
+        "endIndex": 755,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 743,
+              "endIndex": 755,
+              "textRun": {
+                "content": "References:\n",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.12zavacmjpqv",
+            "textStyle": {
+              "backgroundColor": {},
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Arial",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 755,
+        "endIndex": 756,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 755,
+              "endIndex": 756,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 54,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 72,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.12zavacmjpqv",
+            "nestingLevel": 1,
+            "textStyle": {
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.12156863,
+                    "green": 0.12156863,
+                    "blue": 0.12156863
+                  }
+                }
+              },
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Figtree",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 756,
+        "endIndex": 791,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 756,
+              "endIndex": 791,
+              "textRun": {
+                "content": "3. Production Scope & Deliverables\n",
+                "textStyle": {
+                  "bold": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {}
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "headingId": "h.71i0oncozvmh",
+            "namedStyleType": "HEADING_3",
+            "lineSpacing": 150,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 21,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "keepLinesTogether": false,
+            "keepWithNext": false
+          }
+        }
+      },
+      {
+        "startIndex": 791,
+        "endIndex": 840,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 791,
+              "endIndex": 807,
+              "textRun": {
+                "content": "On-Site Coverage",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 807,
+              "endIndex": 839,
+              "textRun": {
+                "content": ": 4 hours total across two days.",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 839,
+              "endIndex": 840,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.smbxg6eodxkh",
+            "textStyle": {
+              "backgroundColor": {},
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Arial",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 840,
+        "endIndex": 918,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 840,
+              "endIndex": 852,
+              "textRun": {
+                "content": "Deliverables",
+                "textStyle": {
+                  "bold": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 852,
+              "endIndex": 918,
+              "textRun": {
+                "content": ": All raw video/photo assets uploaded to the shared Google Drive.\n",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.smbxg6eodxkh",
+            "textStyle": {
+              "backgroundColor": {},
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Arial",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 918,
+        "endIndex": 953,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 918,
+              "endIndex": 953,
+              "textRun": {
+                "content": "2x LinkedIn-optimized sizzle reels\n",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 54,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 72,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.smbxg6eodxkh",
+            "nestingLevel": 1,
+            "textStyle": {
+              "backgroundColor": {},
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.12156863,
+                    "green": 0.12156863,
+                    "blue": 0.12156863
+                  }
+                }
+              },
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Figtree",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 953,
+        "endIndex": 965,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 953,
+              "endIndex": 964,
+              "textRun": {
+                "content": "Reference 1",
+                "textStyle": {
+                  "underline": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.06666667,
+                        "green": 0.33333334,
+                        "blue": 0.8
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  },
+                  "link": {
+                    "url": "https://www.linkedin.com/posts/tiktokbusiness_showupwheretheshowis-tiktokcanada-videoadvertising-activity-7448175492328964096-ux7W?utm_source=share&utm_medium=member_desktop&rcm=ACoAAC0zl_gBPiP2KVwv_kKU5f_OoybZBk2Twv0"
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 964,
+              "endIndex": 965,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 90,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 108,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.smbxg6eodxkh",
+            "nestingLevel": 2,
+            "textStyle": {
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.12156863,
+                    "green": 0.12156863,
+                    "blue": 0.12156863
+                  }
+                }
+              },
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Figtree",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 965,
+        "endIndex": 977,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 965,
+              "endIndex": 976,
+              "textRun": {
+                "content": "Reference 2",
+                "textStyle": {
+                  "underline": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.06666667,
+                        "green": 0.33333334,
+                        "blue": 0.8
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  },
+                  "link": {
+                    "url": "https://www.linkedin.com/posts/tiktokbusiness_did-you-catch-us-at-sxsw-sydney-last-week-activity-7386204407312551936-XuGe?utm_source=share&utm_medium=member_desktop&rcm=ACoAAC0zl_gBPiP2KVwv_kKU5f_OoybZBk2Twv0"
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 976,
+              "endIndex": 977,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.12156863,
+                        "green": 0.12156863,
+                        "blue": 0.12156863
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "lineSpacing": 115,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 90,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 108,
+              "unit": "PT"
+            },
+            "avoidWidowAndOrphan": false
+          },
+          "bullet": {
+            "listId": "kix.smbxg6eodxkh",
+            "nestingLevel": 2,
+            "textStyle": {
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.12156863,
+                    "green": 0.12156863,
+                    "blue": 0.12156863
+                  }
+                }
+              },
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Figtree",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 977,
+        "endIndex": 997,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 977,
+              "endIndex": 997,
+              "textRun": {
+                "content": "File Transfer Plan:\n",
+                "textStyle": {
+                  "bold": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 12,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            }
+          },
+          "bullet": {
+            "listId": "kix.smbxg6eodxkh",
+            "textStyle": {
+              "backgroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                  }
+                }
+              },
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 997,
+        "endIndex": 1064,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 997,
+              "endIndex": 1063,
+              "textRun": {
+                "content": "https://next.frame.io/project/32a5d71b-85b1-41a0-aeb4-1d3a0ae68083",
+                "textStyle": {
+                  "underline": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.06666667,
+                        "green": 0.33333334,
+                        "blue": 0.8
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  },
+                  "link": {
+                    "url": "https://next.frame.io/project/32a5d71b-85b1-41a0-aeb4-1d3a0ae68083"
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 1063,
+              "endIndex": 1064,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 12,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 54,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 72,
+              "unit": "PT"
+            }
+          },
+          "bullet": {
+            "listId": "kix.smbxg6eodxkh",
+            "nestingLevel": 1,
+            "textStyle": {
+              "backgroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                  }
+                }
+              },
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              },
+              "fontSize": {
+                "magnitude": 15,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Figtree",
+                "weight": 400
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 1064,
+        "endIndex": 1080,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 1064,
+              "endIndex": 1080,
+              "textRun": {
+                "content": "4. Team On-Site\n",
+                "textStyle": {
+                  "bold": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {}
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "headingId": "h.21c0c3pla478",
+            "namedStyleType": "HEADING_3",
+            "lineSpacing": 150,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 21,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "keepLinesTogether": false,
+            "keepWithNext": false
+          }
+        }
+      },
+      {
+        "startIndex": 1080,
+        "endIndex": 1118,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 1080,
+              "endIndex": 1101,
+              "textRun": {
+                "content": "Assigned Crew Member:",
+                "textStyle": {
+                  "bold": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 1101,
+              "endIndex": 1117,
+              "textRun": {
+                "content": " Angelou Roberts",
+                "textStyle": {
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 1117,
+              "endIndex": 1118,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 9,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 12,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            }
+          },
+          "bullet": {
+            "listId": "kix.v5vckdtv4fl2",
+            "textStyle": {
+              "backgroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                  }
+                }
+              },
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "startIndex": 1118,
+        "endIndex": 1119,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 1118,
+              "endIndex": 1119,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "bold": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {}
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "headingId": "h.633uia3z1q2c",
+            "namedStyleType": "HEADING_3",
+            "lineSpacing": 150,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 21,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "keepLinesTogether": false,
+            "keepWithNext": false
+          }
+        }
+      },
+      {
+        "startIndex": 1119,
+        "endIndex": 1135,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 1119,
+              "endIndex": 1135,
+              "textRun": {
+                "content": "5. Shoot Status\n",
+                "textStyle": {
+                  "bold": true,
+                  "backgroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1
+                      }
+                    }
+                  },
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {}
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "headingId": "h.fxm5y968mkjv",
+            "namedStyleType": "HEADING_3",
+            "lineSpacing": 150,
+            "direction": "LEFT_TO_RIGHT",
+            "spaceAbove": {
+              "magnitude": 21,
+              "unit": "PT"
+            },
+            "spaceBelow": {
+              "magnitude": 6,
+              "unit": "PT"
+            },
+            "keepLinesTogether": false,
+            "keepWithNext": false
+          }
+        }
+      },
+      {
+        "startIndex": 1135,
+        "endIndex": 1136,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 1135,
+              "endIndex": 1136,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {}
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "direction": "LEFT_TO_RIGHT"
+          }
+        }
+      },
+      {
+        "startIndex": 1136,
+        "endIndex": 1199,
+        "paragraph": {
+          "elements": [
+            {
+              "startIndex": 1136,
+              "endIndex": 1154,
+              "textRun": {
+                "content": "Live status here: ",
+                "textStyle": {
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 1154,
+              "endIndex": 1197,
+              "textRun": {
+                "content": "https://shoots.fame.so/0214-tiktok-9bee2654",
+                "textStyle": {
+                  "underline": true,
+                  "foregroundColor": {
+                    "color": {
+                      "rgbColor": {
+                        "red": 0.06666667,
+                        "green": 0.33333334,
+                        "blue": 0.8
+                      }
+                    }
+                  },
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  },
+                  "link": {
+                    "url": "https://shoots.fame.so/0214-tiktok-9bee2654"
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 1197,
+              "endIndex": 1198,
+              "textRun": {
+                "content": " ",
+                "textStyle": {
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            },
+            {
+              "startIndex": 1198,
+              "endIndex": 1199,
+              "textRun": {
+                "content": "\n",
+                "textStyle": {
+                  "fontSize": {
+                    "magnitude": 12,
+                    "unit": "PT"
+                  },
+                  "weightedFontFamily": {
+                    "fontFamily": "Figtree",
+                    "weight": 400
+                  }
+                }
+              }
+            }
+          ],
+          "paragraphStyle": {
+            "namedStyleType": "NORMAL_TEXT",
+            "direction": "LEFT_TO_RIGHT",
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            }
+          },
+          "bullet": {
+            "listId": "kix.5umjc9s17br0",
+            "textStyle": {
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Figtree",
+                "weight": 400
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "documentStyle": {
+    "background": {
+      "color": {
+        "color": {
+          "rgbColor": {
+            "red": 1,
+            "green": 1,
+            "blue": 1
+          }
+        }
+      }
+    },
+    "pageNumberStart": 1,
+    "marginTop": {
+      "magnitude": 90,
+      "unit": "PT"
+    },
+    "marginBottom": {
+      "magnitude": 54,
+      "unit": "PT"
+    },
+    "marginRight": {
+      "magnitude": 72,
+      "unit": "PT"
+    },
+    "marginLeft": {
+      "magnitude": 72,
+      "unit": "PT"
+    },
+    "pageSize": {
+      "height": {
+        "magnitude": 792,
+        "unit": "PT"
+      },
+      "width": {
+        "magnitude": 612,
+        "unit": "PT"
+      }
+    },
+    "marginHeader": {
+      "magnitude": 36,
+      "unit": "PT"
+    },
+    "marginFooter": {
+      "magnitude": 36,
+      "unit": "PT"
+    },
+    "useCustomHeaderFooterMargins": true,
+    "documentFormat": {
+      "documentMode": "PAGES"
+    }
+  },
+  "namedStyles": {
+    "styles": [
+      {
+        "namedStyleType": "NORMAL_TEXT",
+        "textStyle": {
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strikethrough": false,
+          "smallCaps": false,
+          "backgroundColor": {},
+          "foregroundColor": {
+            "color": {
+              "rgbColor": {}
+            }
+          },
+          "fontSize": {
+            "magnitude": 11,
+            "unit": "PT"
+          },
+          "weightedFontFamily": {
+            "fontFamily": "Arial",
+            "weight": 400
+          },
+          "baselineOffset": "NONE"
+        },
+        "paragraphStyle": {
+          "namedStyleType": "NORMAL_TEXT",
+          "alignment": "START",
+          "lineSpacing": 115,
+          "direction": "LEFT_TO_RIGHT",
+          "spacingMode": "COLLAPSE_LISTS",
+          "spaceAbove": {
+            "unit": "PT"
+          },
+          "spaceBelow": {
+            "unit": "PT"
+          },
+          "borderBetween": {
+            "color": {},
+            "width": {
+              "unit": "PT"
+            },
+            "padding": {
+              "unit": "PT"
+            },
+            "dashStyle": "SOLID"
+          },
+          "borderTop": {
+            "color": {},
+            "width": {
+              "unit": "PT"
+            },
+            "padding": {
+              "unit": "PT"
+            },
+            "dashStyle": "SOLID"
+          },
+          "borderBottom": {
+            "color": {},
+            "width": {
+              "unit": "PT"
+            },
+            "padding": {
+              "unit": "PT"
+            },
+            "dashStyle": "SOLID"
+          },
+          "borderLeft": {
+            "color": {},
+            "width": {
+              "unit": "PT"
+            },
+            "padding": {
+              "unit": "PT"
+            },
+            "dashStyle": "SOLID"
+          },
+          "borderRight": {
+            "color": {},
+            "width": {
+              "unit": "PT"
+            },
+            "padding": {
+              "unit": "PT"
+            },
+            "dashStyle": "SOLID"
+          },
+          "indentFirstLine": {
+            "unit": "PT"
+          },
+          "indentStart": {
+            "unit": "PT"
+          },
+          "indentEnd": {
+            "unit": "PT"
+          },
+          "keepLinesTogether": false,
+          "keepWithNext": false,
+          "avoidWidowAndOrphan": true,
+          "shading": {
+            "backgroundColor": {}
+          },
+          "pageBreakBefore": false
+        }
+      },
+      {
+        "namedStyleType": "HEADING_1",
+        "textStyle": {
+          "fontSize": {
+            "magnitude": 20,
+            "unit": "PT"
+          }
+        },
+        "paragraphStyle": {
+          "namedStyleType": "NORMAL_TEXT",
+          "direction": "LEFT_TO_RIGHT",
+          "spaceAbove": {
+            "magnitude": 20,
+            "unit": "PT"
+          },
+          "spaceBelow": {
+            "magnitude": 6,
+            "unit": "PT"
+          },
+          "keepLinesTogether": true,
+          "keepWithNext": true,
+          "pageBreakBefore": false
+        }
+      },
+      {
+        "namedStyleType": "HEADING_2",
+        "textStyle": {
+          "bold": false,
+          "fontSize": {
+            "magnitude": 16,
+            "unit": "PT"
+          }
+        },
+        "paragraphStyle": {
+          "namedStyleType": "NORMAL_TEXT",
+          "direction": "LEFT_TO_RIGHT",
+          "spaceAbove": {
+            "magnitude": 18,
+            "unit": "PT"
+          },
+          "spaceBelow": {
+            "magnitude": 6,
+            "unit": "PT"
+          },
+          "keepLinesTogether": true,
+          "keepWithNext": true,
+          "pageBreakBefore": false
+        }
+      },
+      {
+        "namedStyleType": "HEADING_3",
+        "textStyle": {
+          "bold": false,
+          "foregroundColor": {
+            "color": {
+              "rgbColor": {
+                "red": 0.2627451,
+                "green": 0.2627451,
+                "blue": 0.2627451
+              }
+            }
+          },
+          "fontSize": {
+            "magnitude": 14,
+            "unit": "PT"
+          }
+        },
+        "paragraphStyle": {
+          "namedStyleType": "NORMAL_TEXT",
+          "direction": "LEFT_TO_RIGHT",
+          "spaceAbove": {
+            "magnitude": 16,
+            "unit": "PT"
+          },
+          "spaceBelow": {
+            "magnitude": 4,
+            "unit": "PT"
+          },
+          "keepLinesTogether": true,
+          "keepWithNext": true,
+          "pageBreakBefore": false
+        }
+      },
+      {
+        "namedStyleType": "HEADING_4",
+        "textStyle": {
+          "foregroundColor": {
+            "color": {
+              "rgbColor": {
+                "red": 0.4,
+                "green": 0.4,
+                "blue": 0.4
+              }
+            }
+          },
+          "fontSize": {
+            "magnitude": 12,
+            "unit": "PT"
+          }
+        },
+        "paragraphStyle": {
+          "namedStyleType": "NORMAL_TEXT",
+          "direction": "LEFT_TO_RIGHT",
+          "spaceAbove": {
+            "magnitude": 14,
+            "unit": "PT"
+          },
+          "spaceBelow": {
+            "magnitude": 4,
+            "unit": "PT"
+          },
+          "keepLinesTogether": true,
+          "keepWithNext": true,
+          "pageBreakBefore": false
+        }
+      },
+      {
+        "namedStyleType": "HEADING_5",
+        "textStyle": {
+          "foregroundColor": {
+            "color": {
+              "rgbColor": {
+                "red": 0.4,
+                "green": 0.4,
+                "blue": 0.4
+              }
+            }
+          },
+          "fontSize": {
+            "magnitude": 11,
+            "unit": "PT"
+          }
+        },
+        "paragraphStyle": {
+          "namedStyleType": "NORMAL_TEXT",
+          "direction": "LEFT_TO_RIGHT",
+          "spaceAbove": {
+            "magnitude": 12,
+            "unit": "PT"
+          },
+          "spaceBelow": {
+            "magnitude": 4,
+            "unit": "PT"
+          },
+          "keepLinesTogether": true,
+          "keepWithNext": true,
+          "pageBreakBefore": false
+        }
+      },
+      {
+        "namedStyleType": "HEADING_6",
+        "textStyle": {
+          "italic": true,
+          "foregroundColor": {
+            "color": {
+              "rgbColor": {
+                "red": 0.4,
+                "green": 0.4,
+                "blue": 0.4
+              }
+            }
+          },
+          "fontSize": {
+            "magnitude": 11,
+            "unit": "PT"
+          }
+        },
+        "paragraphStyle": {
+          "namedStyleType": "NORMAL_TEXT",
+          "direction": "LEFT_TO_RIGHT",
+          "spaceAbove": {
+            "magnitude": 12,
+            "unit": "PT"
+          },
+          "spaceBelow": {
+            "magnitude": 4,
+            "unit": "PT"
+          },
+          "keepLinesTogether": true,
+          "keepWithNext": true,
+          "pageBreakBefore": false
+        }
+      },
+      {
+        "namedStyleType": "TITLE",
+        "textStyle": {
+          "fontSize": {
+            "magnitude": 26,
+            "unit": "PT"
+          }
+        },
+        "paragraphStyle": {
+          "namedStyleType": "NORMAL_TEXT",
+          "direction": "LEFT_TO_RIGHT",
+          "spaceAbove": {
+            "unit": "PT"
+          },
+          "spaceBelow": {
+            "magnitude": 3,
+            "unit": "PT"
+          },
+          "keepLinesTogether": true,
+          "keepWithNext": true,
+          "pageBreakBefore": false
+        }
+      },
+      {
+        "namedStyleType": "SUBTITLE",
+        "textStyle": {
+          "italic": false,
+          "foregroundColor": {
+            "color": {
+              "rgbColor": {
+                "red": 0.4,
+                "green": 0.4,
+                "blue": 0.4
+              }
+            }
+          },
+          "fontSize": {
+            "magnitude": 15,
+            "unit": "PT"
+          },
+          "weightedFontFamily": {
+            "fontFamily": "Arial",
+            "weight": 400
+          }
+        },
+        "paragraphStyle": {
+          "namedStyleType": "NORMAL_TEXT",
+          "direction": "LEFT_TO_RIGHT",
+          "spaceAbove": {
+            "unit": "PT"
+          },
+          "spaceBelow": {
+            "magnitude": 16,
+            "unit": "PT"
+          },
+          "keepLinesTogether": true,
+          "keepWithNext": true,
+          "pageBreakBefore": false
+        }
+      }
+    ]
+  },
+  "lists": {
+    "kix.12zavacmjpqv": {
+      "listProperties": {
+        "nestingLevels": [
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false,
+              "backgroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.07450981,
+                    "green": 0.07450981,
+                    "blue": 0.078431375
+                  }
+                }
+              },
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.8901961,
+                    "green": 0.8901961,
+                    "blue": 0.8901961
+                  }
+                }
+              },
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Helvetica Neue",
+                "weight": 400
+              }
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 54,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 72,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 90,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 108,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 126,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 144,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 162,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 180,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 198,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 216,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 234,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 252,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 270,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 288,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 306,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 324,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          }
+        ]
+      }
+    },
+    "kix.5umjc9s17br0": {
+      "listProperties": {
+        "nestingLevels": [
+          {
+            "bulletAlignment": "START",
+            "glyphSymbol": "●",
+            "glyphFormat": "%0",
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphSymbol": "○",
+            "glyphFormat": "%1",
+            "indentFirstLine": {
+              "magnitude": 54,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 72,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphSymbol": "■",
+            "glyphFormat": "%2",
+            "indentFirstLine": {
+              "magnitude": 90,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 108,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphSymbol": "●",
+            "glyphFormat": "%3",
+            "indentFirstLine": {
+              "magnitude": 126,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 144,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphSymbol": "○",
+            "glyphFormat": "%4",
+            "indentFirstLine": {
+              "magnitude": 162,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 180,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphSymbol": "■",
+            "glyphFormat": "%5",
+            "indentFirstLine": {
+              "magnitude": 198,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 216,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphSymbol": "●",
+            "glyphFormat": "%6",
+            "indentFirstLine": {
+              "magnitude": 234,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 252,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphSymbol": "○",
+            "glyphFormat": "%7",
+            "indentFirstLine": {
+              "magnitude": 270,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 288,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphSymbol": "■",
+            "glyphFormat": "%8",
+            "indentFirstLine": {
+              "magnitude": 306,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 324,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          }
+        ]
+      }
+    },
+    "kix.gzxf7mgr713f": {
+      "listProperties": {
+        "nestingLevels": [
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 10.5,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 28.5,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 30.75,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 48.75,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 90,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 108,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 126,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 144,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 162,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 180,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 198,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 216,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 234,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 252,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 270,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 288,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 306,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 324,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          }
+        ]
+      }
+    },
+    "kix.smbxg6eodxkh": {
+      "listProperties": {
+        "nestingLevels": [
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false,
+              "backgroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.07450981,
+                    "green": 0.07450981,
+                    "blue": 0.078431375
+                  }
+                }
+              },
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.8901961,
+                    "green": 0.8901961,
+                    "blue": 0.8901961
+                  }
+                }
+              },
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Helvetica Neue",
+                "weight": 400
+              }
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 54,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 72,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false,
+              "backgroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.07450981,
+                    "green": 0.07450981,
+                    "blue": 0.078431375
+                  }
+                }
+              },
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.8901961,
+                    "green": 0.8901961,
+                    "blue": 0.8901961
+                  }
+                }
+              },
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Helvetica Neue",
+                "weight": 400
+              }
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 90,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 108,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 126,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 144,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 162,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 180,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 198,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 216,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 234,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 252,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 270,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 288,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 306,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 324,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          }
+        ]
+      }
+    },
+    "kix.v5vckdtv4fl2": {
+      "listProperties": {
+        "nestingLevels": [
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false,
+              "backgroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.07450981,
+                    "green": 0.07450981,
+                    "blue": 0.078431375
+                  }
+                }
+              },
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.8901961,
+                    "green": 0.8901961,
+                    "blue": 0.8901961
+                  }
+                }
+              },
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Helvetica Neue",
+                "weight": 400
+              }
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 54,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 72,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 90,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 108,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 126,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 144,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 162,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 180,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 198,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 216,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 234,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 252,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 270,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 288,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 306,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 324,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          }
+        ]
+      }
+    },
+    "kix.w2ga5fhgpo4j": {
+      "listProperties": {
+        "nestingLevels": [
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 18,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 36,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false,
+              "backgroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.07450981,
+                    "green": 0.07450981,
+                    "blue": 0.078431375
+                  }
+                }
+              },
+              "foregroundColor": {
+                "color": {
+                  "rgbColor": {
+                    "red": 0.8901961,
+                    "green": 0.8901961,
+                    "blue": 0.8901961
+                  }
+                }
+              },
+              "fontSize": {
+                "magnitude": 12,
+                "unit": "PT"
+              },
+              "weightedFontFamily": {
+                "fontFamily": "Helvetica Neue",
+                "weight": 400
+              }
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 54,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 72,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 90,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 108,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 126,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 144,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 162,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 180,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 198,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 216,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 234,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 252,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 270,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 288,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          },
+          {
+            "bulletAlignment": "START",
+            "glyphType": "GLYPH_TYPE_UNSPECIFIED",
+            "indentFirstLine": {
+              "magnitude": 306,
+              "unit": "PT"
+            },
+            "indentStart": {
+              "magnitude": 324,
+              "unit": "PT"
+            },
+            "textStyle": {
+              "underline": false
+            },
+            "startNumber": 1
+          }
+        ]
+      }
+    }
+  },
+  "suggestionsViewMode": "PREVIEW_WITHOUT_SUGGESTIONS",
+  "documentId": "1noOq1kzYARJY9TZf4fDVljo4usODHkHr7BYaxYG_kww"
+}

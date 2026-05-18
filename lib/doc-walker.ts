@@ -90,39 +90,60 @@ export function renderRichText(p: Paragraph): string {
 }
 
 // Many brief paragraphs follow the shape "**Label:** value..." — a
-// contiguous prefix of bold text runs ending in ":" followed by the value
-// in non-bold runs. Returns the trimmed plain-text label (without the
-// trailing colon) and the trimmed value. Returns null if no such split
-// exists.
+// contiguous prefix of bold text runs followed by the value in non-bold
+// runs. Returns the trimmed plain-text label (without the trailing colon)
+// and the trimmed value. Returns null if no colon can be located.
 //
-// Splits on the LAST colon in the bold prefix — schedule rows like
-// "1:00 PM:" have a colon inside the time itself, so first-colon would
-// give label="1", value="00 PM: ...".
+// Tolerates two producer patterns:
+//   • Colon INSIDE the bold prefix:   **Label:** value
+//     e.g. schedule rows "1:00 PM: …" — splits on the LAST colon in the
+//     bold prefix so the internal colons in times don't get mistaken
+//     for the separator.
+//   • Colon OUTSIDE the bold prefix:  **Label**: value
+//     e.g. "**On-Site Coverage**: 4 hours total". The colon is the
+//     first character of the non-bold remainder.
 export function splitLabelValue(p: Paragraph): { label: string; value: string } | null {
   const runs = (p.elements ?? [])
     .map((e) => e.textRun)
     .filter((r): r is TextRun => !!r && !!r.content);
   if (runs.length === 0) return null;
 
+  // Leading bold prefix.
   let boldText = "";
   let i = 0;
   while (i < runs.length && runs[i].textStyle?.bold) {
     boldText += runs[i].content ?? "";
     i++;
   }
-  if (!boldText.includes(":")) return null;
+  if (!boldText.trim()) return null;
 
-  const colon = boldText.lastIndexOf(":");
-  const before = boldText.slice(0, colon);
-  // Bold characters after the colon (e.g. trailing "\n" on a standalone
-  // subheading) get prepended to the value.
-  const afterBold = boldText.slice(colon + 1);
-  let valueText = afterBold;
+  // Non-bold tail.
+  let valueText = "";
   for (let j = i; j < runs.length; j++) {
     valueText += runs[j].content ?? "";
   }
-  const label = before.trim();
-  const value = valueText.replace(/\n+$/u, "").trim();
+
+  let label: string;
+  let value: string;
+  // Pattern 1: bold prefix ends with ":" — the trailing colon is the
+  // separator. Anchored to the END (not "any colon in bold") so labels
+  // that legitimately contain colons internally — e.g. "Monday 11th
+  // (10:00–11:30 am):" or schedule rows "1:00 PM:" — keep their full
+  // text as the label.
+  const trailing = boldText.match(/^(.*):\s*$/su);
+  if (trailing) {
+    label = trailing[1];
+    value = valueText;
+  } else {
+    // Pattern 2: bold prefix doesn't end in ":" but the non-bold
+    // remainder begins with one — e.g. "**On-Site Coverage**: 4 hours".
+    const m = valueText.match(/^\s*:\s*(.*)$/su);
+    if (!m) return null;
+    label = boldText;
+    value = m[1];
+  }
+  label = label.trim();
+  value = value.replace(/\n+$/u, "").trim();
   if (!label) return null;
   return { label, value };
 }

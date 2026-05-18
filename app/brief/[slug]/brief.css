@@ -247,9 +247,27 @@
   font-size: 20px;
   flex-shrink: 0;
 }
+.brief-crew-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
 .brief-crew-name {
   font-weight: 700;
   font-size: 16px;
+}
+.brief-crew-bio {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.brief-crew-vetted {
+  font-size: 13px;
+  color: var(--pink);
+  font-weight: 600;
+  margin-top: 4px;
 }
 .brief-crew-contact {
   font-size: 14px;

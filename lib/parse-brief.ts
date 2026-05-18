@@ -31,7 +31,21 @@ export type ScheduleRow = { time: string; what: string };
 // doc-walker.renderRichText, which escapes text and emits a fixed allowlist.
 export type ProseBlock = { html: string };
 
-export type CrewMember = { name: string; contact?: LinkValue | string };
+// CrewMember has two production sources:
+//   • The brief Doc's "Team On-Site" section (parser-populated).
+//     Yields {name, contact} where contact is a WhatsApp/Phone string
+//     or a hyperlinked LinkValue.
+//   • The matching Shoot record on the brief page (page-level override).
+//     Yields {name, bio, photoUrl, vetted} for the richer card seen on
+//     the status page — preferred when available so the brief mirrors
+//     the status-page treatment instead of the Doc's contact-only row.
+export type CrewMember = {
+  name: string;
+  contact?: LinkValue | string;
+  bio?: string;
+  photoUrl?: string;
+  vetted?: boolean;
+};
 
 export type LinkCard = { label?: string; url: string };
 
@@ -289,21 +303,25 @@ function parseProduction(body: Paragraph[]): {
       if (trans.inlineRemainder) dispatchRemainder(trans.inlineRemainder);
       continue;
     }
-    if (!bucket) continue;
+    // Until we've seen an explicit subheading, default to "deliverables"
+    // so free-form section-3 templates (no Confirmed Schedule / Equipment
+    // Requirements / Deliverables subheadings — e.g. brief #0214) still
+    // render their bullets instead of being silently dropped.
+    const effective: ProductionBucket = bucket ?? "deliverables";
     const split = splitLabelValue(p);
-    if (bucket === "schedule") {
+    if (effective === "schedule") {
       if (split && TIME_RX.test(split.label)) {
         schedule.push({ time: split.label.trim(), what: split.value });
       }
       continue;
     }
-    if (bucket === "equipment") {
+    if (effective === "equipment") {
       if (split) {
         equipment[split.label] = split.value;
       }
       continue;
     }
-    if (bucket === "deliverables") {
+    if (effective === "deliverables") {
       const html = renderRichText(p);
       if (html) deliverables.push({ html });
     }

@@ -105,3 +105,59 @@ test("isExcludedSection: matches the v1 exclusion list", () => {
   assert.equal(isExcludedSection("questions FOR THE client call"), true);
   assert.equal(isExcludedSection("1. Project Overview"), false);
 });
+
+// Brief #0214 uses a different producer template than #0219 — it tests
+// the colon-outside-bold pattern, internal colons in labels (time
+// ranges), and section 3 with no explicit Confirmed Schedule /
+// Equipment / Deliverables subheadings (everything bullet-ranges into
+// the deliverables fallback).
+const FIXTURE_0214 = path.join(__dirname, "__fixtures__", "brief-0214.json");
+const fixture0214 = JSON.parse(
+  readFileSync(FIXTURE_0214, "utf8"),
+) as docs_v1.Schema$Document;
+
+test("parseBriefDoc: Brief #0214 (TikTok)", async (t) => {
+  const result = parseBriefDoc(fixture0214);
+
+  await t.test("header parses non-Demand-AI template", () => {
+    assert.equal(result.header.briefNumber, "0214");
+    assert.equal(result.header.clientName, "TikTok");
+    assert.match(result.header.eventName, /LA Events/);
+  });
+
+  await t.test("overview keeps internal colons in time-range labels", () => {
+    const s = result.sections.find((x) => x.kind === "overview");
+    assert.ok(s && s.kind === "overview");
+    if (!s || s.kind !== "overview") return;
+    // Labels containing colons (time ranges) must survive splitLabelValue.
+    assert.ok("Monday 11th (10:00–11:30 am)" in s.fields);
+    assert.match(
+      String(s.fields["Monday 11th (10:00–11:30 am)"]),
+      /TikTok LA HQ/,
+    );
+  });
+
+  await t.test("colon-outside-bold pattern parses correctly", () => {
+    // Section 3 in #0214 is bullets like "**On-Site Coverage**: 4 hours…"
+    // — bold prefix WITHOUT the trailing colon. Should still produce
+    // deliverables (the default bucket when no explicit subheading is
+    // detected).
+    const s = result.sections.find((x) => x.kind === "production");
+    assert.ok(s && s.kind === "production");
+    if (!s || s.kind !== "production") return;
+    assert.equal(s.schedule.length, 0);
+    assert.ok(s.deliverables.length > 0);
+    // The "On-Site Coverage" line should render with its bold lead.
+    const blob = s.deliverables.map((b) => b.html).join("\n");
+    assert.match(blob, /<strong>On-Site Coverage<\/strong>/);
+  });
+
+  await t.test("unknown section title falls through to prose", () => {
+    // "5. Shoot Status" isn't in SECTION_KIND_BY_TITLE; should render
+    // as the prose fallback.
+    const s = result.sections.find(
+      (x) => x.kind === "prose" && x.title === "Shoot Status",
+    );
+    assert.ok(s);
+  });
+});

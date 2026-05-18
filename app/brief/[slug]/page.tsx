@@ -18,7 +18,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getBySlug } from "@/lib/brief-storage";
-import type { BriefRecord } from "@/lib/types";
+import { getBySlug as getShootBySlug } from "@/lib/storage";
+import type { BriefRecord, Shoot } from "@/lib/types";
 import type { ParsedBrief, Section } from "@/lib/parse-brief";
 import { PasscodeForm } from "./passcode-form";
 import { AutoUnlockSync } from "./auto-unlock-sync";
@@ -72,10 +73,21 @@ export default async function BriefPage({ params, searchParams }: PageProps) {
     return <PendingView slug={slug} rec={rec} />;
   }
 
+  // Look up the matching Shoot — used to enrich the brief's crew section
+  // with the same photo / bio / "Vetted by Fame" treatment the status
+  // page renders. Best-effort: if the Shoot has rotated to a different
+  // slug or isn't in storage, we fall back to the brief Doc's crew data.
+  const shoot = await getShootBySlug(`${rec.slug}-${rec.hash}`);
+
   return (
     <>
       {showSync && queryCode && <AutoUnlockSync slug={slug} code={queryCode} />}
-      <UnlockedView slug={slug} rec={rec} parsed={rec.parsedJson} />
+      <UnlockedView
+        slug={slug}
+        rec={rec}
+        parsed={rec.parsedJson}
+        shoot={shoot}
+      />
     </>
   );
 }
@@ -86,16 +98,19 @@ function UnlockedView({
   slug,
   rec,
   parsed,
+  shoot,
 }: {
   slug: string;
   rec: BriefRecord;
   parsed: ParsedBrief;
+  shoot: Shoot | null;
 }) {
   const statusUrl = `/${rec.slug}-${rec.hash}`;
   const subtitle = deriveSubtitle(parsed);
   const dateLabel = deriveDateLabel(parsed);
   const locationLabel = deriveLocationLabel(parsed);
   const pills = [dateLabel, locationLabel].filter((p): p is string => !!p);
+  const sections = enrichAndFilterSections(parsed.sections, shoot);
 
   return (
     <div className="brief-root">
@@ -128,7 +143,7 @@ function UnlockedView({
           )}
         </div>
 
-        {parsed.sections.map((s, i) => (
+        {sections.map((s, i) => (
           <SectionCard key={`${s.kind}-${i}`} section={s} num={i + 1} />
         ))}
 
@@ -227,6 +242,64 @@ function BriefFooter({
       )}
     </footer>
   );
+}
+
+// ---------- Section enrichment + filtering ----------
+
+// Two passes:
+//   1. When shoot.crew is available, override the brief's crew section
+//      with the richer status-page treatment (photo, bio, "Vetted by
+//      Fame"). The brief Doc's "Team On-Site" data (WhatsApp number,
+//      etc.) is intentionally dropped — the brief page mirrors the
+//      client-facing status page treatment per producer feedback.
+//   2. Drop any section whose kind-specific content is empty (orphan
+//      HEADING_3 in the Doc, deliberately blank section, etc.) so the
+//      page doesn't render empty cards.
+function enrichAndFilterSections(
+  sections: Section[],
+  shoot: Shoot | null,
+): Section[] {
+  const enriched = sections.map((s) => {
+    if (s.kind === "crew" && shoot?.crew) {
+      return {
+        kind: "crew" as const,
+        title: s.title,
+        members: [
+          {
+            name: shoot.crew.name,
+            bio: shoot.crew.bio || undefined,
+            photoUrl: shoot.crew.photoUrl,
+            vetted: true,
+          },
+        ],
+      };
+    }
+    return s;
+  });
+  return enriched.filter((s) => !isSectionEmpty(s));
+}
+
+function isSectionEmpty(s: Section): boolean {
+  // Sections with empty titles AND no content are usually orphan
+  // HEADING_3 paragraphs the producer left behind — never useful.
+  switch (s.kind) {
+    case "overview":
+      return Object.keys(s.fields).length === 0;
+    case "objectives":
+      return s.blocks.length === 0;
+    case "production":
+      return (
+        s.schedule.length === 0 &&
+        Object.keys(s.equipment).length === 0 &&
+        s.deliverables.length === 0
+      );
+    case "crew":
+      return s.members.length === 0;
+    case "comms":
+      return s.links.length === 0;
+    case "prose":
+      return s.blocks.length === 0;
+  }
 }
 
 // ---------- Helpers ----------

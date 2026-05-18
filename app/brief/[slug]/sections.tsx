@@ -177,9 +177,22 @@ function CrewCard({ member }: { member: CrewMember }) {
   const contact = renderContact(member.contact);
   return (
     <div className="brief-crew-card">
-      <div className="brief-crew-avatar">{initials || "—"}</div>
+      {member.photoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          className="brief-crew-photo"
+          src={member.photoUrl}
+          alt={member.name}
+        />
+      ) : (
+        <div className="brief-crew-avatar">{initials || "—"}</div>
+      )}
       <div>
         <div className="brief-crew-name">{member.name}</div>
+        {member.bio && <div className="brief-crew-bio">{member.bio}</div>}
+        {member.vetted && (
+          <div className="brief-crew-vetted">Vetted by Fame</div>
+        )}
         {contact && <div className="brief-crew-contact">{contact}</div>}
       </div>
     </div>
