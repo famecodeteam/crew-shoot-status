@@ -12,6 +12,7 @@
 
 import type { docs_v1 } from "googleapis";
 import {
+  bulletLevel,
   escapeHtml,
   firstLink,
   isBulleted,
@@ -30,10 +31,13 @@ export type ScheduleRow = { time: string; what: string };
 // A run of prose with inline marks (bold/italic/links) pre-rendered to a
 // small HTML subset. The page sets innerHTML; the only HTML producer is
 // doc-walker.renderRichText, which escapes text and emits a fixed allowlist.
-// `bullet` carries through whether the source paragraph was bulleted in
-// the Doc — the renderer groups consecutive bullet blocks into a single
-// <ul> for proper visual hierarchy.
-export type ProseBlock = { html: string; bullet?: boolean };
+//
+// `bullet` is true when the source paragraph was bulleted in the Doc. The
+// renderer groups consecutive bullet blocks into a single <ul>. `level`
+// carries the Doc's nestingLevel through so the renderer can rebuild the
+// tree (so "Reference 1" stays nested under "2x sizzle reels", which
+// stays nested under "Deliverables", etc.).
+export type ProseBlock = { html: string; bullet?: boolean; level?: number };
 
 // CrewMember has two production sources:
 //   • The brief Doc's "Team On-Site" section (parser-populated).
@@ -200,7 +204,7 @@ function parseAsProse(c: SectionChunk): Section {
     title: c.titleClean,
     blocks: c.body.flatMap((p) => {
       const html = renderRichText(p);
-      return html ? [{ html, bullet: isBulleted(p) }] : [];
+      return html ? [{ html, bullet: isBulleted(p), level: bulletLevel(p) }] : [];
     }),
   };
 }
@@ -231,7 +235,7 @@ function parseOverview(body: Paragraph[]): Record<string, string | LinkValue> {
 function parseObjectives(body: Paragraph[]): ProseBlock[] {
   return body.flatMap((p) => {
     const html = renderRichText(p);
-    return html ? [{ html, bullet: isBulleted(p) }] : [];
+    return html ? [{ html, bullet: isBulleted(p), level: bulletLevel(p) }] : [];
   });
 }
 
@@ -283,7 +287,11 @@ function parseProduction(body: Paragraph[]): {
   // and schedule (we still validate the time pattern). The deliverables
   // case carries the source paragraph's bullet state through so the
   // remainder renders alongside other bullets in the same <ul>.
-  const dispatchRemainder = (remainder: string, sourceBullet: boolean) => {
+  const dispatchRemainder = (
+    remainder: string,
+    sourceBullet: boolean,
+    sourceLevel: number,
+  ) => {
     if (!bucket || !remainder) return;
     if (bucket === "schedule") {
       const m = remainder.match(/^(.+?):\s*(.+)$/u);
@@ -299,7 +307,8 @@ function parseProduction(body: Paragraph[]): {
       }
     } else if (bucket === "deliverables") {
       const html = escapeHtml(remainder.trim());
-      if (html) deliverables.push({ html, bullet: sourceBullet });
+      if (html)
+        deliverables.push({ html, bullet: sourceBullet, level: sourceLevel });
     }
   };
 
@@ -308,7 +317,7 @@ function parseProduction(body: Paragraph[]): {
     if (trans) {
       bucket = trans.bucket;
       if (trans.inlineRemainder) {
-        dispatchRemainder(trans.inlineRemainder, isBulleted(p));
+        dispatchRemainder(trans.inlineRemainder, isBulleted(p), bulletLevel(p));
       }
       continue;
     }
@@ -332,7 +341,12 @@ function parseProduction(body: Paragraph[]): {
     }
     if (effective === "deliverables") {
       const html = renderRichText(p);
-      if (html) deliverables.push({ html, bullet: isBulleted(p) });
+      if (html)
+        deliverables.push({
+          html,
+          bullet: isBulleted(p),
+          level: bulletLevel(p),
+        });
     }
   }
 

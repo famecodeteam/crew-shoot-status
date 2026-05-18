@@ -213,6 +213,30 @@
   border-radius: 50%;
   background: var(--pink);
 }
+/* Nested lists: indent under the parent's content, slight breathing
+   room above and below so the hierarchy reads cleanly. */
+.brief-prose ul ul {
+  margin: 8px 0 8px 0;
+}
+/* Level 2+ bullets get a hollow ring so the depth reads at a glance. */
+.brief-prose ul ul li::before {
+  background: transparent;
+  border: 1.5px solid var(--pink);
+  width: 7px;
+  height: 7px;
+  top: 8px;
+  left: 5px;
+}
+/* Level 3+ bullets switch to a small pink square. */
+.brief-prose ul ul ul li::before {
+  background: var(--pink);
+  border: none;
+  border-radius: 1px;
+  width: 5px;
+  height: 5px;
+  top: 10px;
+  left: 6px;
+}
 
 /* ---------- Schedule ---------- */
 .brief-schedule {

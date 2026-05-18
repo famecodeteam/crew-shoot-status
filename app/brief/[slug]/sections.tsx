@@ -84,43 +84,84 @@ function isLink(v: string | LinkValue): v is LinkValue {
 
 function ProseBody({ blocks }: { blocks: ProseBlock[] }) {
   if (blocks.length === 0) return null;
-  // Group consecutive bulleted blocks into a single <ul>; non-bulleted
-  // blocks render as <p>. Preserves the Doc's visual hierarchy — flat
-  // bullet lists become bullet lists, mixed prose stays prose.
+  // Group consecutive bulleted blocks into one <ul> tree, rebuilding the
+  // Doc's nestingLevel hierarchy. Non-bulleted blocks render as <p>.
+  type BulletNode = { html: string; children: BulletNode[] };
   type Group =
-    | { kind: "ul"; items: ProseBlock[] }
+    | { kind: "ul"; tree: BulletNode[] }
     | { kind: "p"; block: ProseBlock };
+
   const groups: Group[] = [];
+  // Stack tracks the current insertion parent at each level. Index 0 is
+  // the virtual root (the top-level <ul>); index i holds the most-recent
+  // node at level i so that a new node at level i+1 becomes its child.
+  let stack: BulletNode[] = [];
+
   for (const b of blocks) {
-    const last = groups[groups.length - 1];
-    if (b.bullet && last && last.kind === "ul") {
-      last.items.push(b);
-    } else if (b.bullet) {
-      groups.push({ kind: "ul", items: [b] });
-    } else {
+    if (!b.bullet) {
+      stack = [];
       groups.push({ kind: "p", block: b });
+      continue;
     }
+    const last = groups[groups.length - 1];
+    if (!last || last.kind !== "ul") {
+      groups.push({ kind: "ul", tree: [] });
+      stack = [];
+    }
+    const current = groups[groups.length - 1] as Extract<Group, { kind: "ul" }>;
+    const node: BulletNode = { html: b.html, children: [] };
+    const level = Math.max(0, b.level ?? 0);
+
+    // If the Doc jumps multiple levels at once (rare; usually only when
+    // the producer indented without a parent line first), clamp to the
+    // deepest existing level + 1 so we don't lose the item.
+    const insertAt = Math.min(level, stack.length);
+    if (insertAt === 0) {
+      current.tree.push(node);
+    } else {
+      stack[insertAt - 1].children.push(node);
+    }
+    stack = [...stack.slice(0, insertAt), node];
   }
+
   return (
     <div className="brief-prose">
       {groups.map((g, i) =>
         g.kind === "ul" ? (
-          <ul key={i}>
-            {g.items.map((b, j) => (
-              // HTML is produced by lib/doc-walker.renderRichText: text
-              // is escaped and only <strong>/<em>/<a target=_blank> are
-              // emitted. The Doc is the only input source.
-              <li key={j} dangerouslySetInnerHTML={{ __html: b.html }} />
-            ))}
-          </ul>
+          <BulletList key={i} nodes={g.tree} />
         ) : (
-          <p
-            key={i}
-            dangerouslySetInnerHTML={{ __html: g.block.html }}
-          />
+          <p key={i} dangerouslySetInnerHTML={{ __html: g.block.html }} />
         ),
       )}
     </div>
+  );
+}
+
+function BulletList({
+  nodes,
+}: {
+  nodes: { html: string; children: { html: string; children: unknown[] }[] }[];
+}) {
+  return (
+    <ul>
+      {nodes.map((n, i) => (
+        <li key={i}>
+          {/* HTML produced by lib/doc-walker.renderRichText — escapes
+              text + emits only <strong>/<em>/<a target=_blank>. */}
+          <span dangerouslySetInnerHTML={{ __html: n.html }} />
+          {n.children.length > 0 && (
+            <BulletList
+              nodes={
+                n.children as {
+                  html: string;
+                  children: { html: string; children: unknown[] }[];
+                }[]
+              }
+            />
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }
 

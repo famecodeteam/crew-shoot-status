@@ -31,6 +31,13 @@ export function isBulleted(p: Paragraph): boolean {
   return p.bullet != null;
 }
 
+// Docs API exposes nesting depth on `paragraph.bullet.nestingLevel`.
+// Level 0 = outermost bullet; absent on level-0 items. Non-bulleted
+// paragraphs return 0 (caller checks isBulleted first when it cares).
+export function bulletLevel(p: Paragraph): number {
+  return p.bullet?.nestingLevel ?? 0;
+}
+
 // Concatenated plain text of a paragraph — only textRun.content runs;
 // auto-text and footnote references are ignored (the brief template
 // doesn't use them).
