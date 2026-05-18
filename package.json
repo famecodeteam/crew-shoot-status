@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --test lib/parse-brief.test.ts",
     "backfill": "tsx --env-file=.env.local scripts/backfill.ts",
     "register-webhook": "tsx --env-file=.env.local scripts/register-webhook.ts"
   },
