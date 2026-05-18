@@ -1,0 +1,407 @@
+/* Doc-synced brief page. Tokens lifted from globals.css; layout + classes
+   are brief-specific and prefixed `brief-*` to avoid colliding with the
+   status page styles. Pulled from brief-page-mockup-0219.html with the
+   "crew-only" callout block deleted (that section is filtered upstream). */
+
+.brief-root {
+  --radius-sm: 8px;
+  --text-soft: #4b5563;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.brief-wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* ---------- Top strip ---------- */
+.brief-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 32px;
+  border-bottom: 2px solid var(--pink);
+}
+.brief-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--pink);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.brief-logo img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+.brief-back {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  transition: border-color 0.15s, color 0.15s;
+}
+.brief-back:hover {
+  border-color: var(--pink);
+  color: var(--pink);
+}
+
+/* ---------- Hero ---------- */
+.brief-hero {
+  margin-bottom: 32px;
+}
+.brief-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pink);
+  margin-bottom: 8px;
+}
+.brief-h1 {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+.brief-subtitle {
+  font-size: 18px;
+  color: var(--text-soft);
+  margin-bottom: 18px;
+}
+.brief-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.brief-meta .brief-pill {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+/* ---------- Section card ---------- */
+.brief-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 20px;
+}
+.brief-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  letter-spacing: -0.01em;
+}
+.brief-section h2 .brief-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--pink-light);
+  color: var(--pink);
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ---------- Definition list (overview / equipment) ---------- */
+.brief-fields {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 10px 24px;
+}
+.brief-fields dt {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-top: 2px;
+}
+.brief-fields dd {
+  font-size: 15px;
+  color: var(--text);
+}
+.brief-fields dd a {
+  color: var(--pink);
+  text-decoration: none;
+}
+.brief-fields dd a:hover {
+  text-decoration: underline;
+}
+@media (max-width: 640px) {
+  .brief-fields {
+    grid-template-columns: 1fr;
+    gap: 4px 0;
+  }
+  .brief-fields dt {
+    margin-top: 12px;
+  }
+  .brief-fields dt:first-of-type {
+    margin-top: 0;
+  }
+}
+
+/* ---------- Prose ---------- */
+.brief-prose p {
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.brief-prose p:last-child {
+  margin-bottom: 0;
+}
+.brief-prose strong {
+  font-weight: 700;
+}
+.brief-prose a {
+  color: var(--pink);
+  text-decoration: none;
+}
+.brief-prose a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Schedule ---------- */
+.brief-schedule {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 10px 20px;
+  margin-top: 4px;
+}
+.brief-schedule .brief-time {
+  font-weight: 700;
+  color: var(--pink);
+  font-variant-numeric: tabular-nums;
+}
+.brief-schedule .brief-what {
+  color: var(--text);
+}
+@media (max-width: 480px) {
+  .brief-schedule {
+    grid-template-columns: 120px 1fr;
+    gap: 8px 12px;
+  }
+}
+
+/* ---------- Subhead inside section ---------- */
+.brief-subhead {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-top: 22px;
+  margin-bottom: 10px;
+}
+.brief-subhead:first-child {
+  margin-top: 0;
+}
+
+/* ---------- Crew card ---------- */
+.brief-crew-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.brief-crew-card + .brief-crew-card {
+  margin-top: 12px;
+}
+.brief-crew-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--pink-light);
+  color: var(--pink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.brief-crew-name {
+  font-weight: 700;
+  font-size: 16px;
+}
+.brief-crew-contact {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.brief-crew-contact a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.brief-crew-contact a:hover {
+  color: var(--pink);
+}
+
+/* ---------- Link card (comms) ---------- */
+.brief-link-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.brief-link-card + .brief-link-card {
+  margin-top: 10px;
+}
+.brief-link-card:hover {
+  border-color: var(--pink);
+  transform: translateY(-1px);
+}
+.brief-link-card .brief-link-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.brief-link-card .brief-link-url {
+  font-size: 15px;
+  color: var(--text);
+  margin-top: 2px;
+  word-break: break-all;
+}
+.brief-link-card .brief-link-arrow {
+  color: var(--pink);
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* ---------- Footer ---------- */
+.brief-footer {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.brief-footer .brief-updated {
+  display: block;
+  margin-bottom: 6px;
+}
+.brief-footer .brief-sync-error {
+  display: block;
+  margin-top: 6px;
+  color: var(--review-fg, #8a4a16);
+}
+.brief-footer a {
+  color: var(--pink);
+  text-decoration: none;
+}
+.brief-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Locked view (passcode gate) ---------- */
+.brief-lock-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  margin-top: 24px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.brief-lock-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+.brief-lock-hint {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+.brief-passcode-input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 16px;
+  font-family: inherit;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: white;
+  color: var(--text);
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.brief-passcode-input:focus {
+  border-color: var(--pink);
+}
+.brief-passcode-error {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--red);
+}
+.brief-passcode-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--pink);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+.brief-passcode-btn:hover {
+  background: var(--pink-hover);
+}
+.brief-passcode-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Print ---------- */
+@media print {
+  body {
+    background: white;
+  }
+  .brief-back {
+    display: none;
+  }
+  .brief-section {
+    box-shadow: none;
+  }
+}
