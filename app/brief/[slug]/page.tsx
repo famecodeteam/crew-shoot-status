@@ -147,6 +147,8 @@ function UnlockedView({
           <SectionCard key={`${s.kind}-${i}`} section={s} num={i + 1} />
         ))}
 
+        <StatusPageCTA statusUrl={statusUrl} />
+
         <BriefFooter rec={rec} statusUrl={statusUrl} />
       </div>
     </div>
@@ -210,6 +212,33 @@ function PendingView({ slug, rec }: { slug: string; rec: BriefRecord }) {
 }
 
 // ---------- Footer ----------
+
+// ---------- Status page CTA ----------
+
+// Replaces whatever "Pre-Event Communications" / "Shoot Status" section
+// the producer put in the Doc — those are always "click here to see live
+// status" and look bad as a stack of bullets. The designed card below is
+// the page's call-to-action: a single clickable surface that takes the
+// client to the live status page.
+function StatusPageCTA({ statusUrl }: { statusUrl: string }) {
+  return (
+    <a className="brief-status-cta" href={statusUrl}>
+      <div className="brief-status-cta-content">
+        <div className="brief-status-cta-eyebrow">Live shoot status</div>
+        <div className="brief-status-cta-title">
+          Track your shoot in real time
+        </div>
+        <div className="brief-status-cta-hint">
+          Progress through every milestone, crew details, and final
+          deliverables — all in one place.
+        </div>
+      </div>
+      <div className="brief-status-cta-arrow" aria-hidden="true">
+        →
+      </div>
+    </a>
+  );
+}
 
 function BriefFooter({
   rec,
@@ -276,7 +305,24 @@ function enrichAndFilterSections(
     }
     return s;
   });
-  return enriched.filter((s) => !isSectionEmpty(s));
+  return enriched
+    .filter((s) => !isStatusPageRedirect(s))
+    .filter((s) => !isSectionEmpty(s));
+}
+
+// Producer templates name the last section several different ways, and
+// it's almost always just "here's a link back to the live status page".
+// We render a designed CTA card for that purpose ourselves at the bottom
+// of the brief, so we drop these sections from the regular section list.
+function isStatusPageRedirect(s: Section): boolean {
+  const t = s.title.toLowerCase();
+  return (
+    /pre.?event communications/.test(t) ||
+    /shoot status/.test(t) ||
+    /communications timeline/.test(t) ||
+    /project status/.test(t) ||
+    /^status$/.test(t)
+  );
 }
 
 function isSectionEmpty(s: Section): boolean {
