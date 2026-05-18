@@ -100,7 +100,15 @@ export async function syncOne(rec: BriefRecord): Promise<SyncResult> {
       lastErrorMessage: null,
       // Don't bump updatedAt — preserves "real change" signal downstream.
     }));
-    return { slug: rec.slug, status: "unchanged", durationMs: Date.now() - start };
+    // Compute health off the stored parse so monitoring stays accurate
+    // even when nothing changed since the last sync. Same shape as the
+    // "updated" path, so log dashboards don't have to special-case.
+    return {
+      slug: rec.slug,
+      status: "unchanged",
+      durationMs: Date.now() - start,
+      health: computeHealth(rec.parsedJson),
+    };
   }
 
   // Parse
