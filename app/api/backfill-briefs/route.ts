@@ -98,7 +98,12 @@ export async function POST(req: NextRequest) {
       continue;
     }
 
-    const result = await syncOne(rec);
+    // Backfill is the "definitely re-parse everything" path — it's
+    // typically invoked after a parser change, so we want to bypass
+    // syncOne's content-hash short-circuit. Pass an empty hash + null
+    // parsedJson so syncOne always re-parses + writes back.
+    const forced = { ...rec, lastContentHash: null, parsedJson: null };
+    const result = await syncOne(forced);
     logSyncResult(result);
     summary.syncs.push(result);
   }
