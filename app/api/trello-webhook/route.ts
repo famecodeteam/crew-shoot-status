@@ -19,6 +19,8 @@ import { deleteByCardId, getByCardId, upsertByCardId } from "@/lib/storage";
 import { buildContext, transformCard } from "@/lib/transform";
 import { findShootDriveLinks } from "@/lib/drive";
 import { writeBackStatusUrl } from "@/lib/writeback";
+import { registerBrief } from "@/lib/brief-storage";
+import { extractDocId, shootSlugToBriefSlug } from "@/lib/brief-slug";
 
 // Defer the route to be dynamic - we always need to handle the live POST.
 export const dynamic = "force-dynamic";
@@ -110,6 +112,31 @@ export async function POST(req: NextRequest) {
   }
 
   await upsertByCardId(cardId, () => next);
+
+  // Register / update the brief mapping for the doc-synced /brief/[slug]
+  // page. Best-effort: any failure here doesn't roll back the shoot upsert.
+  // The brief slug is the shoot slug with its 8-hex-char hash stripped;
+  // the hash itself becomes the modal unlock code.
+  if (next.briefUrl) {
+    try {
+      const docId = extractDocId(next.briefUrl);
+      const split = shootSlugToBriefSlug(next.slug);
+      if (docId && split) {
+        await registerBrief({
+          briefSlug: split.briefSlug,
+          hash: split.hash,
+          docId,
+          cardId: next.cardId,
+          shootNumber: next.shootNumber || undefined,
+        });
+      }
+    } catch (err) {
+      console.warn(
+        `[trello-webhook] brief register failed for ${next.shootNumber}:`,
+        (err as Error).message,
+      );
+    }
+  }
 
   // Best-effort URL write-back so the PM sees the public URL on the card.
   // Idempotent: if the field already matches, this is a no-op (so our own

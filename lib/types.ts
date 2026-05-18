@@ -1,5 +1,6 @@
 import type { ShootStatus } from "../app/[slug]/status";
 import type { MilestoneDates } from "./milestone-dates";
+import type { ParsedBrief } from "./parse-brief";
 
 // Options on the Trello "Crew Status" single-select list field. Crew tap
 // these via member.fame.so; the client page reads them via the same
@@ -119,4 +120,26 @@ export type Shoot = {
   trelloListId: string;
   trelloListName: string;
   updatedAt: string; // ISO timestamp of last write
+};
+
+// ---------- Brief (doc-synced shoot brief page) ----------
+// One per shoot that has a brief Doc registered. The brief slug is the
+// shoot slug with its trailing 8-hex-char hash stripped — the hash itself
+// is preserved here as the unlock code for the modal gate.
+//
+// Storage: keyed by brief slug in `briefs:store` (Upstash) or .data/briefs.json
+// (local dev). See lib/brief-storage*.ts.
+export type BriefRecord = {
+  slug: string;            // short brief slug, e.g. "0219-demand-ai"
+  hash: string;            // 8-hex-char access code (lifted from shoot slug)
+  docId: string;           // Google Doc ID backing this brief
+  cardId: string;          // Trello card id (so the webhook can find this)
+  shootNumber?: string;    // "#0219" — convenience for logs / observability
+  lastSyncedAt: string | null;     // ISO of last sync attempt that succeeded
+  lastContentHash: string | null;  // SHA-256 of the structural Docs API response
+  parsedJson: ParsedBrief | null;  // last successfully parsed model
+  lastErrorAt: string | null;
+  lastErrorMessage: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
