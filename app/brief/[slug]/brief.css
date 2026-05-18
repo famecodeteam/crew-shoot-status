@@ -378,7 +378,11 @@
 /* ---------- Status page CTA ---------- */
 .brief-status-cta {
   display: flex;
-  align-items: center;
+  /* Align to the top of the content rather than the geometric center.
+     The arrow then sits next to the title via a tuned margin-top below,
+     which reads as "visually centered" because the eyebrow above the
+     title is light/uppercase and doesn't pull the visual mass down. */
+  align-items: flex-start;
   gap: 24px;
   padding: 28px 32px;
   background: var(--pink-light);
@@ -430,6 +434,12 @@
   justify-content: center;
   font-size: 22px;
   font-weight: 700;
+  /* Aligns the arrow's vertical center with the title row rather than
+     the geometric center of the content. The eyebrow above the title
+     is light/uppercase and doesn't carry much visual weight, so a
+     pure align-items:center leaves the arrow looking too low. The
+     offset below is tuned so arrow midpoint ≈ title midpoint. */
+  margin-top: 11px;
   transition: transform 0.15s;
 }
 .brief-status-cta:hover .brief-status-cta-arrow {
