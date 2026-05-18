@@ -72,6 +72,12 @@ export function escapeHtml(s: string): string {
 // (paragraphs become <p> at the next level up). Linked runs override the
 // bold/italic wrapping order — links wrap inside marks.
 //
+// Two element types contribute output:
+//   • textRun: ordinary text, with optional bold/italic/link marks.
+//   • richLink: Google Drive file / folder embeds inserted via the
+//     "@" picker or drag-and-drop. We render these as a link using the
+//     richLink's title (preserving the producer-recognisable filename).
+//
 // Raw-URL paste prettification: when the producer pastes a URL on its
 // own and Docs auto-links it, the textRun's content IS the URL. We strip
 // the `https?://` prefix from the display so the page shows a tidier
@@ -83,31 +89,64 @@ export function escapeHtml(s: string): string {
 export function renderRichText(p: Paragraph): string {
   let html = "";
   for (const el of p.elements ?? []) {
-    const r = el.textRun;
-    if (!r?.content) continue;
-    const raw = r.content;
-    // Trailing newline on the final run is paragraph-terminator noise.
-    const text = raw.replace(/\n+$/u, "");
-    if (!text) continue;
-    let inner = escapeHtml(text);
-    const url = r.textStyle?.link?.url;
-    if (url) {
-      // Raw URL paste: the link text IS the URL. Display the protocol-
-      // stripped version while still linking to the full URL.
-      const trimmed = text.trim();
-      const isRawUrlPaste =
-        trimmed === url || trimmed === url.replace(/\/$/, "");
-      if (isRawUrlPaste) {
-        const display = url.replace(/^https?:\/\//u, "").replace(/\/$/u, "");
-        inner = escapeHtml(display);
-      }
-      inner = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${inner}</a>`;
+    if (el.textRun?.content) {
+      html += renderTextRun(el.textRun);
+      continue;
     }
-    if (r.textStyle?.italic) inner = `<em>${inner}</em>`;
-    if (r.textStyle?.bold) inner = `<strong>${inner}</strong>`;
-    html += inner;
+    if (el.richLink) {
+      html += renderRichLink(el.richLink);
+      continue;
+    }
   }
   return html;
+}
+
+function renderTextRun(r: NonNullable<ParagraphElement["textRun"]>): string {
+  const raw = r.content ?? "";
+  // Trailing newline on the final run is paragraph-terminator noise.
+  const text = raw.replace(/\n+$/u, "");
+  if (!text) return "";
+  let inner = escapeHtml(text);
+  const url = r.textStyle?.link?.url;
+  if (url) {
+    // Raw URL paste: the link text IS the URL. Display the protocol-
+    // stripped version while still linking to the full URL.
+    const trimmed = text.trim();
+    const isRawUrlPaste =
+      trimmed === url || trimmed === url.replace(/\/$/, "");
+    if (isRawUrlPaste) {
+      const display = url.replace(/^https?:\/\//u, "").replace(/\/$/u, "");
+      inner = escapeHtml(display);
+    }
+    inner = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${inner}</a>`;
+  }
+  if (r.textStyle?.italic) inner = `<em>${inner}</em>`;
+  if (r.textStyle?.bold) inner = `<strong>${inner}</strong>`;
+  return inner;
+}
+
+function renderRichLink(
+  rl: NonNullable<ParagraphElement["richLink"]>,
+): string {
+  const props = rl.richLinkProperties;
+  const url = props?.uri;
+  if (!url) return "";
+  // Prefer the embed's title (usually the filename / Doc title). Strip
+  // common file extensions and replace underscores with spaces so a
+  // long Drive filename like "Rios_Business_Funding_Video_Content_
+  // Shoot_Guide.pdf" reads as "Rios Business Funding Video Content
+  // Shoot Guide". Falls back to a protocol-stripped URL if no title.
+  const raw = (props?.title ?? "").trim();
+  let display: string;
+  if (raw) {
+    display = raw
+      .replace(/\.(pdf|docx?|xlsx?|pptx?|csv|txt|jpe?g|png|gif|webp)$/i, "")
+      .replace(/_+/g, " ")
+      .trim();
+  } else {
+    display = url.replace(/^https?:\/\//u, "").replace(/\/$/u, "");
+  }
+  return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(display)}</a>`;
 }
 
 // Many brief paragraphs follow the shape "**Label:** value..." — a

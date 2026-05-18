@@ -276,7 +276,20 @@ function detectSubheading(p: Paragraph): {
   const key = split.label.toLowerCase().trim();
   const bucket = PRODUCTION_SUBHEADINGS[key as keyof typeof PRODUCTION_SUBHEADINGS];
   if (!bucket) return null;
-  return { bucket, inlineRemainder: split.value || undefined };
+
+  const value = split.value.trim();
+  // The "equipment" bucket is structured as label→value pairs; if the
+  // producer wrote "Equipment: <prose>" (no inner label:value), it's
+  // really a single bulleted item not a subheading transition. Without
+  // this check, the entire prose gets wedged into the equipment dict
+  // as a giant key with an empty value, and following items get lost.
+  // Schedule + deliverables are more forgiving — schedule validates the
+  // time pattern at dispatch, deliverables takes any content.
+  if (bucket === "equipment" && value && !/^\S[^:]*:\s+\S/.test(value)) {
+    return null;
+  }
+
+  return { bucket, inlineRemainder: value || undefined };
 }
 
 const TIME_RX =
