@@ -1,0 +1,107 @@
+// POST /api/backfill-briefs
+//
+// One-shot operational endpoint: iterates every shoot in storage, and
+// for each one with a detected brief Doc (shoot.briefUrl set), registers
+// the BriefRecord + immediately syncs it. Server-side mirror of
+// scripts/backfill-briefs.ts — used when we need to populate the briefs
+// store against the production environment (the CLI script writes to
+// whatever store the local .env points at, which isn't always prod).
+//
+// Auth: same CRON_SECRET bearer as the cron route. Idempotent — safe to
+// run again (registerBrief no-ops when nothing changed; syncOne hashes
+// the Doc and skips if unchanged).
+
+import { NextResponse, type NextRequest } from "next/server";
+import { listAll as listShoots } from "@/lib/storage";
+import { getBySlug as getBriefBySlug, registerBrief } from "@/lib/brief-storage";
+import { extractDocId, shootSlugToBriefSlug } from "@/lib/brief-slug";
+import { logSyncResult, syncOne, type SyncResult } from "@/lib/sync-brief";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+// Vercel Pro: 60s default function timeout on the production tier; bump
+// the cap so a single call can chew through ~30+ briefs without truncating.
+export const maxDuration = 300;
+
+const TIME_BUDGET_MS = 280_000;
+
+type SkipReason = "no-briefUrl" | "slug-shape" | "doc-id-extract";
+
+type BackfillSummary = {
+  totalShoots: number;
+  eligible: number;
+  skipped: { slug: string; reason: SkipReason }[];
+  registered: number;
+  alreadyRegistered: number;
+  syncs: SyncResult[];
+  timedOut: boolean;
+};
+
+export async function POST(req: NextRequest) {
+  const expected = process.env.CRON_SECRET;
+  if (expected) {
+    const auth = req.headers.get("authorization") ?? "";
+    if (auth !== `Bearer ${expected}`) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+  }
+
+  const deadline = Date.now() + TIME_BUDGET_MS;
+  const shoots = await listShoots();
+  const summary: BackfillSummary = {
+    totalShoots: shoots.length,
+    eligible: 0,
+    skipped: [],
+    registered: 0,
+    alreadyRegistered: 0,
+    syncs: [],
+    timedOut: false,
+  };
+
+  for (const s of shoots) {
+    if (Date.now() > deadline) {
+      summary.timedOut = true;
+      break;
+    }
+    if (!s.briefUrl) {
+      summary.skipped.push({ slug: s.slug, reason: "no-briefUrl" });
+      continue;
+    }
+    const split = shootSlugToBriefSlug(s.slug);
+    if (!split) {
+      summary.skipped.push({ slug: s.slug, reason: "slug-shape" });
+      continue;
+    }
+    const docId = extractDocId(s.briefUrl);
+    if (!docId) {
+      summary.skipped.push({ slug: s.slug, reason: "doc-id-extract" });
+      continue;
+    }
+    summary.eligible++;
+
+    const reg = await registerBrief({
+      briefSlug: split.briefSlug,
+      hash: split.hash,
+      docId,
+      cardId: s.cardId,
+      shootNumber: s.shootNumber || undefined,
+    });
+    if (reg.created) summary.registered++;
+    else if (!reg.updated) summary.alreadyRegistered++;
+    else summary.registered++;
+
+    const rec = await getBriefBySlug(split.briefSlug);
+    if (!rec) {
+      // Shouldn't happen — register-then-read is sequential, but log
+      // and continue defensively.
+      console.warn(`[backfill-briefs] missing record after register: ${split.briefSlug}`);
+      continue;
+    }
+
+    const result = await syncOne(rec);
+    logSyncResult(result);
+    summary.syncs.push(result);
+  }
+
+  return NextResponse.json({ ok: true, summary });
+}
