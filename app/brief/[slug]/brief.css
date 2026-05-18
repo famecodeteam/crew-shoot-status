@@ -351,6 +351,81 @@
   flex-shrink: 0;
 }
 
+/* ---------- Status page CTA ---------- */
+.brief-status-cta {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 32px;
+  background: var(--pink-light);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text);
+  margin-bottom: 20px;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.brief-status-cta:hover {
+  border-color: var(--pink);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(255, 70, 124, 0.15);
+}
+.brief-status-cta-content {
+  flex: 1;
+  min-width: 0;
+}
+.brief-status-cta-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--pink);
+  margin-bottom: 6px;
+}
+.brief-status-cta-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+  line-height: 1.25;
+}
+.brief-status-cta-hint {
+  font-size: 14px;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+.brief-status-cta-arrow {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--pink);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  transition: transform 0.15s;
+}
+.brief-status-cta:hover .brief-status-cta-arrow {
+  transform: translateX(4px);
+}
+@media (max-width: 520px) {
+  .brief-status-cta {
+    padding: 22px 22px;
+    gap: 16px;
+  }
+  .brief-status-cta-title {
+    font-size: 18px;
+  }
+  .brief-status-cta-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+}
+
 /* ---------- Footer ---------- */
 .brief-footer {
   margin-top: 40px;
