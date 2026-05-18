@@ -136,7 +136,22 @@ export function splitLabelValue(p: Paragraph): { label: string; value: string } 
     boldText += runs[i].content ?? "";
     i++;
   }
-  if (!boldText.trim()) return null;
+  if (!boldText.trim()) {
+    // No bold prefix at all. This happens when the producer styled a
+    // field row as HEADING_3 — Docs renders it bold visually but the
+    // underlying runs aren't marked bold. Fall back to splitting on
+    // the first ":<space>" in the whole paragraph text.
+    const fullText = runs
+      .map((r) => r.content ?? "")
+      .join("")
+      .replace(/\n+$/u, "");
+    const m = fullText.match(/^([^:]+?):\s+(.+)$/su);
+    if (!m) return null;
+    const label = m[1].trim();
+    const value = m[2].trim();
+    if (!label) return null;
+    return { label, value };
+  }
 
   // Non-bold tail.
   let valueText = "";
@@ -155,13 +170,26 @@ export function splitLabelValue(p: Paragraph): { label: string; value: string } 
   if (trailing) {
     label = trailing[1];
     value = valueText;
-  } else {
+  } else if (/^\s*:/.test(valueText)) {
     // Pattern 2: bold prefix doesn't end in ":" but the non-bold
     // remainder begins with one — e.g. "**On-Site Coverage**: 4 hours".
     const m = valueText.match(/^\s*:\s*(.*)$/su);
     if (!m) return null;
     label = boldText;
     value = m[1];
+  } else if (!valueText.trim() && /:\s+\S/.test(boldText)) {
+    // Pattern 3: producer styled the WHOLE paragraph bold (no non-bold
+    // tail), but it still contains a "Label: value" structure inside.
+    // Common when the brief Doc has HEADING_3 styling applied to field
+    // rows by accident. Split on the first ":<space>" so we don't
+    // mis-split labels with internal colons (those won't have a
+    // following space, e.g. "1:00").
+    const m = boldText.match(/^([^:]+?):\s+(.+)$/su);
+    if (!m) return null;
+    label = m[1];
+    value = m[2];
+  } else {
+    return null;
   }
   label = label.trim();
   value = value.replace(/\n+$/u, "").trim();

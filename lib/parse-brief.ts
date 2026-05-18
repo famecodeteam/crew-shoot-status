@@ -157,19 +157,32 @@ type SectionChunk = {
   body: Paragraph[];
 };
 
+// Section headings always carry the numbered "N. Title" template (e.g.
+// "1. Project Overview"). When a Doc has a HEADING_3 paragraph that
+// DOESN'T match — a common producer mistake is to apply the heading
+// style to field labels like "Client Name: ..." — treat it as regular
+// content inside the current section rather than starting a new one.
+// Without this, every styled paragraph splits the Doc into a stack of
+// empty single-paragraph sections that all get filtered as empty.
+const SECTION_HEADER_RX = /^\s*\d+\.\s+\S/u;
+
 function splitSections(ps: Paragraph[]): SectionChunk[] {
   const out: SectionChunk[] = [];
   let current: SectionChunk | null = null;
   for (const p of ps) {
     if (isHeading3(p)) {
       const titleRaw = plainTextTrimmed(p);
-      if (current) out.push(current);
-      current = {
-        titleRaw,
-        titleClean: stripLeadingNumber(titleRaw),
-        body: [],
-      };
-      continue;
+      if (SECTION_HEADER_RX.test(titleRaw)) {
+        if (current) out.push(current);
+        current = {
+          titleRaw,
+          titleClean: stripLeadingNumber(titleRaw),
+          body: [],
+        };
+        continue;
+      }
+      // HEADING_3 styling on a non-numbered line — producer drift.
+      // Fall through and treat it as a regular paragraph below.
     }
     if (!current) continue; // pre-heading content (doc title etc.) ignored
     current.body.push(p);

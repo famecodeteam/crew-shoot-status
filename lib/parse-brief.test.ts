@@ -161,3 +161,48 @@ test("parseBriefDoc: Brief #0214 (TikTok)", async (t) => {
     assert.ok(s);
   });
 });
+
+// Brief #0203 (Rios Business Funding) — producer styled every field
+// paragraph as HEADING_3. Earlier the parser split on every heading,
+// produced ~18 empty sections, and the page rendered blank.
+// Regression test ensures the parser is now tolerant of that drift:
+// only numbered HEADING_3s create section boundaries, and field rows
+// without explicit bold styling still parse via the no-bold fallback
+// in splitLabelValue.
+const FIXTURE_0203 = path.join(__dirname, "__fixtures__", "brief-0203.json");
+const fixture0203 = JSON.parse(
+  readFileSync(FIXTURE_0203, "utf8"),
+) as docs_v1.Schema$Document;
+
+test("parseBriefDoc: Brief #0203 (Rios) — all-HEADING_3 producer drift", async (t) => {
+  const result = parseBriefDoc(fixture0203);
+
+  await t.test("section count + ordering survives heading drift", () => {
+    const kinds = result.sections.map((s) => s.kind);
+    // Should have exactly 5 numbered sections, in order.
+    assert.deepEqual(kinds, [
+      "overview",
+      "objectives",
+      "production",
+      "crew",
+      "prose", // "Shooting Status" — falls to prose, filtered in render
+    ]);
+  });
+
+  await t.test("overview fields populate via no-bold fallback", () => {
+    const s = result.sections.find((x) => x.kind === "overview");
+    assert.ok(s && s.kind === "overview");
+    if (!s || s.kind !== "overview") return;
+    assert.equal(s.fields["Client Name"], "Rios Business Funding");
+    assert.match(String(s.fields["Primary Contact"]), /jimmy@/);
+    assert.match(String(s.fields["Location"]), /Chandler/);
+  });
+
+  await t.test("crew member parses without explicit bold runs", () => {
+    const s = result.sections.find((x) => x.kind === "crew");
+    assert.ok(s && s.kind === "crew");
+    if (!s || s.kind !== "crew") return;
+    assert.equal(s.members.length, 1);
+    assert.equal(s.members[0].name, "Thomas Pelletier");
+  });
+});
