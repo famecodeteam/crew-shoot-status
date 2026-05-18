@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getBySlug } from "@/lib/storage";
+import { getBySlug as getBriefBySlug } from "@/lib/brief-storage";
+import { shootSlugToBriefSlug } from "@/lib/brief-slug";
 import { getAssetsForShoot } from "@/lib/asset-storage";
 import type { Asset, Shoot } from "@/lib/types";
 import { getDemoShoot } from "./demo-data";
@@ -40,17 +42,35 @@ export default async function ShootPage({ params }: { params: Promise<{ slug: st
   // version. Skip the lookup for the demo slug (no real cardId).
   const assets = slug === "demo" ? [] : await getAssetsForShoot(shoot.cardId);
 
-  return <ShootView shoot={shoot} assets={assets} shootSlug={slug} />;
+  // Brief page link — points at /brief/<briefSlug>?code=<hash> with
+  // one-tap auto-unlock. Hidden until the brief has actually been
+  // synced (parsedJson present); otherwise the link would land the
+  // client on the "Brief is being prepared" placeholder.
+  const briefHref = slug === "demo" ? null : await resolveBriefHref(slug);
+
+  return (
+    <ShootView shoot={shoot} assets={assets} shootSlug={slug} briefHref={briefHref} />
+  );
+}
+
+async function resolveBriefHref(shootSlug: string): Promise<string | null> {
+  const split = shootSlugToBriefSlug(shootSlug);
+  if (!split) return null;
+  const rec = await getBriefBySlug(split.briefSlug);
+  if (!rec?.parsedJson) return null;
+  return `/brief/${split.briefSlug}?code=${split.hash}`;
 }
 
 function ShootView({
   shoot,
   assets,
   shootSlug,
+  briefHref,
 }: {
   shoot: Shoot;
   assets: Asset[];
   shootSlug: string;
+  briefHref: string | null;
 }) {
   const steps = timelineSteps(shoot.hasPostProduction);
   const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
@@ -191,12 +211,12 @@ function ShootView({
         </section>
       )}
 
-      {(shoot.briefUrl || shoot.quoteUrl) && (
+      {(briefHref || shoot.quoteUrl) && (
         <section className="section">
           <div className="card-h">Documents</div>
           <div className="link-grid">
-            {shoot.briefUrl && (
-              <a className="link-card" href={shoot.briefUrl} target="_blank" rel="noreferrer">
+            {briefHref && (
+              <a className="link-card" href={briefHref} target="_blank" rel="noopener">
                 <div>
                   <div className="link-card-label">Brief</div>
                   <div className="link-card-text">View your brief</div>
