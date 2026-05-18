@@ -84,15 +84,42 @@ function isLink(v: string | LinkValue): v is LinkValue {
 
 function ProseBody({ blocks }: { blocks: ProseBlock[] }) {
   if (blocks.length === 0) return null;
+  // Group consecutive bulleted blocks into a single <ul>; non-bulleted
+  // blocks render as <p>. Preserves the Doc's visual hierarchy — flat
+  // bullet lists become bullet lists, mixed prose stays prose.
+  type Group =
+    | { kind: "ul"; items: ProseBlock[] }
+    | { kind: "p"; block: ProseBlock };
+  const groups: Group[] = [];
+  for (const b of blocks) {
+    const last = groups[groups.length - 1];
+    if (b.bullet && last && last.kind === "ul") {
+      last.items.push(b);
+    } else if (b.bullet) {
+      groups.push({ kind: "ul", items: [b] });
+    } else {
+      groups.push({ kind: "p", block: b });
+    }
+  }
   return (
     <div className="brief-prose">
-      {blocks.map((b, i) => (
-        // The HTML is produced by lib/doc-walker.renderRichText, which
-        // escapes text and only emits <strong>/<em>/<a target=_blank>.
-        // No user input enters this pipeline; the only producer is the
-        // sync cron parsing the Google Doc we control.
-        <p key={i} dangerouslySetInnerHTML={{ __html: b.html }} />
-      ))}
+      {groups.map((g, i) =>
+        g.kind === "ul" ? (
+          <ul key={i}>
+            {g.items.map((b, j) => (
+              // HTML is produced by lib/doc-walker.renderRichText: text
+              // is escaped and only <strong>/<em>/<a target=_blank> are
+              // emitted. The Doc is the only input source.
+              <li key={j} dangerouslySetInnerHTML={{ __html: b.html }} />
+            ))}
+          </ul>
+        ) : (
+          <p
+            key={i}
+            dangerouslySetInnerHTML={{ __html: g.block.html }}
+          />
+        ),
+      )}
     </div>
   );
 }

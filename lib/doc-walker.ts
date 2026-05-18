@@ -65,6 +65,11 @@ export function escapeHtml(s: string): string {
 // (paragraphs become <p> at the next level up). Linked runs override the
 // bold/italic wrapping order — links wrap inside marks.
 //
+// Raw-URL paste prettification: when the producer pastes a URL on its
+// own and Docs auto-links it, the textRun's content IS the URL. We strip
+// the `https?://` prefix from the display so the page shows a tidier
+// "frame.io/project/…" instead of the full address.
+//
 // The parser is the only HTML producer in this pipeline; nothing else
 // emits markup. So this is also the entire allowlist for the page's
 // dangerouslySetInnerHTML calls.
@@ -80,6 +85,15 @@ export function renderRichText(p: Paragraph): string {
     let inner = escapeHtml(text);
     const url = r.textStyle?.link?.url;
     if (url) {
+      // Raw URL paste: the link text IS the URL. Display the protocol-
+      // stripped version while still linking to the full URL.
+      const trimmed = text.trim();
+      const isRawUrlPaste =
+        trimmed === url || trimmed === url.replace(/\/$/, "");
+      if (isRawUrlPaste) {
+        const display = url.replace(/^https?:\/\//u, "").replace(/\/$/u, "");
+        inner = escapeHtml(display);
+      }
       inner = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${inner}</a>`;
     }
     if (r.textStyle?.italic) inner = `<em>${inner}</em>`;

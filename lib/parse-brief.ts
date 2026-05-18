@@ -14,6 +14,7 @@ import type { docs_v1 } from "googleapis";
 import {
   escapeHtml,
   firstLink,
+  isBulleted,
   isHeading3,
   paragraphs as docParagraphs,
   plainTextTrimmed,
@@ -29,7 +30,10 @@ export type ScheduleRow = { time: string; what: string };
 // A run of prose with inline marks (bold/italic/links) pre-rendered to a
 // small HTML subset. The page sets innerHTML; the only HTML producer is
 // doc-walker.renderRichText, which escapes text and emits a fixed allowlist.
-export type ProseBlock = { html: string };
+// `bullet` carries through whether the source paragraph was bulleted in
+// the Doc — the renderer groups consecutive bullet blocks into a single
+// <ul> for proper visual hierarchy.
+export type ProseBlock = { html: string; bullet?: boolean };
 
 // CrewMember has two production sources:
 //   • The brief Doc's "Team On-Site" section (parser-populated).
@@ -196,7 +200,7 @@ function parseAsProse(c: SectionChunk): Section {
     title: c.titleClean,
     blocks: c.body.flatMap((p) => {
       const html = renderRichText(p);
-      return html ? [{ html }] : [];
+      return html ? [{ html, bullet: isBulleted(p) }] : [];
     }),
   };
 }
@@ -222,11 +226,12 @@ function parseOverview(body: Paragraph[]): Record<string, string | LinkValue> {
 
 // Objectives are bulleted paragraphs with a bold lead ("Core Goal:") and a
 // value. Render each as a prose block so the page can keep the lead bold
-// and preserve any inline links (e.g. Visual Reference).
+// and preserve any inline links (e.g. Visual Reference). `bullet` flows
+// through so the renderer can group consecutive bullets into a <ul>.
 function parseObjectives(body: Paragraph[]): ProseBlock[] {
   return body.flatMap((p) => {
     const html = renderRichText(p);
-    return html ? [{ html }] : [];
+    return html ? [{ html, bullet: isBulleted(p) }] : [];
   });
 }
 
@@ -275,8 +280,10 @@ function parseProduction(body: Paragraph[]): {
   // Cameras: 2x 4K Camera Kits."). We can't recover the bold structure
   // on the remainder cleanly, so this path uses a regex split on the
   // plain-text remainder — fine for equipment (values are plain strings)
-  // and schedule (we still validate the time pattern).
-  const dispatchRemainder = (remainder: string) => {
+  // and schedule (we still validate the time pattern). The deliverables
+  // case carries the source paragraph's bullet state through so the
+  // remainder renders alongside other bullets in the same <ul>.
+  const dispatchRemainder = (remainder: string, sourceBullet: boolean) => {
     if (!bucket || !remainder) return;
     if (bucket === "schedule") {
       const m = remainder.match(/^(.+?):\s*(.+)$/u);
@@ -292,7 +299,7 @@ function parseProduction(body: Paragraph[]): {
       }
     } else if (bucket === "deliverables") {
       const html = escapeHtml(remainder.trim());
-      if (html) deliverables.push({ html });
+      if (html) deliverables.push({ html, bullet: sourceBullet });
     }
   };
 
@@ -300,7 +307,9 @@ function parseProduction(body: Paragraph[]): {
     const trans = detectSubheading(p);
     if (trans) {
       bucket = trans.bucket;
-      if (trans.inlineRemainder) dispatchRemainder(trans.inlineRemainder);
+      if (trans.inlineRemainder) {
+        dispatchRemainder(trans.inlineRemainder, isBulleted(p));
+      }
       continue;
     }
     // Until we've seen an explicit subheading, default to "deliverables"
@@ -323,7 +332,7 @@ function parseProduction(body: Paragraph[]): {
     }
     if (effective === "deliverables") {
       const html = renderRichText(p);
-      if (html) deliverables.push({ html });
+      if (html) deliverables.push({ html, bullet: isBulleted(p) });
     }
   }
 
