@@ -303,11 +303,50 @@ function enrichAndFilterSections(
         ],
       };
     }
+    if (s.kind === "production" && shoot?.hasPostProduction) {
+      // When Fame is handling post-production the raw files flow
+      // crew → Fame editor, not crew → client. The "File Transfer
+      // Plan" bullet (typically a link to a Frame.io / Drive folder)
+      // is internal routing the client doesn't need to see.
+      return {
+        ...s,
+        deliverables: stripCrewOnlyDeliverables(s.deliverables),
+      };
+    }
     return s;
   });
   return enriched
     .filter((s) => !isStatusPageRedirect(s))
     .filter((s) => !isSectionEmpty(s));
+}
+
+// Labels that are internal Fame ⇄ crew routing concerns and don't
+// belong on the client-facing brief page. Match against the text of an
+// L0 deliverables bullet; the bullet AND any nested sub-bullets are
+// dropped together (so the Frame.io / Drive folder under the label
+// goes with it).
+const CREW_ONLY_LABEL_RX = /^\s*file\s+transfer\s+plan\b/i;
+
+function stripCrewOnlyDeliverables<T extends { html: string; level?: number }>(
+  blocks: T[],
+): T[] {
+  const out: T[] = [];
+  let skipDescendants = false;
+  for (const b of blocks) {
+    const level = b.level ?? 0;
+    if (skipDescendants && level > 0) continue;
+    skipDescendants = false;
+    if (level === 0 && CREW_ONLY_LABEL_RX.test(stripTagsToText(b.html))) {
+      skipDescendants = true;
+      continue;
+    }
+    out.push(b);
+  }
+  return out;
+}
+
+function stripTagsToText(html: string): string {
+  return html.replace(/<[^>]+>/g, "").trim();
 }
 
 // Producer templates name the last section several different ways, and
