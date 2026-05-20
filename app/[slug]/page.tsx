@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getBySlug } from "@/lib/storage";
 import { getBySlug as getBriefBySlug } from "@/lib/brief-storage";
-import { shootSlugToBriefSlug } from "@/lib/brief-slug";
+import { shootSlugToBriefSlug, briefAccessCode } from "@/lib/brief-slug";
 import { getAssetsForShoot } from "@/lib/asset-storage";
 import type { Asset, Shoot } from "@/lib/types";
 import { getDemoShoot } from "./demo-data";
@@ -42,8 +42,8 @@ export default async function ShootPage({ params }: { params: Promise<{ slug: st
   // version. Skip the lookup for the demo slug (no real cardId).
   const assets = slug === "demo" ? [] : await getAssetsForShoot(shoot.cardId);
 
-  // Brief page link — points at /brief/<briefSlug>?code=<hash> with
-  // one-tap auto-unlock. Hidden until the brief has actually been
+  // Brief page link - points at /brief/<briefSlug>?code=<shoot number>
+  // for one-tap auto-unlock. Hidden until the brief has actually been
   // synced (parsedJson present); otherwise the link would land the
   // client on the "Brief is being prepared" placeholder.
   const briefHref = slug === "demo" ? null : await resolveBriefHref(slug);
@@ -58,7 +58,9 @@ async function resolveBriefHref(shootSlug: string): Promise<string | null> {
   if (!split) return null;
   const rec = await getBriefBySlug(split.briefSlug);
   if (!rec?.parsedJson) return null;
-  return `/brief/${split.briefSlug}?code=${split.hash}`;
+  // ?code= is the shoot number - the one-tap unlock the client arrives with.
+  const code = briefAccessCode(rec.slug, rec.hash);
+  return `/brief/${split.briefSlug}?code=${encodeURIComponent(code)}`;
 }
 
 function ShootView({

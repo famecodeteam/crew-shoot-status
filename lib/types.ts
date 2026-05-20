@@ -124,14 +124,15 @@ export type Shoot = {
 
 // ---------- Brief (doc-synced shoot brief page) ----------
 // One per shoot that has a brief Doc registered. The brief slug is the
-// shoot slug with its trailing 8-hex-char hash stripped — the hash itself
-// is preserved here as the unlock code for the modal gate.
+// shoot slug with its trailing 8-hex-char hash stripped - the hash is
+// preserved here as the unguessable suffix of the status-page URL. The
+// brief unlock code is the shoot number (see briefAccessCode).
 //
 // Storage: keyed by brief slug in `briefs:store` (Upstash) or .data/briefs.json
 // (local dev). See lib/brief-storage*.ts.
 export type BriefRecord = {
   slug: string;            // short brief slug, e.g. "0219-demand-ai"
-  hash: string;            // 8-hex-char access code (lifted from shoot slug)
+  hash: string;            // 8-hex-char unguessable suffix of the status-page slug
   docId: string;           // Google Doc ID backing this brief
   cardId: string;          // Trello card id (so the webhook can find this)
   shootNumber?: string;    // "#0219" — convenience for logs / observability

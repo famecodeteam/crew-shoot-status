@@ -1,11 +1,11 @@
 // POST /api/brief/<slug>/unlock
 // Body: { code: string }
 //
-// Verifies the supplied code against the BriefRecord.hash (the trailing
-// 8-hex-char block of the matching status page slug). On match, sets an
-// HttpOnly cookie scoped to this brief slug; the next SSR pass of
-// /brief/<slug> sees the cookie and renders the full content. On
-// mismatch, returns 401 with no cookie change.
+// Verifies the supplied code against the brief access code - the shoot
+// number (see briefAccessCode). On match, sets an HttpOnly cookie scoped
+// to this brief slug; the next SSR pass of /brief/<slug> sees the cookie
+// and renders the full content. On mismatch, returns 401 with no cookie
+// change.
 //
 // Cookie is presence-only; the value is meaningless. Soft-lock semantics
 // per the spec: friction against casual viewers, not crypto. Lifted from
@@ -14,6 +14,7 @@
 import type { NextRequest } from "next/server";
 import { getBySlug } from "@/lib/brief-storage";
 import { briefUnlockCookieName } from "@/lib/brief-passcode";
+import { briefAccessCode } from "@/lib/brief-slug";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -42,7 +43,8 @@ export async function POST(
     return Response.json({ error: "unknown brief" }, { status: 404 });
   }
 
-  if (code.toLowerCase() !== rec.hash.toLowerCase()) {
+  const accessCode = briefAccessCode(rec.slug, rec.hash);
+  if (code.toLowerCase() !== accessCode.toLowerCase()) {
     return Response.json({ error: "wrong code" }, { status: 401 });
   }
 

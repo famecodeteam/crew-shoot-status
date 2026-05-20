@@ -25,6 +25,7 @@ import { PasscodeForm } from "./passcode-form";
 import { AutoUnlockSync } from "./auto-unlock-sync";
 import { SectionCard } from "./sections";
 import { briefUnlockCookieName } from "@/lib/brief-passcode";
+import { briefAccessCode } from "@/lib/brief-slug";
 import "./brief.css";
 
 export const dynamic = "force-dynamic";
@@ -55,8 +56,9 @@ export default async function BriefPage({ params, searchParams }: PageProps) {
 
   const cookieStore = await cookies();
   const unlocked = cookieStore.has(briefUnlockCookieName(slug));
+  const accessCode = briefAccessCode(rec.slug, rec.hash);
   const codeMatches =
-    queryCode && queryCode.toLowerCase() === rec.hash.toLowerCase();
+    !!queryCode && queryCode.toLowerCase() === accessCode.toLowerCase();
 
   if (!unlocked && !codeMatches) {
     return <LockedView slug={slug} />;
