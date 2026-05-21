@@ -25,6 +25,12 @@ export type AssetVersion = {
   sizeBytes: number | null;
   durationSeconds: number | null;
   filename: string | null; // e.g. "v2.mp4"
+  // Cloudflare Stream delivery copy (lib/stream.ts). Populated by the
+  // sync-stream cron - NOT at upload time - so all three are optional and
+  // the member.fame.so writer can leave them unset.
+  streamUid?: string | null; // Cloudflare Stream video UID
+  streamStatus?: "pending" | "ready" | "error" | null;
+  streamError?: string | null; // last ingest/transcode failure reason
 };
 
 export type AssetApprovalStatus =

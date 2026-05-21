@@ -15,7 +15,10 @@ import { findAssetBySlug } from "@/lib/asset-lookup";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+// 300s: Cloudflare Stream's copy-from-URL ingest pulls the whole file
+// through this proxy in one request - a large master must not be cut off
+// mid-transfer. Also covers long client range reads pre-Stream-cutover.
+export const maxDuration = 300;
 
 const DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.readonly"];
 
