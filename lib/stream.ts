@@ -87,6 +87,13 @@ export function getVideo(uid: string): Promise<StreamVideo> {
   });
 }
 
+// Every Stream video on the account. Not paginated - the default
+// response covers up to 1000 videos, ample here. Used by the
+// orphan-prune script to find videos no AssetVersion references.
+export function listVideos(): Promise<StreamVideo[]> {
+  return cfJson<StreamVideo[]>("/stream", { method: "GET" });
+}
+
 // Remove a Stream video (M5 lifecycle - superseded / deleted versions).
 export async function deleteVideo(uid: string): Promise<void> {
   const { accountId, token } = creds();
