@@ -38,6 +38,11 @@ export function ReviewShell({
   asset: Asset;
   streamCustomerCode: string | null;
 }) {
+  // `asset.versions` arrives already publish-gated: the server component
+  // (page.tsx) filters it through clientVersions() before this prop is
+  // serialised into the public browser payload. Every versions read
+  // below is therefore client-safe - do NOT pass an unfiltered asset in
+  // here (contract v2 §4).
   const latest = asset.versions[asset.versions.length - 1];
   const [version, setVersion] = useState<number>(latest.n);
   const [comments, setComments] = useState<ClientComment[]>([]);

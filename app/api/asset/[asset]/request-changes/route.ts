@@ -9,6 +9,7 @@
 
 import type { NextRequest } from "next/server";
 import { findAssetBySlug } from "@/lib/asset-lookup";
+import { clientVersions } from "@/lib/asset-versions";
 import { applyApprovalToAsset, makeApproval, syncTrelloForShoot } from "@/lib/approval";
 import { addCardComment } from "@/lib/trello";
 
@@ -41,7 +42,9 @@ export async function POST(
 
   const lookup = await findAssetBySlug(slug);
   if (!lookup) return Response.json({ error: "unknown asset" }, { status: 404 });
-  if (!lookup.asset.versions.some((v) => v.n === onVersion)) {
+  // Publish gate (contract v2 §4): reject a change request pointed at an
+  // unpublished (or nonexistent) version - same no-auth risk as approve.
+  if (!clientVersions(lookup.asset).some((v) => v.n === onVersion)) {
     return Response.json({ error: "version not found on asset" }, { status: 400 });
   }
 

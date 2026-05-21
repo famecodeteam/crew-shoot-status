@@ -5,6 +5,7 @@ import { getBySlug } from "@/lib/storage";
 import { getBySlug as getBriefBySlug } from "@/lib/brief-storage";
 import { shootSlugToBriefSlug, briefAccessCode } from "@/lib/brief-slug";
 import { getAssetsForShoot } from "@/lib/asset-storage";
+import { clientVersions } from "@/lib/asset-versions";
 import type { Asset, Shoot } from "@/lib/types";
 import { getDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
@@ -369,9 +370,10 @@ function FinalAssetsSection({
 }
 
 function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
-  const latest = asset.versions.length
-    ? asset.versions[asset.versions.length - 1]
-    : null;
+  // Publish gate (contract v2 §4): card meta reflects only versions the
+  // client may see.
+  const versions = clientVersions(asset);
+  const latest = versions.length ? versions[versions.length - 1] : null;
   const pill = pickAssetPill(asset);
   return (
     <Link className="asset-card" href={`/${shootSlug}/asset/${asset.slug}`}>
@@ -387,13 +389,16 @@ function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
 }
 
 function pickAssetPill(a: Asset): { label: string; cls: string } {
-  if (a.versions.length === 0) {
+  // Publish gate (contract v2 §4): an unpublished version must not move
+  // the pill off "Pending upload" or surface a "new version".
+  const versions = clientVersions(a);
+  if (versions.length === 0) {
     return { label: "Pending upload", cls: "pending" };
   }
   // Stale decision: a newer version has landed since the client's last
   // approve / request-changes decision. Surface it as "new version ready"
   // rather than the now-outdated "Approved" / "Changes requested".
-  const latest = a.versions[a.versions.length - 1];
+  const latest = versions[versions.length - 1];
   if (a.approval && latest.n > a.approval.onVersion) {
     return { label: "New version ready", cls: "comments-open" };
   }
@@ -435,11 +440,14 @@ function assetReviewBadge(
   let pendingUpload = 0;
 
   for (const a of assets) {
-    if (a.versions.length === 0) {
+    // Publish gate (contract v2 §4): the badge reflects only
+    // client-visible versions - an unpublished cut must not flip it.
+    const versions = clientVersions(a);
+    if (versions.length === 0) {
       pendingUpload++;
       continue;
     }
-    const latest = a.versions[a.versions.length - 1];
+    const latest = versions[versions.length - 1];
     if (a.approval && latest.n > a.approval.onVersion) {
       // A newer cut landed since the client's last decision - back to them.
       needsClient++;

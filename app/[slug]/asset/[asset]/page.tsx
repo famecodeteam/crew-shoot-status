@@ -17,6 +17,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getBySlug } from "@/lib/storage";
 import { getAsset } from "@/lib/asset-storage";
+import { clientVersions } from "@/lib/asset-versions";
 import type { Asset } from "@/lib/types";
 import { ReviewShell } from "./review-shell";
 
@@ -54,8 +55,18 @@ export default async function AssetReviewPage({
   const asset = await getAsset(shoot.cardId, assetSlug);
   if (!asset) notFound();
 
-  const latest = asset.versions.length
-    ? asset.versions[asset.versions.length - 1]
+  // Publish gate (contract v2 §4). Filter at the server boundary:
+  // <ReviewShell> serialises its entire `asset` prop into the public
+  // browser payload, so an unpublished version must be dropped *before*
+  // it crosses into the client component - filtering only inside
+  // ReviewShell would still ship the unpublished version's driveFileId /
+  // streamUid to the browser. Absent flag ⇒ published (clientVersions).
+  const visibleAsset: Asset = {
+    ...asset,
+    versions: clientVersions(asset),
+  };
+  const latest = visibleAsset.versions.length
+    ? visibleAsset.versions[visibleAsset.versions.length - 1]
     : null;
 
   return (
@@ -77,7 +88,7 @@ export default async function AssetReviewPage({
 
       {latest ? (
         <ReviewShell
-          asset={asset}
+          asset={visibleAsset}
           streamCustomerCode={process.env.CF_STREAM_CUSTOMER_CODE ?? null}
         />
       ) : (

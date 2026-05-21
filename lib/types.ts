@@ -25,6 +25,19 @@ export type AssetVersion = {
   sizeBytes: number | null;
   durationSeconds: number | null;
   filename: string | null; // e.g. "v2.mp4"
+  // Publish gate (shared-KV contract v2 §4). member.fame.so writes these
+  // via the CPM "approve for client" toggle - READ-ONLY on this side,
+  // never write them here. A version is invisible to the client until
+  // isPublishedToClient is true; absent ⇒ treated as published (legacy +
+  // interim records). The filter lives in lib/asset-versions.ts.
+  isPublishedToClient?: boolean;
+  publishedToClientAt?: string | null;
+  publishedBy?: string | null;
+  internalStatus?:
+    | "awaiting_cpm_review"
+    | "changes_requested"
+    | "approved_internal"
+    | "published";
   // Cloudflare Stream delivery copy (lib/stream.ts). Populated by the
   // sync-stream cron - NOT at upload time - so all three are optional and
   // the member.fame.so writer can leave them unset.

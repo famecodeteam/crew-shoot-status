@@ -43,6 +43,18 @@ function publicBase(): string {
   return base;
 }
 
+// The video proxy 404s unpublished versions for client requests (the
+// contract v2 §4 publish gate). But this cron must ingest EVERY version
+// into Stream, published or not (§12). Cloudflare's copy-from-URL fetch
+// can't send an auth header, so we mark the ingest pull with
+// ?ingest=<CRON_SECRET> in the URL - the one signal the proxy honours to
+// skip the gate. Empty when CRON_SECRET is unset (local dev: the publish
+// gate is a no-op there anyway).
+function ingestQuery(): string {
+  const secret = process.env.CRON_SECRET;
+  return secret ? `?ingest=${encodeURIComponent(secret)}` : "";
+}
+
 // Immutable patch of one version inside one asset. Re-reads the asset so
 // concurrent writes to OTHER versions aren't clobbered.
 async function patchVersion(
@@ -103,7 +115,7 @@ async function syncVersion(
 
     // No Stream copy yet → kick one off. Cloudflare pulls the file from
     // our Drive proxy (a public, range-capable URL).
-    const srcUrl = `${publicBase()}/api/video/${encodeURIComponent(asset.slug)}/v${version.n}`;
+    const srcUrl = `${publicBase()}/api/video/${encodeURIComponent(asset.slug)}/v${version.n}${ingestQuery()}`;
     const name = `${asset.name} v${version.n} (${asset.slug})`;
     // Tag the ingest so the orphan-prune can scope to this app's videos
     // (the Cloudflare Stream account is shared with the Video Review Tool).

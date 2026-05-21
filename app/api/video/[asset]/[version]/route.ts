@@ -12,6 +12,7 @@ import { google } from "googleapis";
 import type { NextRequest } from "next/server";
 import { googleAuth } from "@/lib/google-auth";
 import { findAssetBySlug } from "@/lib/asset-lookup";
+import { clientVersions } from "@/lib/asset-versions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,7 +54,22 @@ export async function GET(
   const lookup = await findAssetBySlug(assetSlug);
   if (!lookup) return new Response("Unknown asset", { status: 404 });
 
-  const v = lookup.asset.versions.find((x) => x.n === version);
+  // Publish gate (contract v2 §4). This is a public, no-auth endpoint -
+  // a client can bump <n> in the URL - so an unpublished version must
+  // 404, identical to a nonexistent one (no existence leak).
+  //
+  // Exception: the sync-stream cron ingests *every* version into
+  // Cloudflare Stream, published or not (contract §12, a tracked +
+  // deferred decision). Cloudflare's copy-from-URL fetch can't carry an
+  // auth header, so the cron marks its own pull with ?ingest=<CRON_SECRET>
+  // - that, and only that, sees the unfiltered version list.
+  const cronSecret = process.env.CRON_SECRET;
+  const isIngestPull =
+    !!cronSecret && req.nextUrl.searchParams.get("ingest") === cronSecret;
+  const pool = isIngestPull
+    ? lookup.asset.versions
+    : clientVersions(lookup.asset);
+  const v = pool.find((x) => x.n === version);
   if (!v) return new Response("Unknown version", { status: 404 });
 
   let accessToken: string;
