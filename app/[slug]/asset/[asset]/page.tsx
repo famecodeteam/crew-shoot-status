@@ -75,7 +75,14 @@ export default async function AssetReviewPage({
         <h1 className="hero-title">{asset.name}</h1>
       </header>
 
-      {latest ? <ReviewShell asset={asset} /> : <PendingUploadState />}
+      {latest ? (
+        <ReviewShell
+          asset={asset}
+          streamCustomerCode={process.env.CF_STREAM_CUSTOMER_CODE ?? null}
+        />
+      ) : (
+        <PendingUploadState />
+      )}
 
       <footer className="footer" style={{ marginTop: 56 }}>
         <div>

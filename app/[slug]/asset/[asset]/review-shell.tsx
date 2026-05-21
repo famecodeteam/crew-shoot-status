@@ -31,7 +31,13 @@ function commentKey(id: string): string {
 
 // ---------- Top-level shell ----------
 
-export function ReviewShell({ asset }: { asset: Asset }) {
+export function ReviewShell({
+  asset,
+  streamCustomerCode,
+}: {
+  asset: Asset;
+  streamCustomerCode: string | null;
+}) {
   const latest = asset.versions[asset.versions.length - 1];
   const [version, setVersion] = useState<number>(latest.n);
   const [comments, setComments] = useState<ClientComment[]>([]);
@@ -105,6 +111,7 @@ export function ReviewShell({ asset }: { asset: Asset }) {
         videoRef={videoRef}
         comments={comments}
         onSeek={seekTo}
+        streamCustomerCode={streamCustomerCode}
       />
       <CommentBar
         currentTime={currentTime}
@@ -162,6 +169,7 @@ function Player({
   videoRef,
   comments,
   onSeek,
+  streamCustomerCode,
 }: {
   asset: Asset;
   version: number;
@@ -169,6 +177,7 @@ function Player({
   videoRef: React.MutableRefObject<HTMLVideoElement | null>;
   comments: ClientComment[];
   onSeek: (seconds: number) => void;
+  streamCustomerCode: string | null;
 }) {
   // We get the video duration once metadata loads so we can position
   // comment markers proportionally.
@@ -182,13 +191,62 @@ function Player({
     return () => v.removeEventListener("loadedmetadata", onMeta);
   }, [videoRef, version]);
 
-  // Reload on version change.
-  useEffect(() => {
-    const v = videoRef.current;
-    if (v) v.load();
-  }, [version, videoRef]);
+  // Resolve the video source for the selected version. Cloudflare Stream
+  // (transcoded, adaptive, CDN-cached HLS) once the version has been
+  // ingested and is "ready"; otherwise the Drive proxy as the fallback,
+  // so a not-yet-ingested version still plays - just not as fast.
+  const fileUrl = `/api/video/${encodeURIComponent(asset.slug)}/v${version}`;
+  const cv = asset.versions.find((v) => v.n === version);
+  const streamUid =
+    cv?.streamStatus === "ready" && cv.streamUid ? cv.streamUid : null;
+  const hlsUrl =
+    streamCustomerCode && streamUid
+      ? `https://customer-${streamCustomerCode}.cloudflarestream.com/${streamUid}/manifest/video.m3u8`
+      : null;
+  const posterUrl =
+    streamCustomerCode && streamUid
+      ? `https://customer-${streamCustomerCode}.cloudflarestream.com/${streamUid}/thumbnails/thumbnail.jpg`
+      : undefined;
 
-  const src = `/api/video/${encodeURIComponent(asset.slug)}/v${version}`;
+  // Wire the source onto the <video>. HLS plays natively on Safari and
+  // via hls.js (MSE) on Chrome/Firefox/Edge; the Drive-proxy fallback is
+  // a plain MP4. Re-runs on version change, which reloads the element.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    let hls: { destroy(): void } | null = null;
+    let cancelled = false;
+
+    if (!hlsUrl) {
+      video.src = fileUrl;
+      video.load();
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = hlsUrl;
+      video.load();
+    } else {
+      // Dynamic-import so hls.js is code-split and never SSR-evaluated.
+      void import("hls.js").then(({ default: Hls }) => {
+        if (cancelled) return;
+        if (Hls.isSupported()) {
+          video.removeAttribute("src");
+          const inst = new Hls();
+          inst.loadSource(hlsUrl);
+          inst.attachMedia(video);
+          hls = inst;
+        } else {
+          // No HLS support at all - fall back to the Drive-proxy MP4.
+          video.src = fileUrl;
+          video.load();
+        }
+      });
+    }
+
+    return () => {
+      cancelled = true;
+      if (hls) hls.destroy();
+    };
+  }, [hlsUrl, fileUrl, videoRef]);
+
   const showSelector = asset.versions.length > 1;
 
   return (
@@ -196,10 +254,10 @@ function Player({
       <div className="asset-player">
         <video
           ref={videoRef}
-          src={src}
           controls
           playsInline
           preload="metadata"
+          poster={posterUrl}
           className="asset-video"
         />
         {duration > 0 && comments.length > 0 && (
