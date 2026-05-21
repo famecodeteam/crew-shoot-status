@@ -55,6 +55,28 @@ function ingestQuery(): string {
   return secret ? `?ingest=${encodeURIComponent(secret)}` : "";
 }
 
+// The public, range-capable URL Cloudflare Stream pulls a version from.
+//
+// Default: the Vercel Drive proxy. But Vercel functions cap at ~300s, so
+// a multi-GB shoot master can't be pulled through in that window - the
+// ingest stalls at "downloading" and never reaches "ready". When the
+// video-origin Worker is configured (VIDEO_ORIGIN_BASE set), the ingest
+// is pulled straight from Drive via the Worker instead - a Worker request
+// lives as long as bytes flow, no 300s wall. The ?key= secret gates the
+// Worker (copy-from-URL can't send headers, so it rides in the URL).
+// Falls back to the proxy when the Worker isn't configured.
+function ingestSourceUrl(asset: Asset, version: AssetVersion): string {
+  const workerBase = (process.env.VIDEO_ORIGIN_BASE ?? "").replace(/\/+$/, "");
+  const workerSecret = process.env.VIDEO_ORIGIN_SECRET ?? "";
+  if (workerBase && workerSecret && version.driveFileId) {
+    return (
+      `${workerBase}/file/${encodeURIComponent(version.driveFileId)}` +
+      `?key=${encodeURIComponent(workerSecret)}`
+    );
+  }
+  return `${publicBase()}/api/video/${encodeURIComponent(asset.slug)}/v${version.n}${ingestQuery()}`;
+}
+
 // Immutable patch of one version inside one asset. Re-reads the asset so
 // concurrent writes to OTHER versions aren't clobbered.
 async function patchVersion(
@@ -113,9 +135,10 @@ async function syncVersion(
       };
     }
 
-    // No Stream copy yet → kick one off. Cloudflare pulls the file from
-    // our Drive proxy (a public, range-capable URL).
-    const srcUrl = `${publicBase()}/api/video/${encodeURIComponent(asset.slug)}/v${version.n}${ingestQuery()}`;
+    // No Stream copy yet → kick one off. Cloudflare pulls the file from a
+    // public, range-capable URL - the video-origin Worker, or the Drive
+    // proxy as fallback. See ingestSourceUrl.
+    const srcUrl = ingestSourceUrl(asset, version);
     const name = `${asset.name} v${version.n} (${asset.slug})`;
     // Tag the ingest so the orphan-prune can scope to this app's videos
     // (the Cloudflare Stream account is shared with the Video Review Tool).
