@@ -70,13 +70,28 @@ async function cfJson<T>(path: string, init: RequestInit): Promise<T> {
   return json.result;
 }
 
+// Fame runs TWO tools on ONE Cloudflare Stream account: this app and
+// the Video Review Tool (review.fame.so). Every video this app ingests
+// is tagged meta.app === STREAM_APP_TAG so the orphan-prune script can
+// scope itself and NEVER delete the other tool's videos.
+export const STREAM_APP_TAG = "crew-shoot-status";
+
 // Ingest a video by pulling it from a publicly-fetchable URL. Cloudflare
 // downloads + transcodes server-side and returns immediately with a uid;
-// transcoding runs async (poll getVideo until readyToStream).
-export function copyFromUrl(url: string, name?: string): Promise<StreamVideo> {
+// transcoding runs async (poll getVideo until readyToStream). extraMeta
+// lets callers tag the video - e.g. { app: STREAM_APP_TAG }.
+export function copyFromUrl(
+  url: string,
+  name?: string,
+  extraMeta?: Record<string, string>,
+): Promise<StreamVideo> {
+  const meta = { ...(name ? { name } : {}), ...(extraMeta ?? {}) };
   return cfJson<StreamVideo>("/stream/copy", {
     method: "POST",
-    body: JSON.stringify({ url, ...(name ? { meta: { name } } : {}) }),
+    body: JSON.stringify({
+      url,
+      ...(Object.keys(meta).length > 0 ? { meta } : {}),
+    }),
   });
 }
 

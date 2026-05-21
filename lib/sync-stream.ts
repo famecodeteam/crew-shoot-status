@@ -13,7 +13,7 @@
 
 import { listAll as listShoots } from "./storage";
 import { getAssetsForShoot, upsertAsset } from "./asset-storage";
-import { copyFromUrl, getVideo } from "./stream";
+import { copyFromUrl, getVideo, STREAM_APP_TAG } from "./stream";
 import type { Asset, AssetVersion } from "./types";
 
 export type StreamSyncOutcome =
@@ -105,7 +105,9 @@ async function syncVersion(
     // our Drive proxy (a public, range-capable URL).
     const srcUrl = `${publicBase()}/api/video/${encodeURIComponent(asset.slug)}/v${version.n}`;
     const name = `${asset.name} v${version.n} (${asset.slug})`;
-    const created = await copyFromUrl(srcUrl, name);
+    // Tag the ingest so the orphan-prune can scope to this app's videos
+    // (the Cloudflare Stream account is shared with the Video Review Tool).
+    const created = await copyFromUrl(srcUrl, name, { app: STREAM_APP_TAG });
     await patchVersion(cardId, asset.slug, version.n, {
       streamUid: created.uid,
       streamStatus: "pending",

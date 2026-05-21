@@ -1,14 +1,19 @@
-// Find Cloudflare Stream videos that no AssetVersion references, and
-// (with --delete) remove them. Orphans arise when an ingest is
-// superseded - e.g. a manual sync run racing the cron's read-modify-
-// write, producing a duplicate Stream copy.
+// Find Cloudflare Stream videos that THIS app ingested but no
+// AssetVersion references, and (with --delete) remove them. Orphans
+// arise when an ingest is superseded - e.g. a manual sync run racing
+// the cron's read-modify-write, producing a duplicate Stream copy.
+//
+// SHARED ACCOUNT: the Cloudflare Stream account is shared with the
+// Video Review Tool (review.fame.so). This script only ever considers
+// videos tagged meta.app === STREAM_APP_TAG, so it can NEVER flag or
+// delete the other tool's videos (or pre-tag legacy crew videos).
 //
 // Dry-run by default - it only reports. Pass --delete to actually
 // remove the orphans (a permanent deletion - run it yourself).
 //   pnpm tsx --env-file=<env-file> scripts/prune-stream-orphans.ts
 //   pnpm tsx --env-file=<env-file> scripts/prune-stream-orphans.ts --delete
 
-import { listVideos, deleteVideo } from "../lib/stream";
+import { listVideos, deleteVideo, STREAM_APP_TAG } from "../lib/stream";
 import { listAll as listShoots } from "../lib/storage";
 import { getAssetsForShoot } from "../lib/asset-storage";
 
@@ -26,10 +31,14 @@ async function main() {
   }
 
   const all = await listVideos();
-  const orphans = all.filter((v) => !referenced.has(v.uid));
+  // Shared account: scope to videos THIS tool ingested. Everything else
+  // (review.fame.so's videos + any pre-tag legacy crew videos) is off
+  // limits and can never be deleted by this script.
+  const ours = all.filter((v) => v.meta?.app === STREAM_APP_TAG);
+  const orphans = ours.filter((v) => !referenced.has(v.uid));
 
   console.log(
-    `Stream account: ${all.length} video(s), ${referenced.size} referenced by an asset, ${orphans.length} orphan(s).`,
+    `Stream account: ${all.length} video(s) total, ${ours.length} ingested by this app, ${referenced.size} referenced, ${orphans.length} orphan(s).`,
   );
   for (const o of orphans) {
     console.log(`  orphan  ${o.uid}  "${o.meta?.name ?? "-"}"  state=${o.status.state}`);
