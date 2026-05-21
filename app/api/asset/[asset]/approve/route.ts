@@ -12,6 +12,8 @@ import { findAssetBySlug } from "@/lib/asset-lookup";
 import { clientVersions } from "@/lib/asset-versions";
 import { applyApprovalToAsset, makeApproval, syncTrelloForShoot } from "@/lib/approval";
 import { addCardComment } from "@/lib/trello";
+import { appendActivity } from "@/lib/activity-storage";
+import { newDecisionNote } from "@/lib/activity";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +58,30 @@ export async function POST(
     assetSlug: slug,
     approval,
   });
+
+  // §6: an approval note (optional) also lands in the shared activity
+  // stream as a comment_client entry. Best-effort - never block the
+  // approval write on it.
+  const note = (body.note ?? "").trim();
+  if (note) {
+    try {
+      await appendActivity(
+        lookup.shoot.cardId,
+        slug,
+        newDecisionNote({
+          authorName,
+          text: note,
+          version: onVersion,
+          decision: "approved",
+        }),
+      );
+    } catch (err) {
+      console.warn(
+        "[approve] activity note append failed:",
+        (err as Error).message,
+      );
+    }
+  }
 
   const todayHuman = new Date().toLocaleDateString("en-GB", {
     day: "numeric",

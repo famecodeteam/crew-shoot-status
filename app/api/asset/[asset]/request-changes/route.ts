@@ -12,6 +12,8 @@ import { findAssetBySlug } from "@/lib/asset-lookup";
 import { clientVersions } from "@/lib/asset-versions";
 import { applyApprovalToAsset, makeApproval, syncTrelloForShoot } from "@/lib/approval";
 import { addCardComment } from "@/lib/trello";
+import { appendActivity } from "@/lib/activity-storage";
+import { newDecisionNote } from "@/lib/activity";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +61,29 @@ export async function POST(
     assetSlug: slug,
     approval,
   });
+
+  // §6: the client's decision note also lands in the shared activity
+  // stream as a comment_client entry. Best-effort - never block the
+  // request-changes write on it.
+  if (text) {
+    try {
+      await appendActivity(
+        lookup.shoot.cardId,
+        slug,
+        newDecisionNote({
+          authorName,
+          text,
+          version: onVersion,
+          decision: "changes_requested",
+        }),
+      );
+    } catch (err) {
+      console.warn(
+        "[request-changes] activity note append failed:",
+        (err as Error).message,
+      );
+    }
+  }
 
   const reviewUrl = clientReviewUrl(lookup.shoot.slug, slug);
   const trelloText = text

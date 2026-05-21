@@ -93,6 +93,46 @@ export type Comment = {
   resolved: boolean;
 };
 
+// ---------- Activity stream (shared unified timeline) ----------
+// One Redis list per asset, keyed activity:<cardId>:<assetSlug>. The
+// post-production rebuild's single timeline - it replaces the per-version
+// comments:<assetSlug>:v<N> store (shared-KV contract v2 §5). Both repos
+// read the whole list; member.fame.so writes comment_internal + every
+// system_* entry, and THIS repo writes ONLY comment_client.
+export type AssetActivityType =
+  | "comment_internal"
+  | "comment_client"
+  | "system_version_uploaded"
+  | "system_version_published"
+  | "system_version_unpublished"
+  | "system_lifecycle_changed"
+  | "system_clips_selected";
+
+export type AssetActivity = {
+  id: string; // "act_<hex8>"
+  type: AssetActivityType;
+  actorName: string | null;
+  actorRole: "cpm" | "editor" | "client" | "system";
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+  body: string | null; // comment text; null on system_* entries
+  targetVersionN: number | null; // version a comment / event refers to
+  timestampSeconds: number | null; // playhead position, client comments
+  resolved: boolean;
+  parentId: string | null; // reply threading
+  meta: Record<string, unknown>; // e.g. { fromComment } or { kind }
+};
+
+// Edit/delete capability + audit fields for a client comment, keyed
+// comment-auth:<activityId>. Kept OFF the shared activity entry: the
+// activity list is partly client-readable, so the author token must
+// never ride on it (shared-KV contract v2 §5, §8). shoots.fame.so-only.
+export type CommentAuth = {
+  authorToken: string; // server-issued; client stores it in localStorage
+  authorIp: string | null;
+  authorUa: string | null;
+};
+
 // Public data model - what /[slug] reads. One blob per Trello card.
 export type Shoot = {
   slug: string;

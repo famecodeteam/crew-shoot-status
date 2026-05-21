@@ -1,43 +1,37 @@
-// Comments collection for a (asset, version) pair.
+// Client review comments for an (asset, version) pair, stored in the
+// shared activity stream (shared-KV contract v2 §5).
 //
-//   GET    → returns the list, oldest-first, with author tokens stripped.
-//   POST   → appends a new comment; returns the server-issued authorToken
-//            so the client can store it for later edit/delete.
+//   GET  -> the version's client comments, oldest-first.
+//   POST -> appends a comment_client activity entry; returns the
+//           server-issued authorToken for later edit/delete.
 //
-// Identity: anonymous + unguessable URL. Name is requested client-side
-// on first post and stored in localStorage along with the per-comment
-// authorToken returned here.
+// Identity is anonymous + unguessable-URL: the name is collected
+// client-side, the per-comment authorToken lives in localStorage and in
+// the comment-auth:<activityId> side record - never on the shared
+// activity entry (the activity list is partly client-readable).
 //
-// Trello write-back: posting the FIRST comment on a version writes a
-// note to the shoot's Trello card. Subsequent comments don't (the
-// review URL is the source of truth).
+// Trello write-back: the FIRST comment on a version notes the shoot's
+// Trello card. Subsequent comments don't.
+//
+// §9 cutover: the read path also surfaces any legacy comments:<slug>:v<N>
+// not yet migrated - see readClientComments.
 
 import type { NextRequest } from "next/server";
 import { findAssetBySlug } from "@/lib/asset-lookup";
+import { appendActivity, setCommentAuth } from "@/lib/activity-storage";
 import {
-  appendComment,
-  listComments,
-} from "@/lib/asset-storage";
-import { newAuthorToken, newCommentId } from "@/lib/comment-id";
+  newClientComment,
+  readClientComments,
+  toClientComment,
+} from "@/lib/activity";
+import { newAuthorToken } from "@/lib/comment-id";
 import { addCardComment } from "@/lib/trello";
-import type { Comment } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 function parseVersion(raw: string): number | null {
   const n = Number(raw.replace(/^v/, ""));
   return Number.isInteger(n) && n >= 1 ? n : null;
-}
-
-// What we send to the client - note authorToken is stripped (only the
-// original author has it; we never echo it to subsequent readers).
-type ClientComment = Omit<Comment, "authorToken" | "authorIp" | "authorUa">;
-function strip(c: Comment): ClientComment {
-  const { authorToken, authorIp, authorUa, ...rest } = c;
-  void authorToken;
-  void authorIp;
-  void authorUa;
-  return rest;
 }
 
 export async function GET(
@@ -48,8 +42,11 @@ export async function GET(
   const version = parseVersion(vRaw);
   if (!version) return Response.json({ error: "bad version" }, { status: 400 });
 
-  const list = await listComments(slug, version);
-  return Response.json({ comments: list.map(strip) });
+  const lookup = await findAssetBySlug(slug);
+  if (!lookup) return Response.json({ error: "unknown asset" }, { status: 404 });
+
+  const comments = await readClientComments(lookup.shoot.cardId, slug, version);
+  return Response.json({ comments });
 }
 
 export async function POST(
@@ -82,45 +79,37 @@ export async function POST(
 
   const lookup = await findAssetBySlug(slug);
   if (!lookup) return Response.json({ error: "unknown asset" }, { status: 404 });
+  const cardId = lookup.shoot.cardId;
 
-  // Detect "this is the first comment on this version" BEFORE writing.
-  const existing = await listComments(slug, version);
+  // "First comment on this version?" - decided before the write.
+  const existing = await readClientComments(cardId, slug, version);
   const isFirst = existing.length === 0;
 
-  const now = new Date().toISOString();
-  const comment: Comment = {
-    id: newCommentId(),
-    authorName,
-    authorToken: newAuthorToken(),
+  const entry = newClientComment({ authorName, text, version, timestampSeconds: ts });
+  const authorToken = newAuthorToken();
+  await appendActivity(cardId, slug, entry);
+  await setCommentAuth(entry.id, {
+    authorToken,
     authorIp: req.headers.get("x-forwarded-for") ?? null,
     authorUa: req.headers.get("user-agent") ?? null,
-    text,
-    timestampSeconds: ts,
-    createdAt: now,
-    updatedAt: now,
-    resolved: false,
-  };
+  });
 
-  await appendComment(slug, version, comment);
-
-  // First-comment write-back to the Trello card. Best-effort: if Trello
-  // is down, the comment is still saved - the PM might just miss the
-  // notification. (Email fallback is deferred per the brief.)
+  // First-comment write-back to the Trello card (best-effort).
   if (isFirst) {
     const reviewUrl = reviewUrlFor(lookup.shoot.slug, slug);
-    const text = `[${authorName}] left comments on ${lookup.asset.name} (v${version}): ${reviewUrl}`;
+    const note = `[${authorName}] left comments on ${lookup.asset.name} (v${version}): ${reviewUrl}`;
     try {
-      await addCardComment(lookup.shoot.cardId, text);
+      await addCardComment(cardId, note);
     } catch (err) {
       console.warn("[comments] Trello write-back failed:", (err as Error).message);
     }
   }
 
   return Response.json({
-    comment: strip(comment),
-    // Return the author token so the client can persist it and prove
-    // ownership on subsequent edits/deletes.
-    authorToken: comment.authorToken,
+    comment: toClientComment(entry),
+    // The author token lets the client prove ownership on later
+    // edit/delete; it is returned once and never echoed to other readers.
+    authorToken,
   });
 }
 

@@ -1,19 +1,32 @@
-// Single-comment operations: edit + delete + toggle resolved.
+// Single client-comment ops: edit text, toggle resolved, delete.
 //
-// Identity is via author token (server-issued on POST, stored client-side
-// in localStorage). Edit + delete are only permitted within 10 minutes
-// of the comment's creation; after that the comment is locked even for
-// the original author. Toggling resolved is permitted by anyone with
-// the page URL (the brief says "anyone with access to the page can
-// toggle"), so we don't require a token for that.
+// A comment is a comment_client entry in the shared activity stream.
+// Edit/delete capability is the authorToken in the comment-auth:<id>
+// side record (server-issued on POST, stored client-side). Edit + delete
+// are allowed only within 10 minutes of creation; resolved can be
+// toggled by anyone with the page URL.
+//
+// §9 cutover fallback: a comment id not in the activity stream is an
+// un-migrated legacy comments:<assetSlug>:v<N> entry - we fall through
+// to the legacy store for it. The whole legacy arm is dropped at §9
+// step (c).
 
 import type { NextRequest } from "next/server";
+import { findAssetBySlug } from "@/lib/asset-lookup";
 import {
-  deleteComment as deleteCommentStore,
+  deleteCommentAuth,
+  getCommentAuth,
+  listActivity,
+  removeActivity,
+  replaceActivity,
+} from "@/lib/activity-storage";
+import { toClientComment } from "@/lib/activity";
+import {
+  deleteComment as deleteLegacyComment,
   listComments,
-  updateComment,
+  updateComment as updateLegacyComment,
 } from "@/lib/asset-storage";
-import type { Comment } from "@/lib/types";
+import type { AssetActivity, Comment } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -24,25 +37,8 @@ function parseVersion(raw: string): number | null {
   return Number.isInteger(n) && n >= 1 ? n : null;
 }
 
-function withinEditWindow(c: Comment): boolean {
-  return Date.now() - new Date(c.createdAt).getTime() <= EDIT_WINDOW_MS;
-}
-
-function strip(c: Comment) {
-  const { authorToken, authorIp, authorUa, ...rest } = c;
-  void authorToken;
-  void authorIp;
-  void authorUa;
-  return rest;
-}
-
-async function findComment(
-  slug: string,
-  version: number,
-  id: string,
-): Promise<Comment | null> {
-  const list = await listComments(slug, version);
-  return list.find((c) => c.id === id) ?? null;
+function withinEditWindow(createdAt: string): boolean {
+  return Date.now() - new Date(createdAt).getTime() <= EDIT_WINDOW_MS;
 }
 
 export async function PATCH(
@@ -60,45 +56,48 @@ export async function PATCH(
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
 
-  const existing = await findComment(slug, version, commentId);
-  if (!existing) return Response.json({ error: "not found" }, { status: 404 });
+  const lookup = await findAssetBySlug(slug);
+  if (!lookup) return Response.json({ error: "unknown asset" }, { status: 404 });
+  const cardId = lookup.shoot.cardId;
 
-  const updates: Partial<Comment> = {};
+  const activity = await listActivity(cardId, slug);
+  const entry = activity.find(
+    (a) => a.id === commentId && a.type === "comment_client",
+  );
+  // Not in the activity stream -> un-migrated legacy comment.
+  if (!entry) return patchLegacy(slug, version, commentId, body);
 
-  // Text edit - author-only, within edit window.
+  const updates: Partial<AssetActivity> = {};
+
+  // Text edit - author-only, within the edit window.
   if (typeof body.text === "string") {
-    if (!body.authorToken || body.authorToken !== existing.authorToken) {
+    const auth = await getCommentAuth(entry.id);
+    if (!body.authorToken || !auth || body.authorToken !== auth.authorToken) {
       return Response.json({ error: "forbidden" }, { status: 403 });
     }
-    if (!withinEditWindow(existing)) {
+    if (!withinEditWindow(entry.createdAt)) {
       return Response.json({ error: "edit window closed" }, { status: 410 });
     }
     const t = body.text.trim();
     if (!t || t.length > 2000) {
       return Response.json({ error: "text required (≤2000 chars)" }, { status: 400 });
     }
-    updates.text = t;
+    updates.body = t;
     updates.updatedAt = new Date().toISOString();
   }
 
-  // Resolved toggle - anyone with the URL can flip this.
+  // Resolved toggle - anyone with the URL can flip it.
   if (typeof body.resolved === "boolean") {
     updates.resolved = body.resolved;
-    // Don't bump updatedAt for resolve toggles - the "(edited)" marker
-    // only appears for text edits.
   }
 
   if (Object.keys(updates).length === 0) {
     return Response.json({ error: "no fields to update" }, { status: 400 });
   }
 
-  const updated = await updateComment(slug, version, commentId, (c) => ({
-    ...c,
-    ...updates,
-  }));
-  if (!updated) return Response.json({ error: "not found" }, { status: 404 });
-
-  return Response.json({ comment: strip(updated) });
+  const updated: AssetActivity = { ...entry, ...updates };
+  await replaceActivity(cardId, slug, updated);
+  return Response.json({ comment: toClientComment(updated) });
 }
 
 export async function DELETE(
@@ -116,16 +115,96 @@ export async function DELETE(
     body = {};
   }
 
-  const existing = await findComment(slug, version, commentId);
-  if (!existing) return Response.json({ error: "not found" }, { status: 404 });
+  const lookup = await findAssetBySlug(slug);
+  if (!lookup) return Response.json({ error: "unknown asset" }, { status: 404 });
+  const cardId = lookup.shoot.cardId;
 
-  if (!body.authorToken || body.authorToken !== existing.authorToken) {
+  const activity = await listActivity(cardId, slug);
+  const entry = activity.find(
+    (a) => a.id === commentId && a.type === "comment_client",
+  );
+  if (!entry) return deleteLegacy(slug, version, commentId, body);
+
+  const auth = await getCommentAuth(entry.id);
+  if (!body.authorToken || !auth || body.authorToken !== auth.authorToken) {
     return Response.json({ error: "forbidden" }, { status: 403 });
   }
-  if (!withinEditWindow(existing)) {
+  if (!withinEditWindow(entry.createdAt)) {
     return Response.json({ error: "edit window closed" }, { status: 410 });
   }
 
-  await deleteCommentStore(slug, version, commentId);
+  await removeActivity(cardId, slug, entry.id);
+  await deleteCommentAuth(entry.id);
+  return Response.json({ ok: true });
+}
+
+// ---- Legacy comments: fallback (un-migrated entries; §9 step c drops it) ----
+
+async function findLegacy(
+  slug: string,
+  version: number,
+  id: string,
+): Promise<Comment | null> {
+  const list = await listComments(slug, version);
+  return list.find((c) => c.id === id) ?? null;
+}
+
+async function patchLegacy(
+  slug: string,
+  version: number,
+  commentId: string,
+  body: { text?: string; resolved?: boolean; authorToken?: string },
+): Promise<Response> {
+  const existing = await findLegacy(slug, version, commentId);
+  if (!existing) return Response.json({ error: "not found" }, { status: 404 });
+
+  const updates: Partial<Comment> = {};
+  if (typeof body.text === "string") {
+    if (!body.authorToken || body.authorToken !== existing.authorToken) {
+      return Response.json({ error: "forbidden" }, { status: 403 });
+    }
+    if (!withinEditWindow(existing.createdAt)) {
+      return Response.json({ error: "edit window closed" }, { status: 410 });
+    }
+    const t = body.text.trim();
+    if (!t || t.length > 2000) {
+      return Response.json({ error: "text required (≤2000 chars)" }, { status: 400 });
+    }
+    updates.text = t;
+    updates.updatedAt = new Date().toISOString();
+  }
+  if (typeof body.resolved === "boolean") {
+    updates.resolved = body.resolved;
+  }
+  if (Object.keys(updates).length === 0) {
+    return Response.json({ error: "no fields to update" }, { status: 400 });
+  }
+  const updated = await updateLegacyComment(slug, version, commentId, (c) => ({
+    ...c,
+    ...updates,
+  }));
+  if (!updated) return Response.json({ error: "not found" }, { status: 404 });
+  const { authorToken, authorIp, authorUa, ...rest } = updated;
+  void authorToken;
+  void authorIp;
+  void authorUa;
+  return Response.json({ comment: rest });
+}
+
+async function deleteLegacy(
+  slug: string,
+  version: number,
+  commentId: string,
+  body: { authorToken?: string },
+): Promise<Response> {
+  const existing = await findLegacy(slug, version, commentId);
+  if (!existing) return Response.json({ error: "not found" }, { status: 404 });
+  if (!body.authorToken || body.authorToken !== existing.authorToken) {
+    return Response.json({ error: "forbidden" }, { status: 403 });
+  }
+  if (!withinEditWindow(existing.createdAt)) {
+    return Response.json({ error: "edit window closed" }, { status: 410 });
+  }
+  await deleteLegacyComment(slug, version, commentId);
   return Response.json({ ok: true });
 }

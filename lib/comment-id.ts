@@ -9,6 +9,11 @@ export function newCommentId(): string {
   return `cmt_${randomBytes(4).toString("hex")}`;
 }
 
+// Activity-stream entry id (shared-KV contract v2 §5). "act_" + 8 hex.
+export function newActivityId(): string {
+  return `act_${randomBytes(4).toString("hex")}`;
+}
+
 export function newAuthorToken(): string {
   return randomBytes(32).toString("hex");
 }
