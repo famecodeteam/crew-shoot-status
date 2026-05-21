@@ -218,13 +218,17 @@ function Player({
     let cancelled = false;
 
     if (!hlsUrl) {
+      // Not ingested into Stream yet - Drive proxy fallback.
       video.src = fileUrl;
       video.load();
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = hlsUrl;
-      video.load();
     } else {
-      // Dynamic-import so hls.js is code-split and never SSR-evaluated.
+      // Ingested - play the Stream HLS. Prefer hls.js (MSE) whenever it's
+      // supported: the reliable, consistent path on Chrome / Firefox /
+      // Edge. Only Safari / iOS (no hls.js support) fall back to native
+      // HLS - some browsers report HLS as natively playable ("maybe")
+      // yet hls.js is still the better choice, so isSupported() must be
+      // checked first. Dynamic-import so hls.js is code-split and never
+      // SSR-evaluated.
       void import("hls.js").then(({ default: Hls }) => {
         if (cancelled) return;
         if (Hls.isSupported()) {
@@ -233,6 +237,10 @@ function Player({
           inst.loadSource(hlsUrl);
           inst.attachMedia(video);
           hls = inst;
+        } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+          // Safari / iOS - native HLS.
+          video.src = hlsUrl;
+          video.load();
         } else {
           // No HLS support at all - fall back to the Drive-proxy MP4.
           video.src = fileUrl;
