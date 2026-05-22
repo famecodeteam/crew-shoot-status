@@ -105,8 +105,10 @@ export type AssetActivityType =
   | "system_version_uploaded"
   | "system_version_published"
   | "system_version_unpublished"
+  | "system_version_changes_requested"
   | "system_lifecycle_changed"
-  | "system_clips_selected";
+  | "system_clips_selected"
+  | "system_brief_drafted";
 
 export type AssetActivity = {
   id: string; // "act_<hex8>"
