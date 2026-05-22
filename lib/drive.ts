@@ -54,7 +54,13 @@ function escapeQuery(s: string): string {
  * shoot-folder link still come from the "#NNNN" folder.
  */
 export async function findShootDriveLinks(shootNumber: string): Promise<ShootDriveLinks> {
-  const stripped = shootNumber.replace(/^#/, "").trim();
+  const raw = shootNumber.replace(/^#/, "").trim();
+  if (!raw) return {};
+  // Sub-shoots carry a trailing letter (#0225a / #0225b - a Trello-card
+  // split for multi-leg or split-day bookings) but share ONE
+  // base-numbered Drive folder (#0225); the suffix is never part of the
+  // Drive naming. Resolve brief + quote against the base number.
+  const stripped = raw.replace(/[a-z]$/i, "");
   if (!stripped) return {};
   const folderName = `#${stripped}`;
 
@@ -100,8 +106,15 @@ export async function findShootDriveLinks(shootNumber: string): Promise<ShootDri
     return name.includes(folderName) && name.toLowerCase().includes("brief");
   });
   if (briefCandidates.length) {
+    // Prefer a brief whose name has no unfilled "[[...]]" template
+    // placeholder - a half-edited template copy must not beat the real
+    // brief when several "#NNNN ... brief" docs share the folder.
     const chosen =
-      briefCandidates.find((f) => (f.parents ?? []).length) ?? briefCandidates[0];
+      briefCandidates.find(
+        (f) => (f.parents ?? []).length && !(f.name ?? "").includes("[["),
+      ) ??
+      briefCandidates.find((f) => (f.parents ?? []).length) ??
+      briefCandidates[0];
     briefUrl = chosen.webViewLink ?? undefined;
     briefName = chosen.name ?? undefined;
     briefParentIds = chosen.parents ?? [];
