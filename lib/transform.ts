@@ -30,6 +30,7 @@ export type TransformContext = {
     depositReceiptUrl: string | null;
     balanceReceiptUrl: string | null;
     footageUrl: string | null;
+    footageAssetCount: string | null;
     publicSlug: string | null;
     statusPageUrl: string | null;
     turnaroundDays: string | null;
@@ -82,6 +83,10 @@ export function buildContext(
       // Per-shoot footage index URL (member.fame.so). Written back by
       // member.fame.so to this field when the index is generated.
       footageUrl: findByName("Client Footage URL"),
+      // Asset count on the footage index. Written back by member.fame.so
+      // when assets land. ANDed with the list-position gate so the
+      // Footage section hides while the index has zero assets.
+      footageAssetCount: findByName("Footage Asset Count"),
       publicSlug: findByName("Public Slug"),
       // Where the auto-generated public URL gets written back so PMs can
       // share it from Trello directly. A handful of aliases so a future
@@ -290,6 +295,10 @@ export function transformCard(
     readCustomFieldText(card, ctx.fieldId.balanceReceiptUrl) || undefined;
   const footageUrl =
     readCustomFieldText(card, ctx.fieldId.footageUrl) || undefined;
+  const footageAssetCount = readCustomFieldNumber(
+    card,
+    ctx.fieldId.footageAssetCount,
+  );
   const clientWhatsappUrl =
     readCustomFieldText(card, ctx.fieldId.clientWhatsappUrl) || undefined;
 
@@ -312,11 +321,12 @@ export function transformCard(
     location,
     shootDate,
     status: mapping.status,
-    statusLabel: statusLabel(mapping.status, crewFirstName),
+    statusLabel: statusLabel(mapping.status, crewFirstName, hasPostProduction),
     crew,
     depositReceiptUrl,
     balanceReceiptUrl,
     footageUrl,
+    footageAssetCount,
     clientWhatsappUrl,
     producerEmail: pickProducer(card.idMembers).email,
     hasPostProduction,

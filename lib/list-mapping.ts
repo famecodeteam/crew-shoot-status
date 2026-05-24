@@ -64,9 +64,16 @@ export function mapList(listName: string): Mapping | null {
   return LISTS[key] ?? null;
 }
 
-// Client-facing label for the hero badge. Most labels are stable; "crew-confirmed"
-// gets the crew member's first name interpolated when known.
-export function statusLabel(status: ShootStatus, crewFirstName?: string): string {
+// Client-facing label for the hero badge. Most labels are stable;
+// "crew-confirmed" gets the crew's first name interpolated when known,
+// and "in-editing" is reworded for crew-only shoots (no Post Production
+// label) - there's no editing in that workflow, Fame is just handing
+// off raw footage to the client.
+export function statusLabel(
+  status: ShootStatus,
+  crewFirstName: string | undefined,
+  hasPostProduction: boolean,
+): string {
   switch (status) {
     case "booking-confirmed":
       return "Booking confirmed";
@@ -79,7 +86,7 @@ export function statusLabel(status: ShootStatus, crewFirstName?: string): string
     case "shoot-complete":
       return "Footage captured";
     case "in-editing":
-      return "In editing";
+      return hasPostProduction ? "In editing" : "Delivering footage";
     case "assets-ready":
       return "Assets ready for review";
     case "delivered":
