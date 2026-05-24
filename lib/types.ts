@@ -155,6 +155,11 @@ export type Shoot = {
   };
   briefUrl?: string;
   quoteUrl?: string;
+  // Per-shoot footage index page on member.fame.so - the client browses
+  // their raw footage there. Set from the "Client Footage URL" Trello
+  // custom field, which member.fame.so writes back when the index is
+  // generated. Surfaced in the Documents section.
+  footageUrl?: string;
   depositReceiptUrl?: string;
   balanceReceiptUrl?: string;
   // WhatsApp group invite URL shared with the client - set on the

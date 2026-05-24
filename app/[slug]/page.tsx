@@ -7,6 +7,7 @@ import { shootSlugToBriefSlug, briefAccessCode } from "@/lib/brief-slug";
 import { getAssetsForShoot } from "@/lib/asset-storage";
 import { clientVersions } from "@/lib/asset-versions";
 import type { Asset, Shoot } from "@/lib/types";
+import type { ProseBlock } from "@/lib/parse-brief";
 import { getDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
 import { currentStepIndex, timelineSteps } from "./status";
@@ -47,21 +48,46 @@ export default async function ShootPage({ params }: { params: Promise<{ slug: st
   // for one-tap auto-unlock. Hidden until the brief has actually been
   // synced (parsedJson present); otherwise the link would land the
   // client on the "Brief is being prepared" placeholder.
-  const briefHref = slug === "demo" ? null : await resolveBriefHref(slug);
+  const { briefHref, deliverables } =
+    slug === "demo"
+      ? { briefHref: null, deliverables: null }
+      : await loadBriefData(slug);
 
   return (
-    <ShootView shoot={shoot} assets={assets} shootSlug={slug} briefHref={briefHref} />
+    <ShootView
+      shoot={shoot}
+      assets={assets}
+      shootSlug={slug}
+      briefHref={briefHref}
+      deliverables={deliverables}
+    />
   );
 }
 
-async function resolveBriefHref(shootSlug: string): Promise<string | null> {
+type BriefPageData = {
+  briefHref: string | null;
+  deliverables: ProseBlock[] | null;
+};
+
+// One KV read to back both the Documents-section brief link AND the
+// "What we agreed" pinned summary - the deliverables list is pulled
+// out of the parsed brief's Production-Scope section.
+async function loadBriefData(shootSlug: string): Promise<BriefPageData> {
   const split = shootSlugToBriefSlug(shootSlug);
-  if (!split) return null;
+  if (!split) return { briefHref: null, deliverables: null };
   const rec = await getBriefBySlug(split.briefSlug);
-  if (!rec?.parsedJson) return null;
+  if (!rec?.parsedJson) return { briefHref: null, deliverables: null };
   // ?code= is the shoot number - the one-tap unlock the client arrives with.
   const code = briefAccessCode(rec.slug, rec.hash);
-  return `/brief/${split.briefSlug}?code=${encodeURIComponent(code)}`;
+  const briefHref = `/brief/${split.briefSlug}?code=${encodeURIComponent(code)}`;
+  const production = rec.parsedJson.sections.find(
+    (s) => s.kind === "production",
+  );
+  const deliverables =
+    production && production.kind === "production"
+      ? production.deliverables
+      : null;
+  return { briefHref, deliverables };
 }
 
 function ShootView({
@@ -69,11 +95,13 @@ function ShootView({
   assets,
   shootSlug,
   briefHref,
+  deliverables,
 }: {
   shoot: Shoot;
   assets: Asset[];
   shootSlug: string;
   briefHref: string | null;
+  deliverables: ProseBlock[] | null;
 }) {
   const steps = timelineSteps(shoot.hasPostProduction);
   const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
@@ -185,6 +213,20 @@ function ShootView({
         </section>
       )}
 
+      {!isOnHold && deliverables && deliverables.length > 0 && (
+        <section className="section">
+          <div className="card-h">What we agreed</div>
+          <div className="card">
+            <h3 className="agreed-label">Deliverables</h3>
+            <ul className="agreed-list">
+              {deliverables.map((block, i) => (
+                <li key={i} dangerouslySetInnerHTML={{ __html: block.html }} />
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
       {!isOnHold && assets.length > 0 && (
         <FinalAssetsSection assets={assets} shootSlug={shootSlug} />
       )}
@@ -225,7 +267,7 @@ function ShootView({
       */}
       {(() => {
         const linkHref = briefHref ?? shoot.briefUrl ?? null;
-        if (!linkHref && !shoot.quoteUrl) return null;
+        if (!linkHref && !shoot.quoteUrl && !shoot.footageUrl) return null;
         return (
           <section className="section">
             <div className="card-h">Documents</div>
@@ -244,6 +286,15 @@ function ShootView({
                 <div>
                   <div className="link-card-label">Quote</div>
                   <div className="link-card-text">View your quote</div>
+                </div>
+                <div className="link-card-arrow">→</div>
+              </a>
+            )}
+            {shoot.footageUrl && (
+              <a className="link-card" href={shoot.footageUrl} target="_blank" rel="noreferrer">
+                <div>
+                  <div className="link-card-label">Footage</div>
+                  <div className="link-card-text">Browse your footage</div>
                 </div>
                 <div className="link-card-arrow">→</div>
               </a>

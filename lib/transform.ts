@@ -29,6 +29,7 @@ export type TransformContext = {
     crewBio: string | null;
     depositReceiptUrl: string | null;
     balanceReceiptUrl: string | null;
+    footageUrl: string | null;
     publicSlug: string | null;
     statusPageUrl: string | null;
     turnaroundDays: string | null;
@@ -78,6 +79,9 @@ export function buildContext(
         "Balance Receipt",
         "Final Receipt URL",
       ),
+      // Per-shoot footage index URL (member.fame.so). Written back by
+      // member.fame.so to this field when the index is generated.
+      footageUrl: findByName("Client Footage URL"),
       publicSlug: findByName("Public Slug"),
       // Where the auto-generated public URL gets written back so PMs can
       // share it from Trello directly. A handful of aliases so a future
@@ -284,6 +288,8 @@ export function transformCard(
     readCustomFieldText(card, ctx.fieldId.depositReceiptUrl) || undefined;
   const balanceReceiptUrl =
     readCustomFieldText(card, ctx.fieldId.balanceReceiptUrl) || undefined;
+  const footageUrl =
+    readCustomFieldText(card, ctx.fieldId.footageUrl) || undefined;
   const clientWhatsappUrl =
     readCustomFieldText(card, ctx.fieldId.clientWhatsappUrl) || undefined;
 
@@ -310,6 +316,7 @@ export function transformCard(
     crew,
     depositReceiptUrl,
     balanceReceiptUrl,
+    footageUrl,
     clientWhatsappUrl,
     producerEmail: pickProducer(card.idMembers).email,
     hasPostProduction,
