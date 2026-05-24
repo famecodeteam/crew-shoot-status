@@ -160,9 +160,11 @@ export type Shoot = {
   // custom field, which member.fame.so writes back when the index is
   // generated. Surfaced in the Footage section.
   footageUrl?: string;
-  // Asset count on the footage index. Written back by member.fame.so
-  // when assets are indexed - we hide the Footage section until this is
-  // > 0 so a freshly-generated empty index doesn't surface.
+  // Asset count on the footage index, to be written back by member.fame.so
+  // once a Trello custom field exists for it. Currently unused by the page
+  // (the Footage section is gated on footageUrl + list position alone) -
+  // the field is left in the type so the plumbing is ready if we later
+  // need to distinguish a generated-but-empty index from a populated one.
   footageAssetCount?: number;
   depositReceiptUrl?: string;
   balanceReceiptUrl?: string;

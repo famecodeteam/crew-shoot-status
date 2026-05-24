@@ -80,17 +80,18 @@ function ShootView({
   const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
   const isOnHold = shoot.status === "on-hold";
   const isDelivered = shoot.status === "delivered";
-  // The Footage section appears only when BOTH (a) the card has reached
-  // "Assets Received From Crew" or any list to the right - status mapped
-  // to in-editing / assets-ready / delivered - AND (b) the footage index
-  // actually has assets (Footage Asset Count > 0, written back by
-  // member.fame.so when the index is populated). Together: hide while
-  // the workflow isn't there yet, and hide while the index is empty.
+  // The Footage section appears only once the card has reached "Assets
+  // Received From Crew" or any list to the right (status mapped to
+  // in-editing / assets-ready / delivered). The footageUrl itself is the
+  // "index has been generated" signal - member.fame.so only writes that
+  // hashed URL into the Trello custom field after building the index, so
+  // its presence is sufficient. (We intentionally don't gate on an asset
+  // count here - the count field isn't written yet, and would just hide
+  // ready footage if added unconditionally.)
   const footageAvailable =
-    (shoot.status === "in-editing" ||
-      shoot.status === "assets-ready" ||
-      shoot.status === "delivered") &&
-    (shoot.footageAssetCount ?? 0) > 0;
+    shoot.status === "in-editing" ||
+    shoot.status === "assets-ready" ||
+    shoot.status === "delivered";
   // Crew card appears once we've crossed the "Crew confirmed" milestone
   // (i.e. stepIdx is 2 or higher - booking-confirmed and searching-for-crew
   // both sit at stepIdx=1, working toward crew confirmation).
