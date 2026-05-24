@@ -7,7 +7,6 @@ import { shootSlugToBriefSlug, briefAccessCode } from "@/lib/brief-slug";
 import { getAssetsForShoot } from "@/lib/asset-storage";
 import { clientVersions } from "@/lib/asset-versions";
 import type { Asset, Shoot } from "@/lib/types";
-import type { ProseBlock } from "@/lib/parse-brief";
 import { getDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
 import { currentStepIndex, timelineSteps } from "./status";
@@ -48,46 +47,21 @@ export default async function ShootPage({ params }: { params: Promise<{ slug: st
   // for one-tap auto-unlock. Hidden until the brief has actually been
   // synced (parsedJson present); otherwise the link would land the
   // client on the "Brief is being prepared" placeholder.
-  const { briefHref, deliverables } =
-    slug === "demo"
-      ? { briefHref: null, deliverables: null }
-      : await loadBriefData(slug);
+  const briefHref = slug === "demo" ? null : await resolveBriefHref(slug);
 
   return (
-    <ShootView
-      shoot={shoot}
-      assets={assets}
-      shootSlug={slug}
-      briefHref={briefHref}
-      deliverables={deliverables}
-    />
+    <ShootView shoot={shoot} assets={assets} shootSlug={slug} briefHref={briefHref} />
   );
 }
 
-type BriefPageData = {
-  briefHref: string | null;
-  deliverables: ProseBlock[] | null;
-};
-
-// One KV read to back both the Documents-section brief link AND the
-// "What we agreed" pinned summary - the deliverables list is pulled
-// out of the parsed brief's Production-Scope section.
-async function loadBriefData(shootSlug: string): Promise<BriefPageData> {
+async function resolveBriefHref(shootSlug: string): Promise<string | null> {
   const split = shootSlugToBriefSlug(shootSlug);
-  if (!split) return { briefHref: null, deliverables: null };
+  if (!split) return null;
   const rec = await getBriefBySlug(split.briefSlug);
-  if (!rec?.parsedJson) return { briefHref: null, deliverables: null };
+  if (!rec?.parsedJson) return null;
   // ?code= is the shoot number - the one-tap unlock the client arrives with.
   const code = briefAccessCode(rec.slug, rec.hash);
-  const briefHref = `/brief/${split.briefSlug}?code=${encodeURIComponent(code)}`;
-  const production = rec.parsedJson.sections.find(
-    (s) => s.kind === "production",
-  );
-  const deliverables =
-    production && production.kind === "production"
-      ? production.deliverables
-      : null;
-  return { briefHref, deliverables };
+  return `/brief/${split.briefSlug}?code=${encodeURIComponent(code)}`;
 }
 
 function ShootView({
@@ -95,18 +69,25 @@ function ShootView({
   assets,
   shootSlug,
   briefHref,
-  deliverables,
 }: {
   shoot: Shoot;
   assets: Asset[];
   shootSlug: string;
   briefHref: string | null;
-  deliverables: ProseBlock[] | null;
 }) {
   const steps = timelineSteps(shoot.hasPostProduction);
   const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
   const isOnHold = shoot.status === "on-hold";
   const isDelivered = shoot.status === "delivered";
+  // The Footage card appears once the card has reached "Assets Received
+  // From Crew" or any list to the right - i.e. status mapped to
+  // in-editing, assets-ready, or delivered. Pre-shoot / pre-receipt the
+  // Trello field may already be populated but the index has no assets
+  // yet, so we hide it until the workflow's there.
+  const footageAvailable =
+    shoot.status === "in-editing" ||
+    shoot.status === "assets-ready" ||
+    shoot.status === "delivered";
   // Crew card appears once we've crossed the "Crew confirmed" milestone
   // (i.e. stepIdx is 2 or higher - booking-confirmed and searching-for-crew
   // both sit at stepIdx=1, working toward crew confirmation).
@@ -213,22 +194,28 @@ function ShootView({
         </section>
       )}
 
-      {!isOnHold && deliverables && deliverables.length > 0 && (
-        <section className="section">
-          <div className="card-h">What we agreed</div>
-          <div className="card">
-            <h3 className="agreed-label">Deliverables</h3>
-            <ul className="agreed-list">
-              {deliverables.map((block, i) => (
-                <li key={i} dangerouslySetInnerHTML={{ __html: block.html }} />
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
-
       {!isOnHold && assets.length > 0 && (
         <FinalAssetsSection assets={assets} shootSlug={shootSlug} />
+      )}
+
+      {!isOnHold && shoot.footageUrl && footageAvailable && (
+        <section className="section">
+          <div className="card-h">Footage</div>
+          <div className="link-grid">
+            <a
+              className="link-card"
+              href={shoot.footageUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <div>
+                <div className="link-card-label">All files</div>
+                <div className="link-card-text">Browse your footage</div>
+              </div>
+              <div className="link-card-arrow">→</div>
+            </a>
+          </div>
+        </section>
       )}
 
       {!isOnHold && (
@@ -267,7 +254,7 @@ function ShootView({
       */}
       {(() => {
         const linkHref = briefHref ?? shoot.briefUrl ?? null;
-        if (!linkHref && !shoot.quoteUrl && !shoot.footageUrl) return null;
+        if (!linkHref && !shoot.quoteUrl) return null;
         return (
           <section className="section">
             <div className="card-h">Documents</div>
@@ -286,15 +273,6 @@ function ShootView({
                 <div>
                   <div className="link-card-label">Quote</div>
                   <div className="link-card-text">View your quote</div>
-                </div>
-                <div className="link-card-arrow">→</div>
-              </a>
-            )}
-            {shoot.footageUrl && (
-              <a className="link-card" href={shoot.footageUrl} target="_blank" rel="noreferrer">
-                <div>
-                  <div className="link-card-label">Footage</div>
-                  <div className="link-card-text">Browse your footage</div>
                 </div>
                 <div className="link-card-arrow">→</div>
               </a>
