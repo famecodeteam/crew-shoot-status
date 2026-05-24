@@ -7,6 +7,7 @@ import { shootSlugToBriefSlug, briefAccessCode } from "@/lib/brief-slug";
 import { getAssetsForShoot } from "@/lib/asset-storage";
 import { clientVersions } from "@/lib/asset-versions";
 import type { Asset, Shoot } from "@/lib/types";
+import { statusLabel } from "@/lib/list-mapping";
 import { getDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
 import { currentStepIndex, timelineSteps } from "./status";
@@ -114,11 +115,21 @@ function ShootView({
   // status label and the "Shoot wrapped" override. on-hold keeps its own
   // dedicated badge + styling and is never overridden.
   const assetBadge = isOnHold ? null : assetReviewBadge(assets);
+  // Compute the status label fresh on every render, off shoot.status +
+  // hasPostProduction - so a label-logic change (e.g. crew-only rename of
+  // "In editing" -> "Delivering footage") takes effect immediately on
+  // deploy without waiting for each card's next webhook event to refresh
+  // the stored Shoot.statusLabel.
+  const liveStatusLabel = statusLabel(
+    shoot.status,
+    shoot.crew?.name.split(/\s+/)[0],
+    shoot.hasPostProduction,
+  );
   const badgeText = assetBadge
     ? assetBadge.label
     : wrappedOverridesBadge
       ? "Shoot wrapped"
-      : shoot.statusLabel;
+      : liveStatusLabel;
 
   let badgeClass = "status-badge";
   if (isOnHold) {
