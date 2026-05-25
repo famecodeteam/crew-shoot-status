@@ -36,6 +36,7 @@ export type TransformContext = {
     turnaroundDays: string | null;
     clientWhatsappUrl: string | null;
     crewStatus: string | null;
+    clientEmail: string | null;
   };
 };
 
@@ -120,6 +121,9 @@ export function buildContext(
       // etc. buttons. Resolved by NAME per the hand-off spec so a future
       // re-create of the field on the board doesn't break the read.
       crewStatus: findByName("Crew Status"),
+      // Recipient address for milestone emails. Comma-separated list
+      // is supported (parsed at read time, see clientEmails below).
+      clientEmail: findByName("Client Email"),
     },
   };
 }
@@ -302,6 +306,16 @@ export function transformCard(
   const clientWhatsappUrl =
     readCustomFieldText(card, ctx.fieldId.clientWhatsappUrl) || undefined;
 
+  // Client email(s). Comma-separated list in the Trello custom field
+  // becomes an array; whitespace trimmed, empty entries dropped.
+  const clientEmailsRaw = readCustomFieldText(card, ctx.fieldId.clientEmail);
+  const clientEmails = clientEmailsRaw
+    ? clientEmailsRaw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
   // Crew Status: typed as union for downstream safety, but anything is
   // accepted at runtime - an unknown option just won't trigger a UI
   // branch, which is the right failure mode.
@@ -329,6 +343,7 @@ export function transformCard(
     footageAssetCount,
     clientWhatsappUrl,
     producerEmail: pickProducer(card.idMembers).email,
+    clientEmails,
     hasPostProduction,
     crewStatus,
     milestoneDates,

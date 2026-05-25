@@ -23,6 +23,7 @@ export function getDemoShoot(): Shoot {
     // balanceReceiptUrl deliberately unset - demonstrates partial-payment state.
     clientWhatsappUrl: "https://chat.whatsapp.com/example-group-invite",
     producerEmail: "zandro@fame.so",
+    clientEmails: [],
     hasPostProduction: true,
     crewStatus: "On site",
     milestoneDates: {

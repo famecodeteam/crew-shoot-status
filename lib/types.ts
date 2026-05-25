@@ -173,6 +173,12 @@ export type Shoot = {
   // shoot week.
   clientWhatsappUrl?: string;
   producerEmail: string;
+  // Client-side recipient(s) for milestone emails. Source: "Client Email"
+  // Trello custom field. The field accepts a comma-separated list so a
+  // client with multiple stakeholders (booker + day-of contact) gets all
+  // of them on every milestone email. Empty array = no email plumbed
+  // yet; milestone-email enqueue logs a warning + skips the send.
+  clientEmails: string[];
   // Whether Fame is doing post-production. Drives whether the timeline
   // includes the "In editing" step. Source: "Post Production" Trello label.
   hasPostProduction: boolean;

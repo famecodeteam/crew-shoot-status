@@ -10,16 +10,20 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test lib/parse-brief.test.ts",
     "backfill": "tsx --env-file=.env.local scripts/backfill.ts",
-    "register-webhook": "tsx --env-file=.env.local scripts/register-webhook.ts"
+    "register-webhook": "tsx --env-file=.env.local scripts/register-webhook.ts",
+    "email-dryrun": "tsx --env-file=.env.local scripts/email-dryrun.tsx"
   },
   "dependencies": {
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "googleapis": "^171.4.0",
     "hls.js": "^1.6.16",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "redis": "^5.12.1"
+    "redis": "^5.12.1",
+    "resend": "^6.12.3"
   },
   "devDependencies": {
     "@types/node": "^22",

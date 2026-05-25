@@ -21,6 +21,7 @@ import { findShootDriveLinks } from "@/lib/drive";
 import { writeBackStatusUrl } from "@/lib/writeback";
 import { registerBrief } from "@/lib/brief-storage";
 import { extractDocId, shootSlugToBriefSlug } from "@/lib/brief-slug";
+import { enqueueMilestoneEmail } from "@/lib/emails/enqueue";
 
 // Defer the route to be dynamic - we always need to handle the live POST.
 export const dynamic = "force-dynamic";
@@ -146,6 +147,25 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.warn(
       `[trello-webhook] url write-back failed for ${next.shootNumber}:`,
+      (err as Error).message,
+    );
+  }
+
+  // Milestone email - best-effort, won't roll back the upsert. The
+  // enqueue is idempotent (KV-claimed per cardId+milestone), so the
+  // duplicate webhook events Trello sometimes fires on a single
+  // transition won't double-send. Phase 1 only handles crew-confirmed;
+  // other statuses log "no template yet" and move on.
+  try {
+    const result = await enqueueMilestoneEmail(existing, next);
+    if (result.status !== "no-op") {
+      console.log(
+        `[trello-webhook] email enqueue: status=${result.status} milestone=${result.milestone ?? "-"} reason=${result.reason ?? "-"} card=${next.cardId}`,
+      );
+    }
+  } catch (err) {
+    console.warn(
+      `[trello-webhook] milestone email enqueue failed for ${next.shootNumber}:`,
       (err as Error).message,
     );
   }
