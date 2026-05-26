@@ -19,7 +19,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getBySlug } from "@/lib/storage";
 import { renderEmail } from "@/lib/emails/render";
 import { send } from "@/lib/emails/send";
+import { BookingConfirmedEmail } from "@/lib/emails/templates/booking-confirmed";
 import { CrewConfirmedEmail } from "@/lib/emails/templates/crew-confirmed";
+import { ReadyForShootEmail } from "@/lib/emails/templates/ready-for-shoot";
+import { FootageInEmail } from "@/lib/emails/templates/footage-in";
+import { AssetsReadyEmail } from "@/lib/emails/templates/assets-ready";
+import { DeliveredEmail } from "@/lib/emails/templates/delivered";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -72,14 +77,25 @@ export async function GET(req: NextRequest) {
   const clientFirstName =
     (shoot.clientContactName || "").trim().split(/\s+/)[0] || "";
 
+  const feedbackUrl = `${publicBase}/feedback/${shoot.slug}`;
+
   let rendered: { subject: string; html: string; text: string } | null = null;
 
   switch (milestone) {
+    case "booking-confirmed": {
+      const subject = `Your shoot is booked - here's what happens next ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <BookingConfirmedEmail
+          shoot={shoot}
+          statusPageUrl={statusPageUrl}
+          clientFirstName={clientFirstName}
+        />,
+      );
+      rendered = { subject, html, text };
+      break;
+    }
     case "crew-confirmed": {
-      const crewFirst = shoot.crew?.name.split(/\s+/)[0];
-      const subject = crewFirst
-        ? `Meet your crew - ${shoot.shootNumber}`
-        : `Your crew is confirmed - ${shoot.shootNumber}`;
+      const subject = `Meet your crew - ${shoot.shootNumber}`;
       const { html, text } = await renderEmail(
         <CrewConfirmedEmail
           shoot={shoot}
@@ -90,9 +106,70 @@ export async function GET(req: NextRequest) {
       rendered = { subject, html, text };
       break;
     }
+    case "ready-for-shoot": {
+      const subject = `Your shoot is tomorrow - ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <ReadyForShootEmail
+          shoot={shoot}
+          statusPageUrl={statusPageUrl}
+          clientFirstName={clientFirstName}
+        />,
+      );
+      rendered = { subject, html, text };
+      break;
+    }
+    case "footage-in": {
+      const subject = shoot.hasPostProduction
+        ? `Footage is in - editing has started - ${shoot.shootNumber}`
+        : `Your raw footage is ready - ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <FootageInEmail
+          shoot={shoot}
+          statusPageUrl={statusPageUrl}
+          clientFirstName={clientFirstName}
+        />,
+      );
+      rendered = { subject, html, text };
+      break;
+    }
+    case "assets-ready": {
+      const subject = `Your videos are ready to review - ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <AssetsReadyEmail
+          shoot={shoot}
+          statusPageUrl={statusPageUrl}
+          clientFirstName={clientFirstName}
+        />,
+      );
+      rendered = { subject, html, text };
+      break;
+    }
+    case "delivered": {
+      const subject = `How was your Fame shoot? - ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <DeliveredEmail
+          shoot={shoot}
+          feedbackUrl={feedbackUrl}
+          statusPageUrl={statusPageUrl}
+          clientFirstName={clientFirstName}
+        />,
+      );
+      rendered = { subject, html, text };
+      break;
+    }
     default:
       return NextResponse.json(
-        { error: `unknown milestone: ${milestone} (try: crew-confirmed)` },
+        {
+          error: `unknown milestone: ${milestone}`,
+          valid: [
+            "booking-confirmed",
+            "crew-confirmed",
+            "ready-for-shoot",
+            "footage-in",
+            "assets-ready",
+            "delivered",
+          ],
+        },
         { status: 400 },
       );
   }
