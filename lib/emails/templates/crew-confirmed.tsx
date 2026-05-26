@@ -2,10 +2,14 @@
 //
 // Content goal: introduce the crew member by name + bio + photo, give
 // the client confidence that production is on track, drop them on the
-// status page for the deeper detail.
+// status page for the deeper detail. Shows the simplified timeline
+// (this email fires BEFORE the shoot, so the timeline is meaningful)
+// and a "questions?" block with reply + WhatsApp paths.
 
 import { Img, Section, Text } from "@react-email/components";
 import { EmailLayout, PrimaryButton } from "../layout";
+import { EmailTimeline } from "../timeline";
+import { QuestionsCTA } from "../questions-cta";
 import type { Shoot } from "../../types";
 
 export type CrewConfirmedProps = {
@@ -64,6 +68,8 @@ export function CrewConfirmedEmail({
         </Section>
       ) : null}
 
+      <EmailTimeline shoot={shoot} />
+
       <Text style={paragraph}>
         Your status page has the full picture - shoot date, location,
         and everything else lined up so far. We'll keep it updated as
@@ -72,11 +78,7 @@ export function CrewConfirmedEmail({
 
       <PrimaryButton href={statusPageUrl}>View your status page</PrimaryButton>
 
-      <Text style={paragraph}>
-        Anything you'd like to flag before the shoot - questions about
-        the brief, the crew, the day-of plan - just reply to this email
-        and you'll reach the team.
-      </Text>
+      <QuestionsCTA whatsappUrl={shoot.clientWhatsappUrl} />
     </EmailLayout>
   );
 }

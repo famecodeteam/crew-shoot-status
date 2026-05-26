@@ -39,6 +39,10 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const slug = searchParams.get("slug");
   const milestone = searchParams.get("milestone");
+  // ?preview=true skips the send and returns the rendered HTML so the
+  // browser can display it directly. Useful for tone-checking templates
+  // without triggering any actual delivery.
+  const previewOnly = searchParams.get("preview") === "true";
 
   if (!slug) {
     return NextResponse.json({ error: "missing slug param" }, { status: 400 });
@@ -93,6 +97,19 @@ export async function GET(req: NextRequest) {
         { error: `unknown milestone: ${milestone} (try: crew-confirmed)` },
         { status: 400 },
       );
+  }
+
+  if (previewOnly) {
+    // Browser-renderable HTML preview. Returns the email's HTML body
+    // verbatim so Tom can review tone + layout at the URL.
+    return new Response(rendered.html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        // No-cache so iterations show up on refresh.
+        "Cache-Control": "no-store, max-age=0",
+      },
+    });
   }
 
   const result = await send({
