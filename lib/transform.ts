@@ -351,6 +351,7 @@ export function transformCard(
     footageAssetCount,
     clientWhatsappUrl,
     producerEmail: pickProducer(card.idMembers).email,
+    producerFirstName: pickProducer(card.idMembers).firstName,
     clientEmails,
     clientContactName,
     hasPostProduction,

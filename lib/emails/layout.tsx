@@ -31,15 +31,19 @@ export type LayoutProps = {
     title: string; // big pink line (usually the client/show name)
     statusLabel?: string; // pill text e.g. "Crew confirmed"
   };
-  // Sign-off block. Falls back to "the Fame team" if absent.
-  signOff?: { name: string; email: string };
+  // Sign-off first name (CPM assigned to the card). Falls back to
+  // "the Fame team" if absent. Email address intentionally NOT
+  // included - replies route to the crew@fame.so Google Group via
+  // Reply-To, so a per-producer email line in the footer would be
+  // misleading.
+  signOffName?: string;
   children: ReactNode;
 };
 
 export function EmailLayout({
   preview,
   hero,
-  signOff,
+  signOffName,
   children,
 }: LayoutProps) {
   return (
@@ -96,12 +100,8 @@ export function EmailLayout({
           <Section style={content}>{children}</Section>
 
           <Section style={footer}>
-            <Text style={signOffLine}>
-              {signOff ? `- ${signOff.name}` : "- the Fame team"}
-            </Text>
-            {signOff?.email ? (
-              <Text style={signOffEmail}>{signOff.email}</Text>
-            ) : null}
+            <Text style={thanksLine}>Thanks so much,</Text>
+            <Text style={signOffLine}>{signOffName || "the Fame team"}</Text>
             <Text style={footerSmallPrint}>
               Fame Crew &middot; shoots.fame.so
             </Text>
@@ -255,16 +255,15 @@ const footer = {
   lineHeight: 1.5,
 };
 
-const signOffLine = {
-  margin: "16px 0 4px",
+const thanksLine = {
+  margin: "16px 0 2px",
   color: colors.dark,
-  fontWeight: 500,
 };
 
-const signOffEmail = {
+const signOffLine = {
   margin: "0 0 16px",
-  color: colors.textMuted,
-  fontSize: "13px",
+  color: colors.dark,
+  fontWeight: 600,
 };
 
 const footerSmallPrint = {

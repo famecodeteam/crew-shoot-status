@@ -70,7 +70,7 @@ function milestoneFor(status: Shoot["status"]): EmailMilestone | null {
 async function renderForMilestone(
   milestone: EmailMilestone,
   shoot: Shoot,
-  ctx: { producerFirstName: string; statusPageUrl: string; clientFirstName: string },
+  ctx: { statusPageUrl: string; clientFirstName: string },
 ): Promise<{ subject: string; html: string; text: string } | null> {
   switch (milestone) {
     case "crew-confirmed": {
@@ -81,8 +81,6 @@ async function renderForMilestone(
       const { html, text } = await renderEmail(
         <CrewConfirmedEmail
           shoot={shoot}
-          producerFirstName={ctx.producerFirstName}
-          producerEmail={shoot.producerEmail}
           statusPageUrl={ctx.statusPageUrl}
           clientFirstName={ctx.clientFirstName}
         />,
@@ -170,7 +168,6 @@ export async function enqueueMilestoneEmail(
   }
 
   const ctx = {
-    producerFirstName: firstNameFrom(next.producerEmail.split("@")[0]) || "the team",
     statusPageUrl: `${publicBaseUrl()}/${next.slug}`,
     // Greeting uses the personal contact name from Trello (e.g. "Andy")
     // not the business name. Falls back to empty string -> template

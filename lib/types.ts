@@ -173,6 +173,13 @@ export type Shoot = {
   // shoot week.
   clientWhatsappUrl?: string;
   producerEmail: string;
+  // First name of the CPM assigned to the card (Zandro / Tom / Clay
+  // currently - see lib/producer.ts). Used in the email sign-off
+  // ("Thanks so much, Clay") so the message reads as personal even
+  // though it's automated. Always set by transformCard via the
+  // PRODUCERS table; falls back to the default producer when no
+  // member is assigned on Trello.
+  producerFirstName: string;
   // Client-side recipient(s) for milestone emails. Source: "Client Email"
   // Trello custom field. The field accepts a comma-separated list so a
   // client with multiple stakeholders (booker + day-of contact) gets all

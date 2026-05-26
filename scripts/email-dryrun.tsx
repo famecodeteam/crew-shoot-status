@@ -37,9 +37,8 @@ async function main() {
     "",
   );
   const statusPageUrl = `${publicBase}/${shoot.slug}`;
-  const clientFirstName = (shoot.clientName || "").trim().split(/\s+/)[0] || "";
-  const producerFirstName =
-    (shoot.producerEmail || "").split("@")[0].split(/[.\-_]/)[0] || "the team";
+  const clientFirstName =
+    (shoot.clientContactName || "").trim().split(/\s+/)[0] || "";
 
   let rendered: { subject: string; html: string; text: string } | null = null;
 
@@ -52,8 +51,6 @@ async function main() {
       const { html, text } = await renderEmail(
         <CrewConfirmedEmail
           shoot={shoot}
-          producerFirstName={producerFirstName}
-          producerEmail={shoot.producerEmail}
           statusPageUrl={statusPageUrl}
           clientFirstName={clientFirstName}
         />,

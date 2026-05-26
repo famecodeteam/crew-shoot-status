@@ -71,9 +71,6 @@ export async function GET(req: NextRequest) {
   // "Hi there,".
   const clientFirstName =
     (shoot.clientContactName || "").trim().split(/\s+/)[0] || "";
-  const producerFirstName =
-    (shoot.producerEmail || "").split("@")[0].split(/[.\-_]/)[0] ||
-    "the team";
 
   let rendered: { subject: string; html: string; text: string } | null = null;
 
@@ -86,8 +83,6 @@ export async function GET(req: NextRequest) {
       const { html, text } = await renderEmail(
         <CrewConfirmedEmail
           shoot={shoot}
-          producerFirstName={producerFirstName}
-          producerEmail={shoot.producerEmail}
           statusPageUrl={statusPageUrl}
           clientFirstName={clientFirstName}
         />,

@@ -18,21 +18,16 @@ const { colors } = fameTheme;
 
 export type CrewConfirmedProps = {
   shoot: Shoot;
-  // Producer's first name + email - drives the sign-off block.
-  producerFirstName: string;
-  producerEmail: string;
   // Fully-qualified URL to the client's status page (env-prefixed at
   // send time, not derivable from the Shoot record alone).
   statusPageUrl: string;
-  // Client's first name for the greeting. Best-effort - falls back to
-  // a polite generic if we can't split it.
+  // Client contact's first name for the greeting. Best-effort -
+  // falls back to a polite generic if absent.
   clientFirstName: string;
 };
 
 export function CrewConfirmedEmail({
   shoot,
-  producerFirstName,
-  producerEmail,
   statusPageUrl,
   clientFirstName,
 }: CrewConfirmedProps) {
@@ -54,7 +49,7 @@ export function CrewConfirmedEmail({
           ? `Crew confirmed - meet ${crewFirst}`
           : "Crew confirmed",
       }}
-      signOff={{ name: producerFirstName, email: producerEmail }}
+      signOffName={shoot.producerFirstName}
     >
       <Text style={lede}>Your crew is confirmed</Text>
       <Text style={paragraph}>{greeting}</Text>
