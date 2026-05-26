@@ -263,7 +263,6 @@ const thanksLine = {
 const signOffLine = {
   margin: "0 0 16px",
   color: colors.dark,
-  fontWeight: 600,
 };
 
 const footerSmallPrint = {

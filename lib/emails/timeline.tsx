@@ -78,6 +78,7 @@ export function EmailTimeline({ shoot }: { shoot: Shoot }) {
                     <Indicator
                       done={idx < stepIdx}
                       current={idx === stepIdx}
+                      stepNumber={idx + 1}
                     />
                   </td>
                 </Fragment>
@@ -112,7 +113,15 @@ export function EmailTimeline({ shoot }: { shoot: Shoot }) {
   );
 }
 
-function Indicator({ done, current }: { done: boolean; current: boolean }) {
+function Indicator({
+  done,
+  current,
+  stepNumber,
+}: {
+  done: boolean;
+  current: boolean;
+  stepNumber: number;
+}) {
   if (done) {
     return (
       <span style={dotDone} aria-label="completed">
@@ -121,9 +130,17 @@ function Indicator({ done, current }: { done: boolean; current: boolean }) {
     );
   }
   if (current) {
-    return <span style={dotCurrent} aria-label="in progress" />;
+    return (
+      <span style={dotCurrent} aria-label="in progress">
+        {stepNumber}
+      </span>
+    );
   }
-  return <span style={dotFuture} aria-label="upcoming" />;
+  return (
+    <span style={dotFuture} aria-label="upcoming">
+      {stepNumber}
+    </span>
+  );
 }
 
 const section = {
@@ -171,6 +188,9 @@ const emptyLabelCell = {
   padding: "0",
 };
 
+// Dot styling mirrors .step-dot on the public page (app/globals.css):
+// 32px circle, 2px border, font-size 13px / weight 700, content
+// centred via line-height equal to the inner box height (28px).
 const dotBase = {
   display: "inline-block",
   width: "32px",
@@ -178,7 +198,7 @@ const dotBase = {
   lineHeight: "28px",
   textAlign: "center" as const,
   borderRadius: "16px",
-  fontSize: "14px",
+  fontSize: "13px",
   fontWeight: 700,
   boxSizing: "border-box" as const,
 };
@@ -198,12 +218,14 @@ const dotCurrent = {
   backgroundColor: colors.card,
   border: `2px solid ${colors.pink}`,
   boxShadow: `0 0 0 4px ${colors.pinkLight}`,
+  color: colors.pink,
 };
 
 const dotFuture = {
   ...dotBase,
   backgroundColor: colors.card,
   border: `2px solid ${colors.border}`,
+  color: colors.textMuted,
 };
 
 const labelBase = {
