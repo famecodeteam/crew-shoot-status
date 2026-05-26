@@ -2,15 +2,19 @@
 //
 // Content goal: introduce the crew member by name + bio + photo, give
 // the client confidence that production is on track, drop them on the
-// status page for the deeper detail. Shows the simplified timeline
-// (this email fires BEFORE the shoot, so the timeline is meaningful)
-// and a "questions?" block with reply + WhatsApp paths.
+// status page for the deeper detail. Hero mirrors the public status
+// page (shoot number eyebrow + big pink client name + status pill).
+// Body shows the simplified timeline (this email fires BEFORE the
+// shoot) and a "questions?" block with reply + WhatsApp paths.
 
 import { Img, Section, Text } from "@react-email/components";
 import { EmailLayout, PrimaryButton } from "../layout";
 import { EmailTimeline } from "../timeline";
 import { QuestionsCTA } from "../questions-cta";
+import { fameTheme } from "../theme";
 import type { Shoot } from "../../types";
+
+const { colors } = fameTheme;
 
 export type CrewConfirmedProps = {
   shoot: Shoot;
@@ -34,17 +38,25 @@ export function CrewConfirmedEmail({
 }: CrewConfirmedProps) {
   const crew = shoot.crew;
   const greeting = clientFirstName ? `Hi ${clientFirstName},` : "Hi there,";
+  const crewFirst = crew?.name.split(/\s+/)[0];
 
   return (
     <EmailLayout
       preview={
         crew
-          ? `Your crew for ${shoot.shootNumber} is confirmed - meet ${crew.name.split(/\s+/)[0]}`
+          ? `Your crew for ${shoot.shootNumber} is confirmed - meet ${crewFirst}`
           : `Your crew for ${shoot.shootNumber} is confirmed`
       }
+      hero={{
+        shootNumber: shoot.shootNumber,
+        title: shoot.clientName,
+        statusLabel: crewFirst
+          ? `Crew confirmed - meet ${crewFirst}`
+          : "Crew confirmed",
+      }}
       signOff={{ name: producerFirstName, email: producerEmail }}
     >
-      <Text style={heading}>Your crew is confirmed</Text>
+      <Text style={lede}>Your crew is confirmed</Text>
       <Text style={paragraph}>{greeting}</Text>
       <Text style={paragraph}>
         Quick update on {shoot.shootNumber} - we've locked in your crew
@@ -54,17 +66,33 @@ export function CrewConfirmedEmail({
 
       {crew ? (
         <Section style={crewCard}>
-          {crew.photoUrl ? (
-            <Img
-              src={crew.photoUrl}
-              alt={crew.name}
-              width="80"
-              height="80"
-              style={crewPhoto}
-            />
-          ) : null}
-          <Text style={crewName}>{crew.name}</Text>
-          {crew.bio ? <Text style={crewBio}>{crew.bio}</Text> : null}
+          <table
+            cellPadding={0}
+            cellSpacing={0}
+            border={0}
+            role="presentation"
+            style={crewTable}
+          >
+            <tbody>
+              <tr>
+                {crew.photoUrl ? (
+                  <td style={crewPhotoCell}>
+                    <Img
+                      src={crew.photoUrl}
+                      alt={crew.name}
+                      width="80"
+                      height="80"
+                      style={crewPhoto}
+                    />
+                  </td>
+                ) : null}
+                <td style={crewTextCell}>
+                  <Text style={crewName}>{crew.name}</Text>
+                  {crew.bio ? <Text style={crewBio}>{crew.bio}</Text> : null}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </Section>
       ) : null}
 
@@ -83,40 +111,58 @@ export function CrewConfirmedEmail({
   );
 }
 
-const heading = {
-  fontSize: "20px",
+const lede = {
+  fontSize: "22px",
   fontWeight: 700,
   margin: "8px 0 16px",
-  color: "#111",
+  color: colors.dark,
+  letterSpacing: "-0.01em",
 };
 
 const paragraph = {
   margin: "0 0 14px",
+  color: colors.dark,
 };
 
 const crewCard = {
-  backgroundColor: "#f8f8f6",
-  borderRadius: "6px",
+  backgroundColor: colors.card,
+  border: `1px solid ${colors.border}`,
+  borderRadius: "12px",
   padding: "20px",
-  margin: "16px 0",
+  margin: "18px 0 8px",
+};
+
+const crewTable = {
+  width: "100%",
+  borderCollapse: "collapse" as const,
+};
+
+const crewPhotoCell = {
+  width: "92px",
+  verticalAlign: "middle" as const,
+  paddingRight: "16px",
 };
 
 const crewPhoto = {
   borderRadius: "40px",
   display: "block",
-  margin: "0 0 12px",
+  backgroundColor: colors.pinkLight,
+};
+
+const crewTextCell = {
+  verticalAlign: "middle" as const,
 };
 
 const crewName = {
-  margin: "0 0 8px",
-  fontSize: "16px",
-  fontWeight: 600,
-  color: "#111",
+  margin: "0 0 6px",
+  fontSize: "18px",
+  fontWeight: 700,
+  color: colors.dark,
 };
 
 const crewBio = {
   margin: 0,
-  color: "#444",
+  color: colors.textMuted,
   fontSize: "14px",
-  lineHeight: "1.55",
+  lineHeight: 1.55,
 };

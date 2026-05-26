@@ -1,62 +1,107 @@
-// Branded shell used by every milestone email. Keep this minimal -
-// each template provides the body; layout owns header, footer, and
-// the single CTA-button style.
-//
-// Email clients are HTML-1999-style restricted. No flexbox, no grid,
-// no modern CSS - inline styles + table layouts. React Email's
-// primitives handle most of the boilerplate (Tailwind-style props
-// compile to inline-style attrs at render time).
+// Branded shell used by every milestone email. Designed to feel like
+// the public status page (app/[slug]/page.tsx): cream background,
+// white card, Fame pink accents, Figtree font, Fame logo at the top.
+// One source of truth for layout chrome (header, footer, CTA button,
+// hero block) so individual templates can focus on the milestone body.
 
 import {
   Body,
   Container,
+  Font,
   Head,
-  Hr,
   Html,
+  Img,
   Preview,
   Section,
   Text,
 } from "@react-email/components";
 import type { ReactNode } from "react";
+import { fameTheme } from "./theme";
+
+const { colors, fontFamily, figtreeUrl, logoUrl, radius } = fameTheme;
 
 export type LayoutProps = {
-  // Inbox preview text - first ~80 chars shown next to the subject on
-  // most clients before the user opens the email.
+  // Inbox preview text - first ~80 chars shown by most clients next to
+  // the subject line before the user opens the email.
   preview: string;
-  // Producer signature at the foot. Falls back to "the Fame team" if
-  // we don't have a name (e.g. producer email is a shared inbox).
-  signOff?: {
-    name: string;
-    email: string;
+  // Optional hero block (mirrors the page hero). When provided we show:
+  //   logo + "SHOOT #NNNN" eyebrow + big pink title + optional status pill.
+  hero?: {
+    shootNumber: string; // "#0221a"
+    title: string; // big pink line (usually the client/show name)
+    statusLabel?: string; // pill text e.g. "Crew confirmed"
   };
+  // Sign-off block. Falls back to "the Fame team" if absent.
+  signOff?: { name: string; email: string };
   children: ReactNode;
 };
 
-export function EmailLayout({ preview, signOff, children }: LayoutProps) {
+export function EmailLayout({
+  preview,
+  hero,
+  signOff,
+  children,
+}: LayoutProps) {
   return (
     <Html>
-      <Head />
+      <Head>
+        <Font
+          fontFamily="Figtree"
+          fallbackFontFamily="Verdana"
+          webFont={{ url: figtreeUrl, format: "woff2" }}
+          fontWeight={400}
+          fontStyle="normal"
+        />
+        <Font
+          fontFamily="Figtree"
+          fallbackFontFamily="Verdana"
+          webFont={{ url: figtreeUrl, format: "woff2" }}
+          fontWeight={600}
+          fontStyle="normal"
+        />
+        <Font
+          fontFamily="Figtree"
+          fallbackFontFamily="Verdana"
+          webFont={{ url: figtreeUrl, format: "woff2" }}
+          fontWeight={700}
+          fontStyle="normal"
+        />
+      </Head>
       <Preview>{preview}</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Section style={headerSection}>
-            <Text style={headerLogo}>FAME</Text>
-          </Section>
+          {hero ? (
+            <Section style={heroSection}>
+              <Img
+                src={logoUrl}
+                alt="Fame"
+                height={28}
+                style={heroLogo}
+              />
+              <Text style={eyebrow}>SHOOT {hero.shootNumber}</Text>
+              <Text style={heroTitle}>{hero.title}</Text>
+              {hero.statusLabel ? (
+                <span style={statusBadge}>
+                  <span style={statusDot} />
+                  {hero.statusLabel}
+                </span>
+              ) : null}
+            </Section>
+          ) : (
+            <Section style={headerSection}>
+              <Img src={logoUrl} alt="Fame" height={28} style={heroLogo} />
+            </Section>
+          )}
 
           <Section style={content}>{children}</Section>
 
-          <Hr style={hr} />
-
           <Section style={footer}>
-            <Text style={signOffName}>
+            <Text style={signOffLine}>
               {signOff ? `- ${signOff.name}` : "- the Fame team"}
             </Text>
             {signOff?.email ? (
               <Text style={signOffEmail}>{signOff.email}</Text>
             ) : null}
-            <Text style={footerNote}>
-              You can reach the team any time by replying to this email.
-            </Text>
             <Text style={footerSmallPrint}>
               Fame Studios &middot; shoots.fame.so
             </Text>
@@ -67,8 +112,8 @@ export function EmailLayout({ preview, signOff, children }: LayoutProps) {
   );
 }
 
-// CTA button used across all templates. Reusable so subject + body
-// styling stays consistent.
+// CTA button - pink filled, white text, rounded. Mirrors the page's
+// primary action style (.btn-primary patterns on the status page).
 export function PrimaryButton({
   href,
   children,
@@ -82,7 +127,7 @@ export function PrimaryButton({
       cellPadding={0}
       cellSpacing={0}
       border={0}
-      style={{ margin: "24px 0" }}
+      style={{ margin: "20px 0" }}
     >
       <tbody>
         <tr>
@@ -97,81 +142,140 @@ export function PrimaryButton({
   );
 }
 
+// Secondary outline button - used for WhatsApp on the questions block,
+// so the primary status-page CTA stays the visually dominant action.
+export function OutlineButton({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) {
+  return (
+    <table
+      role="presentation"
+      cellPadding={0}
+      cellSpacing={0}
+      border={0}
+      style={{ margin: "12px 0 0" }}
+    >
+      <tbody>
+        <tr>
+          <td style={outlineButtonCell}>
+            <a href={href} style={outlineButtonLink}>
+              {children}
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  );
+}
+
 const body = {
-  backgroundColor: "#f6f6f4",
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+  backgroundColor: colors.cream,
+  fontFamily,
   margin: 0,
   padding: 0,
 };
 
 const container = {
-  backgroundColor: "#ffffff",
+  backgroundColor: colors.card,
   margin: "32px auto",
   padding: "0",
-  maxWidth: "560px",
-  borderRadius: "8px",
+  maxWidth: "600px",
+  borderRadius: radius,
   overflow: "hidden",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
 };
 
 const headerSection = {
   padding: "28px 32px 16px",
 };
 
-const headerLogo = {
-  fontSize: "18px",
+const heroSection = {
+  padding: "32px 32px 24px",
+  borderBottom: `2px solid ${colors.pink}`,
+};
+
+const heroLogo = {
+  display: "block",
+  marginBottom: "20px",
+};
+
+const eyebrow = {
+  fontSize: "11px",
+  fontWeight: 600,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.1em",
+  color: colors.textMuted,
+  margin: "0 0 8px",
+};
+
+const heroTitle = {
+  fontSize: "30px",
   fontWeight: 700,
-  letterSpacing: "2px",
-  margin: 0,
-  color: "#111",
+  color: colors.pink,
+  letterSpacing: "-0.02em",
+  lineHeight: 1.1,
+  margin: "0 0 14px",
+};
+
+const statusBadge = {
+  display: "inline-block",
+  backgroundColor: colors.pinkLight,
+  color: colors.pink,
+  fontWeight: 600,
+  fontSize: "13px",
+  padding: "6px 14px",
+  borderRadius: "999px",
+};
+
+const statusDot = {
+  display: "inline-block",
+  width: "8px",
+  height: "8px",
+  borderRadius: "50%",
+  backgroundColor: colors.pink,
+  marginRight: "8px",
+  verticalAlign: "middle",
 };
 
 const content = {
-  padding: "8px 32px 24px",
-  color: "#222",
+  padding: "24px 32px 8px",
+  color: colors.dark,
   fontSize: "15px",
-  lineHeight: "1.55",
-};
-
-const hr = {
-  borderColor: "#e7e7e3",
-  margin: "0 32px",
+  lineHeight: 1.55,
 };
 
 const footer = {
-  padding: "20px 32px 28px",
-  color: "#555",
+  padding: "8px 32px 28px",
+  color: colors.dark,
   fontSize: "14px",
-  lineHeight: "1.5",
+  lineHeight: 1.5,
 };
 
-const signOffName = {
-  margin: "0 0 4px",
-  color: "#222",
+const signOffLine = {
+  margin: "16px 0 4px",
+  color: colors.dark,
+  fontWeight: 500,
 };
 
 const signOffEmail = {
   margin: "0 0 16px",
-  color: "#666",
-  fontSize: "13px",
-};
-
-const footerNote = {
-  margin: "0 0 12px",
-  color: "#666",
+  color: colors.textMuted,
   fontSize: "13px",
 };
 
 const footerSmallPrint = {
-  margin: "16px 0 0",
-  color: "#999",
+  margin: "20px 0 0",
+  color: colors.textMuted,
   fontSize: "12px",
 };
 
 const buttonCell = {
-  backgroundColor: "#111",
-  borderRadius: "6px",
+  backgroundColor: colors.pink,
+  borderRadius: "999px",
   padding: "0",
 };
 
@@ -179,7 +283,25 @@ const buttonLink = {
   color: "#ffffff",
   textDecoration: "none",
   display: "inline-block",
-  padding: "12px 22px",
+  padding: "13px 24px",
   fontSize: "15px",
   fontWeight: 600,
+  letterSpacing: "0.01em",
+};
+
+const outlineButtonCell = {
+  backgroundColor: colors.card,
+  borderRadius: "999px",
+  padding: "0",
+};
+
+const outlineButtonLink = {
+  color: colors.pink,
+  textDecoration: "none",
+  display: "inline-block",
+  padding: "11px 22px",
+  fontSize: "14px",
+  fontWeight: 600,
+  border: `1.5px solid ${colors.pink}`,
+  borderRadius: "999px",
 };
