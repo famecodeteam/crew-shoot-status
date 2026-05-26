@@ -332,6 +332,29 @@ function ShootView({
         </section>
       )}
 
+      {/* Feedback prompt. Visible once the shoot is delivered - the
+          last impactful thing the client sees on the page after
+          they've browsed their deliverables. Links to /feedback/<slug>
+          which is also the primary CTA on the delivered milestone
+          email. */}
+      {isDelivered && (
+        <section className="section">
+          <div className="card feedback-prompt-card">
+            <div className="card-h">How did we do?</div>
+            <p className="feedback-prompt-text">
+              Tell us how the shoot went - 60 seconds, optional
+              fields, honest answers welcome.
+            </p>
+            <Link
+              href={`/feedback/${shoot.slug}`}
+              className="feedback-prompt-btn"
+            >
+              Share your feedback →
+            </Link>
+          </div>
+        </section>
+      )}
+
       <footer className="footer">
         <div>
           Questions? Email{" "}
