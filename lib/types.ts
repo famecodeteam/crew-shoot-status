@@ -179,6 +179,13 @@ export type Shoot = {
   // of them on every milestone email. Empty array = no email plumbed
   // yet; milestone-email enqueue logs a warning + skips the send.
   clientEmails: string[];
+  // Personal name of the client contact (e.g. "Andy Zoltan"), used as
+  // the first-name greeting in milestone emails ("Hi Andy,"). Source:
+  // "Client Contact Name" Trello custom field. Separate from
+  // `clientName` (which is the business / show name displayed in the
+  // hero block). Optional - emails fall back to a generic greeting
+  // when this is unset.
+  clientContactName?: string;
   // Whether Fame is doing post-production. Drives whether the timeline
   // includes the "In editing" step. Source: "Post Production" Trello label.
   hasPostProduction: boolean;

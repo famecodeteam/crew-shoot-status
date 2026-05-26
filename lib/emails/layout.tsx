@@ -103,7 +103,7 @@ export function EmailLayout({
               <Text style={signOffEmail}>{signOff.email}</Text>
             ) : null}
             <Text style={footerSmallPrint}>
-              Fame Studios &middot; shoots.fame.so
+              Fame Crew &middot; shoots.fame.so
             </Text>
           </Section>
         </Container>

@@ -172,7 +172,10 @@ export async function enqueueMilestoneEmail(
   const ctx = {
     producerFirstName: firstNameFrom(next.producerEmail.split("@")[0]) || "the team",
     statusPageUrl: `${publicBaseUrl()}/${next.slug}`,
-    clientFirstName: firstNameFrom(next.clientName),
+    // Greeting uses the personal contact name from Trello (e.g. "Andy")
+    // not the business name. Falls back to empty string -> template
+    // renders "Hi there,".
+    clientFirstName: firstNameFrom(next.clientContactName),
   };
 
   const rendered = await renderForMilestone(milestone, next, ctx);

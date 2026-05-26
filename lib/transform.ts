@@ -37,6 +37,7 @@ export type TransformContext = {
     clientWhatsappUrl: string | null;
     crewStatus: string | null;
     clientEmail: string | null;
+    clientContactName: string | null;
   };
 };
 
@@ -124,6 +125,10 @@ export function buildContext(
       // Recipient address for milestone emails. Comma-separated list
       // is supported (parsed at read time, see clientEmails below).
       clientEmail: findByName("Client Email"),
+      // Personal name of the client contact - drives the "Hi <first
+      // name>," greeting in milestone emails. Separate from the card
+      // title's business name.
+      clientContactName: findByName("Client Contact Name"),
     },
   };
 }
@@ -316,6 +321,9 @@ export function transformCard(
         .filter(Boolean)
     : [];
 
+  const clientContactName =
+    readCustomFieldText(card, ctx.fieldId.clientContactName) || undefined;
+
   // Crew Status: typed as union for downstream safety, but anything is
   // accepted at runtime - an unknown option just won't trigger a UI
   // branch, which is the right failure mode.
@@ -344,6 +352,7 @@ export function transformCard(
     clientWhatsappUrl,
     producerEmail: pickProducer(card.idMembers).email,
     clientEmails,
+    clientContactName,
     hasPostProduction,
     crewStatus,
     milestoneDates,

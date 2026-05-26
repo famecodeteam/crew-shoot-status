@@ -66,8 +66,11 @@ export async function GET(req: NextRequest) {
     process.env.PUBLIC_BASE_URL || "https://shoots.fame.so"
   ).replace(/\/$/, "");
   const statusPageUrl = `${publicBase}/${shoot.slug}`;
+  // Greeting uses the personal contact name from Trello (e.g. "Andy"),
+  // not the business name. Empty when unset -> template renders
+  // "Hi there,".
   const clientFirstName =
-    (shoot.clientName || "").trim().split(/\s+/)[0] || "";
+    (shoot.clientContactName || "").trim().split(/\s+/)[0] || "";
   const producerFirstName =
     (shoot.producerEmail || "").split("@")[0].split(/[.\-_]/)[0] ||
     "the team";

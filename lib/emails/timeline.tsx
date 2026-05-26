@@ -1,17 +1,16 @@
-// Simplified shoot-journey timeline for embedding in pre-shoot and
-// during-shoot milestone emails. Mirrors the .timeline / .step
-// design on the public status page (app/[slug]/page.tsx).
+// Simplified shoot-journey timeline for pre-shoot and during-shoot
+// milestone emails. Mirrors the .timeline / .step design on the
+// public status page (app/[slug]/page.tsx).
 //
-// Layout uses an HTML table - flexbox / grid isn't reliable across
-// email clients. Each step is a column with a 32px circle and a
-// label underneath; connecting lines run between cells via the
-// pseudo-element trick reproduced here as left/right borders on
-// each step cell.
+// Layout uses an HTML table - flexbox / grid aren't reliable across
+// email clients. The table has 2N-1 columns where N is the number
+// of steps: alternating dot / connector / dot / connector ...
 //
 // Step state derives from shoot.status + shoot.hasPostProduction via
 // currentStepIndex() - one source of truth shared with the public
 // page so the email and the page never disagree.
 
+import { Fragment } from "react";
 import { Section } from "@react-email/components";
 import type { Shoot } from "../types";
 import { currentStepIndex } from "../../app/[slug]/status";
@@ -42,7 +41,6 @@ export function EmailTimeline({ shoot }: { shoot: Shoot }) {
     ? SHORT_LABELS_WITH_PP
     : SHORT_LABELS_NO_PP;
   const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
-  const cellWidth = `${Math.floor(100 / labels.length)}%`;
 
   return (
     <Section style={section}>
@@ -54,86 +52,58 @@ export function EmailTimeline({ shoot }: { shoot: Shoot }) {
         style={table}
       >
         <tbody>
-          {/* Dot row */}
+          {/* Dot + connector row */}
           <tr>
             {labels.map((_, idx) => {
-              const done = idx < stepIdx;
-              const isFirst = idx === 0;
-              const isLast = idx === labels.length - 1;
-              // Each cell holds a 32px dot. The connecting line is
-              // drawn via left/right cell padding bands - colored pink
-              // for the segments where the journey has reached.
+              // Each step contributes either [connector, dot] (for steps
+              // after the first) or just [dot] (for the first). The
+              // connector colour reflects whether the journey has crossed
+              // that gap (i.e. step `idx - 1` is done).
+              const gapDone = idx - 1 < stepIdx; // segment from prev step to this one
               return (
-                <td
-                  key={`dot-${idx}`}
-                  align="center"
-                  style={{
-                    ...dotCell,
-                    width: cellWidth,
-                  }}
-                >
-                  <table
-                    cellPadding={0}
-                    cellSpacing={0}
-                    border={0}
-                    role="presentation"
-                    style={{ margin: "0 auto" }}
-                  >
-                    <tbody>
-                      <tr>
-                        <td
-                          style={{
-                            ...connector,
-                            backgroundColor: isFirst
-                              ? "transparent"
-                              : done
-                                ? colors.pink
-                                : colors.border,
-                          }}
-                        />
-                        <td style={dotWrap}>
-                          <Indicator
-                            done={done}
-                            current={idx === stepIdx}
-                          />
-                        </td>
-                        <td
-                          style={{
-                            ...connector,
-                            backgroundColor: isLast
-                              ? "transparent"
-                              : idx + 1 <= stepIdx
-                                ? colors.pink
-                                : colors.border,
-                          }}
-                        />
-                      </tr>
-                    </tbody>
-                  </table>
-                </td>
+                <Fragment key={`dotrow-${idx}`}>
+                  {idx > 0 ? (
+                    <td valign="middle" style={connectorCell}>
+                      <div
+                        style={{
+                          ...connectorLine,
+                          backgroundColor: gapDone
+                            ? colors.pink
+                            : colors.border,
+                        }}
+                      />
+                    </td>
+                  ) : null}
+                  <td align="center" valign="middle" style={dotCell}>
+                    <Indicator
+                      done={idx < stepIdx}
+                      current={idx === stepIdx}
+                    />
+                  </td>
+                </Fragment>
               );
             })}
           </tr>
-          {/* Label row */}
+          {/* Label row - empty cells under connectors to keep column
+              alignment, label cells under each dot column */}
           <tr>
             {labels.map((label, idx) => (
-              <td
-                key={`label-${idx}`}
-                align="center"
-                style={{ ...labelCell, width: cellWidth }}
-              >
-                <span
-                  style={
-                    idx === stepIdx
-                      ? labelCurrent
-                      : idx < stepIdx
-                        ? labelDone
-                        : labelFuture
-                  }
-                >
-                  {label}
-                </span>
-              </td>
+              <Fragment key={`labelrow-${idx}`}>
+                {idx > 0 ? <td style={emptyLabelCell} /> : null}
+                <td align="center" valign="top" style={labelCell}>
+                  <span
+                    style={
+                      idx === stepIdx
+                        ? labelCurrent
+                        : idx < stepIdx
+                          ? labelDone
+                          : labelFuture
+                    }
+                  >
+                    {label}
+                  </span>
+                </td>
+              </Fragment>
             ))}
           </tr>
         </tbody>
@@ -151,20 +121,9 @@ function Indicator({ done, current }: { done: boolean; current: boolean }) {
     );
   }
   if (current) {
-    return (
-      <span style={dotCurrentWrap} aria-label="in progress">
-        <span style={dotCurrentInner}>{labelDotNumber(current)}</span>
-      </span>
-    );
+    return <span style={dotCurrent} aria-label="in progress" />;
   }
   return <span style={dotFuture} aria-label="upcoming" />;
-}
-
-// Show no inner content for the current dot - the pink-light ring +
-// hollow circle is the visual. Kept as a helper for future variants
-// (e.g. inner step number) without changing the call site.
-function labelDotNumber(_current: boolean): string {
-  return "";
 }
 
 const section = {
@@ -179,34 +138,44 @@ const table = {
   borderCollapse: "collapse" as const,
 };
 
+// Connector TD is a row-height cell with a thin centred line inside.
+// We use a child <div> for the line so the cell itself stays
+// transparent - this is what fixes the "pink rectangle next to each
+// dot" bug from the prior version.
+const connectorCell = {
+  padding: "0 6px",
+  // Letting the cell auto-size between dots keeps the connectors
+  // proportional regardless of step count.
+};
+
+const connectorLine = {
+  height: "2px",
+  width: "100%",
+  fontSize: "1px",
+  lineHeight: "1px",
+};
+
 const dotCell = {
   padding: "0 0 8px",
-  verticalAlign: "middle" as const,
+  // Fixed width on dot cells so labels line up with their dots
+  // regardless of intervening connector lengths.
+  width: "32px",
 };
 
 const labelCell = {
-  padding: "4px 2px 0",
-  verticalAlign: "top" as const,
+  padding: "4px 0 0",
+  width: "32px",
 };
 
-const dotWrap = {
+const emptyLabelCell = {
   padding: "0",
-  verticalAlign: "middle" as const,
-};
-
-const connector = {
-  height: "2px",
-  width: "26px",
-  fontSize: "1px",
-  lineHeight: "1px",
-  verticalAlign: "middle" as const,
 };
 
 const dotBase = {
   display: "inline-block",
   width: "32px",
   height: "32px",
-  lineHeight: "30px",
+  lineHeight: "28px",
   textAlign: "center" as const,
   borderRadius: "16px",
   fontSize: "14px",
@@ -224,17 +193,11 @@ const dotDone = {
 // Current step: hollow pink-bordered circle with a soft pink-light
 // ring (achieved via boxShadow). Matches .step.current .step-dot on
 // the public page.
-const dotCurrentWrap = {
+const dotCurrent = {
   ...dotBase,
   backgroundColor: colors.card,
   border: `2px solid ${colors.pink}`,
   boxShadow: `0 0 0 4px ${colors.pinkLight}`,
-  color: colors.pink,
-};
-
-const dotCurrentInner = {
-  display: "inline-block",
-  lineHeight: "28px",
 };
 
 const dotFuture = {
