@@ -1303,3 +1303,157 @@ img {
   gap: 10px;
   margin-top: 18px;
 }
+
+/* ---------- Feedback form (/feedback/[slug]) ---------- */
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feedback-card {
+  padding: 20px;
+}
+
+.feedback-q {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.feedback-textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  resize: vertical;
+  min-height: 70px;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.feedback-textarea:focus {
+  outline: none;
+  border-color: var(--pink);
+  background: var(--card);
+}
+
+.feedback-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.feedback-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.feedback-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.feedback-radio input[type="radio"] {
+  margin: 0;
+  accent-color: var(--pink);
+}
+
+.feedback-radio:has(input:checked) {
+  background: var(--pink-light);
+  border-color: var(--pink);
+  color: var(--pink);
+  font-weight: 600;
+}
+
+.star-picker {
+  display: flex;
+  gap: 6px;
+}
+
+.star-picker .star {
+  background: transparent;
+  border: 0;
+  padding: 4px 6px;
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--border);
+  transition: color 0.12s, transform 0.12s;
+}
+
+.star-picker .star:hover,
+.star-picker .star:focus-visible {
+  color: var(--pink);
+  outline: none;
+  transform: scale(1.08);
+}
+
+.star-picker .star.filled {
+  color: var(--pink);
+}
+
+.feedback-error {
+  color: var(--red);
+  font-size: 14px;
+  margin: 4px 4px -8px;
+}
+
+.feedback-submit {
+  align-self: flex-start;
+  background: var(--pink);
+  color: var(--card);
+  border: 0;
+  border-radius: 999px;
+  padding: 13px 26px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+
+.feedback-submit:hover:not(:disabled) {
+  background: var(--pink-hover);
+}
+
+.feedback-submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.feedback-footnote {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+
+.feedback-thanks .card {
+  padding: 32px 24px;
+}
+
+.feedback-thanks-h {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--pink);
+  margin: 0 0 12px;
+}

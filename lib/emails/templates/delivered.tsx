@@ -46,8 +46,8 @@ export function DeliveredEmail({
       <Text style={lede}>How did we do?</Text>
       <Text style={paragraph}>{greeting}</Text>
       <Text style={paragraph}>
-        That's a wrap on {shoot.shootNumber}. Thanks for working with
-        Fame - it's been a pleasure.
+        That's a wrap on the shoot. Thanks for working with Fame -
+        it's been a pleasure.
       </Text>
       <Text style={paragraph}>
         Quick ask: 60 seconds to tell us how it went? Honest feedback

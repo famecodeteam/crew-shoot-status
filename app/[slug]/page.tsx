@@ -595,6 +595,27 @@ function formatShortDate(iso: string): string {
   });
 }
 
+// If a projected (not actual) delivery date has already slipped into the
+// past, nudge the displayed date forward to tomorrow. Done in UTC to match
+// how YYYY-MM-DD strings parse. Display-only: the underlying
+// projectedDeliveredDate isn't mutated, so each new day the rendered
+// "Expected" date moves forward by one - keeping the timeline credible
+// even when the Trello-derived projection hasn't been updated.
+function nudgeExpectedDate(iso: string): string {
+  const now = new Date();
+  const todayUtc = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
+  const projected = new Date(iso);
+  if (projected >= todayUtc) return iso;
+  const tomorrow = new Date(todayUtc);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  const y = tomorrow.getUTCFullYear();
+  const mo = String(tomorrow.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(tomorrow.getUTCDate()).padStart(2, "0");
+  return `${y}-${mo}-${d}`;
+}
+
 // Decide which date string (if any) sits under each timeline step.
 // totalSteps differs for PP shoots (5) vs crew-only (4) - the meaning of
 // each index shifts when "In editing" is absent.
@@ -618,7 +639,7 @@ function formatStepDate(shoot: Shoot, idx: number, totalSteps: number): string {
     if (idx === 4) {
       if (m.delivered) return formatShortDate(m.delivered);
       if (shoot.projectedDeliveredDate)
-        return `Expected ${formatShortDate(shoot.projectedDeliveredDate)}`;
+        return `Expected ${formatShortDate(nudgeExpectedDate(shoot.projectedDeliveredDate))}`;
       return "";
     }
   } else {
@@ -626,7 +647,7 @@ function formatStepDate(shoot: Shoot, idx: number, totalSteps: number): string {
     if (idx === 3) {
       if (m.delivered) return formatShortDate(m.delivered);
       if (shoot.projectedDeliveredDate)
-        return `Expected ${formatShortDate(shoot.projectedDeliveredDate)}`;
+        return `Expected ${formatShortDate(nudgeExpectedDate(shoot.projectedDeliveredDate))}`;
       return "";
     }
   }

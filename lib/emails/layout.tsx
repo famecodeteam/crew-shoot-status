@@ -101,9 +101,11 @@ export function EmailLayout({
 
           <Section style={footer}>
             <Text style={thanksLine}>Thanks so much,</Text>
-            <Text style={signOffLine}>{signOffName || "the Fame team"}</Text>
+            <Text style={signOffLine}>
+              {signOffName || "The Fame Crew team"}
+            </Text>
             <Text style={footerSmallPrint}>
-              Fame Crew &middot; shoots.fame.so
+              Fame Crew &middot; fame.so/crew
             </Text>
           </Section>
         </Container>

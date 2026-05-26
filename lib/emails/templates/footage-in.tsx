@@ -62,9 +62,16 @@ export function FootageInEmail({
       ) : (
         <>
           <Text style={paragraph}>
-            All raw files from {shoot.shootNumber} are uploaded and
-            organised. You can browse + download everything from your
-            status page.
+            All raw files from your shoot are uploaded and organised on
+            your status page. You can preview every clip directly in
+            the browser - each preview is auto-transcribed, so you can
+            search the transcripts to find the moment you need without
+            scrubbing through hours of footage.
+          </Text>
+          <Text style={paragraph}>
+            Each clip links straight to Google Drive for full-resolution
+            download - that's where you (or your editors) grab the
+            files to edit with.
           </Text>
           <Text style={paragraph}>
             For crew-only shoots like this, that's the handoff - your
