@@ -24,7 +24,12 @@ import {
 } from "../email-tracker";
 import { send } from "./send";
 import { renderEmail } from "./render";
+import { BookingConfirmedEmail } from "./templates/booking-confirmed";
 import { CrewConfirmedEmail } from "./templates/crew-confirmed";
+import { ReadyForShootEmail } from "./templates/ready-for-shoot";
+import { FootageInEmail } from "./templates/footage-in";
+import { AssetsReadyEmail } from "./templates/assets-ready";
+import { DeliveredEmail } from "./templates/delivered";
 
 // Pipeline ordering. Used to detect backwards transitions so a card
 // briefly dragged to the wrong list (and dragged back) doesn't trigger
@@ -64,20 +69,31 @@ function milestoneFor(status: Shoot["status"]): EmailMilestone | null {
   }
 }
 
-// Phase 1 only ships crew-confirmed. Other templates return null and
-// the enqueue logs + skips. Add new templates here as they land in
-// later phases.
+// Renders the right milestone email. All six templates are wired up
+// for production sends.
 async function renderForMilestone(
   milestone: EmailMilestone,
   shoot: Shoot,
-  ctx: { statusPageUrl: string; clientFirstName: string },
+  ctx: {
+    statusPageUrl: string;
+    clientFirstName: string;
+    feedbackUrl: string;
+  },
 ): Promise<{ subject: string; html: string; text: string } | null> {
   switch (milestone) {
+    case "booking-confirmed": {
+      const subject = `Your shoot is booked - here's what happens next ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <BookingConfirmedEmail
+          shoot={shoot}
+          statusPageUrl={ctx.statusPageUrl}
+          clientFirstName={ctx.clientFirstName}
+        />,
+      );
+      return { subject, html, text };
+    }
     case "crew-confirmed": {
-      const crewFirst = shoot.crew?.name.split(/\s+/)[0];
-      const subject = crewFirst
-        ? `Meet your crew - ${shoot.shootNumber}`
-        : `Your crew is confirmed - ${shoot.shootNumber}`;
+      const subject = `Meet your crew - ${shoot.shootNumber}`;
       const { html, text } = await renderEmail(
         <CrewConfirmedEmail
           shoot={shoot}
@@ -87,7 +103,53 @@ async function renderForMilestone(
       );
       return { subject, html, text };
     }
-    // Other milestones not yet implemented - Phase 2+.
+    case "ready-for-shoot": {
+      const subject = `Your shoot is tomorrow - ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <ReadyForShootEmail
+          shoot={shoot}
+          statusPageUrl={ctx.statusPageUrl}
+          clientFirstName={ctx.clientFirstName}
+        />,
+      );
+      return { subject, html, text };
+    }
+    case "footage-in": {
+      const subject = shoot.hasPostProduction
+        ? `Footage is in - editing has started - ${shoot.shootNumber}`
+        : `Your raw footage is ready - ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <FootageInEmail
+          shoot={shoot}
+          statusPageUrl={ctx.statusPageUrl}
+          clientFirstName={ctx.clientFirstName}
+        />,
+      );
+      return { subject, html, text };
+    }
+    case "assets-ready": {
+      const subject = `Your videos are ready to review - ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <AssetsReadyEmail
+          shoot={shoot}
+          statusPageUrl={ctx.statusPageUrl}
+          clientFirstName={ctx.clientFirstName}
+        />,
+      );
+      return { subject, html, text };
+    }
+    case "delivered": {
+      const subject = `How was your Fame shoot? - ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <DeliveredEmail
+          shoot={shoot}
+          feedbackUrl={ctx.feedbackUrl}
+          statusPageUrl={ctx.statusPageUrl}
+          clientFirstName={ctx.clientFirstName}
+        />,
+      );
+      return { subject, html, text };
+    }
     default:
       return null;
   }
@@ -140,14 +202,6 @@ export async function enqueueMilestoneEmail(
     return { status: "no-op", reason: "backwards transition" };
   }
 
-  // Phase 1 gate: only crew-confirmed is wired up. Other milestones get
-  // logged as "no template yet" and skipped without claiming the KV
-  // slot - so when we ship a later template we re-fire as cards
-  // transition.
-  if (milestone !== "crew-confirmed") {
-    return { status: "no-op", reason: `template '${milestone}' not yet implemented` };
-  }
-
   // Defensive: existing stored records (written before this field
   // existed) deserialise without `clientEmails`. Treat undefined as
   // empty and skip with a friendly log; the next webhook event will
@@ -169,6 +223,7 @@ export async function enqueueMilestoneEmail(
 
   const ctx = {
     statusPageUrl: `${publicBaseUrl()}/${next.slug}`,
+    feedbackUrl: `${publicBaseUrl()}/feedback/${next.slug}`,
     // Greeting uses the personal contact name from Trello (e.g. "Andy")
     // not the business name. Falls back to empty string -> template
     // renders "Hi there,".
