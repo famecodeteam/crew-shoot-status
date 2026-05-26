@@ -10,7 +10,6 @@ import {
   Font,
   Head,
   Html,
-  Img,
   Preview,
   Section,
   Text,
@@ -18,7 +17,7 @@ import {
 import type { ReactNode } from "react";
 import { fameTheme } from "./theme";
 
-const { colors, fontFamily, figtreeUrl, logoUrl, radius } = fameTheme;
+const { colors, fontFamily, figtreeUrl, radius } = fameTheme;
 
 export type LayoutProps = {
   // Inbox preview text - first ~80 chars shown by most clients next to
@@ -76,12 +75,14 @@ export function EmailLayout({
         <Container style={container}>
           {hero ? (
             <Section style={heroSection}>
-              <Img
-                src={logoUrl}
-                alt="Fame"
-                height={28}
-                style={heroLogo}
-              />
+              {/* Text-based wordmark instead of an <img>. Email
+                  clients reject SVG inconsistently (Outlook desktop
+                  doesn't render it at all, Gmail's image proxy
+                  sometimes strips it) and we want the logo visible
+                  on every send - so we render the brand wordmark as
+                  styled Figtree text in pink. Same colour, same
+                  font as the public status page header. */}
+              <Text style={heroLogo}>FAME</Text>
               <Text style={eyebrow}>SHOOT {hero.shootNumber}</Text>
               <Text style={heroTitle}>{hero.title}</Text>
               {hero.statusLabel ? (
@@ -93,7 +94,7 @@ export function EmailLayout({
             </Section>
           ) : (
             <Section style={headerSection}>
-              <Img src={logoUrl} alt="Fame" height={28} style={heroLogo} />
+              <Text style={heroLogo}>FAME</Text>
             </Section>
           )}
 
@@ -104,6 +105,9 @@ export function EmailLayout({
             <Text style={signOffLine}>
               {signOffName || "The Fame Crew team"}
             </Text>
+            {signOffName ? (
+              <Text style={signOffTitle}>Crew Production Manager</Text>
+            ) : null}
             <Text style={footerSmallPrint}>
               Fame Crew &middot; fame.so/crew
             </Text>
@@ -202,7 +206,12 @@ const heroSection = {
 
 const heroLogo = {
   display: "block",
-  marginBottom: "20px",
+  fontSize: "26px",
+  fontWeight: 900,
+  color: colors.pink,
+  letterSpacing: "-0.02em",
+  lineHeight: 1,
+  margin: "0 0 20px",
 };
 
 const eyebrow = {
@@ -263,8 +272,14 @@ const thanksLine = {
 };
 
 const signOffLine = {
-  margin: "0 0 16px",
+  margin: "0 0 2px",
   color: colors.dark,
+};
+
+const signOffTitle = {
+  margin: "0 0 16px",
+  color: colors.textMuted,
+  fontSize: "13px",
 };
 
 const footerSmallPrint = {
