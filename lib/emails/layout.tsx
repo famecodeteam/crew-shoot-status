@@ -10,6 +10,7 @@ import {
   Font,
   Head,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -17,7 +18,7 @@ import {
 import type { ReactNode } from "react";
 import { fameTheme } from "./theme";
 
-const { colors, fontFamily, figtreeUrl, radius } = fameTheme;
+const { colors, fontFamily, figtreeUrl, logoPngUrl, radius } = fameTheme;
 
 export type LayoutProps = {
   // Inbox preview text - first ~80 chars shown by most clients next to
@@ -75,14 +76,19 @@ export function EmailLayout({
         <Container style={container}>
           {hero ? (
             <Section style={heroSection}>
-              {/* Text-based wordmark instead of an <img>. Email
-                  clients reject SVG inconsistently (Outlook desktop
-                  doesn't render it at all, Gmail's image proxy
-                  sometimes strips it) and we want the logo visible
-                  on every send - so we render the brand wordmark as
-                  styled Figtree text in pink. Same colour, same
-                  font as the public status page header. */}
-              <Text style={heroLogo}>FAME</Text>
+              {/* PNG export of the brand wordmark (300x177), hosted on
+                  our domain. We use PNG instead of the page's SVG
+                  because email clients reject SVG inconsistently
+                  (Outlook desktop entirely, Gmail's image proxy
+                  intermittently). Explicit width + height attrs help
+                  Outlook in particular size the image correctly. */}
+              <Img
+                src={logoPngUrl}
+                alt="Fame"
+                width="47"
+                height="28"
+                style={heroLogo}
+              />
               <Text style={eyebrow}>SHOOT {hero.shootNumber}</Text>
               <Text style={heroTitle}>{hero.title}</Text>
               {hero.statusLabel ? (
@@ -94,7 +100,13 @@ export function EmailLayout({
             </Section>
           ) : (
             <Section style={headerSection}>
-              <Text style={heroLogo}>FAME</Text>
+              <Img
+                src={logoPngUrl}
+                alt="Fame"
+                width="47"
+                height="28"
+                style={heroLogo}
+              />
             </Section>
           )}
 
@@ -206,11 +218,6 @@ const heroSection = {
 
 const heroLogo = {
   display: "block",
-  fontSize: "26px",
-  fontWeight: 900,
-  color: colors.pink,
-  letterSpacing: "-0.02em",
-  lineHeight: 1,
   margin: "0 0 20px",
 };
 

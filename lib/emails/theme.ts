@@ -23,6 +23,12 @@ export const fameTheme = {
     "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap",
   logoUrl:
     "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65bcbe23cfb0eb14d2ce0063_logo.svg",
+  // PNG export of the same wordmark, hosted on shoots.fame.so/public.
+  // Email clients reject SVG (Outlook desktop entirely, Gmail's image
+  // proxy intermittently) - PNG renders reliably across all of them.
+  // Rendered at 300x177 from the SVG via resvg, intrinsic 100x59.
+  // Email <Img> uses this URL with width=47 / height=28 attrs.
+  logoPngUrl: "https://shoots.fame.so/fame-logo.png",
   // Square pink "F" icon - used as a fallback / favicon-style mark
   // when the full wordmark might break in restricted email clients.
   logoFIconUrl:
