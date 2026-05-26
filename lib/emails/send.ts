@@ -1,18 +1,22 @@
-// Resend wrapper used by every milestone email send. Keeps the From,
+// Postmark wrapper used by every milestone email send. Keeps the From,
 // Reply-To, and BCC config in one place so all outgoing mail looks the
 // same and Tom can change the From / BCC list without touching template
 // code.
 //
-// Dry-run mode: if EMAIL_DRYRUN_TO is set, we override the recipient
-// list with that address and prefix the subject with "[DRYRUN]". The
-// rendered HTML is unchanged so we can sanity-check templates with
-// real card data before pointing the system at real clients.
+// We switched from Resend to Postmark when Namecheap's "Mail Settings:
+// Gmail" lock prevented us from adding an MX record on send.shoots.
+// Postmark requires only DKIM (TXT) + Return-Path (CNAME) - no MX -
+// which fits cleanly inside the Namecheap restriction.
 //
-// No-op mode: if RESEND_API_KEY isn't set, we log what would have been
-// sent and return success. This lets the webhook + enqueue logic ship
-// before Resend is wired up.
+// Dry-run mode: if EMAIL_DRYRUN_TO is set, we override the recipient
+// list with that address and prefix the subject with "[DRYRUN]". BCC
+// is suppressed during dry-run.
+//
+// No-op mode: if POSTMARK_API_TOKEN isn't set, we log what would have
+// been sent and return success. Useful so the webhook + enqueue logic
+// can ship before Postmark is wired up.
 
-import { Resend } from "resend";
+import { ServerClient } from "postmark";
 
 export type SendParams = {
   to: string[];
@@ -21,7 +25,10 @@ export type SendParams = {
   // Optional plain-text fallback. If absent, mail clients render the
   // HTML and most strip styling anyway.
   text?: string;
-  // Tag the send so Resend's dashboard groups deliveries by milestone.
+  // Tag the send so Postmark's dashboard groups deliveries by milestone.
+  // Postmark accepts a single string Tag plus an arbitrary Metadata
+  // map - we use Tag for milestone (primary slice) and Metadata for
+  // the rest.
   tags?: { name: string; value: string }[];
 };
 
@@ -29,8 +36,6 @@ export type SendResult =
   | { ok: true; messageId: string; dryRun: boolean }
   | { ok: false; error: string; retriable: boolean };
 
-// One env-derived From line so producers can change the display name
-// without a deploy.
 function fromLine(): string {
   const display = process.env.EMAIL_FROM_NAME || "Fame";
   const address = process.env.EMAIL_FROM_ADDRESS || "hello@shoots.fame.so";
@@ -53,13 +58,35 @@ function dryRunRecipient(): string | undefined {
   return process.env.EMAIL_DRYRUN_TO || undefined;
 }
 
-let cached: Resend | null = null;
-function client(): Resend | null {
+let cached: ServerClient | null = null;
+function client(): ServerClient | null {
   if (cached) return cached;
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  cached = new Resend(key);
+  const token = process.env.POSTMARK_API_TOKEN;
+  if (!token) return null;
+  cached = new ServerClient(token);
   return cached;
+}
+
+// Map our generic tags array onto Postmark's Tag + Metadata shape.
+// First "milestone" tag becomes the primary Tag; the rest plus any
+// extras land in Metadata.
+function splitTagsForPostmark(
+  tags: { name: string; value: string }[] | undefined,
+): { tag?: string; metadata?: Record<string, string> } {
+  if (!tags || !tags.length) return {};
+  const meta: Record<string, string> = {};
+  let primary: string | undefined;
+  for (const t of tags) {
+    if (!primary && t.name === "milestone") {
+      primary = t.value;
+    } else {
+      meta[t.name] = t.value;
+    }
+  }
+  return {
+    tag: primary,
+    metadata: Object.keys(meta).length ? meta : undefined,
+  };
 }
 
 export async function send(params: SendParams): Promise<SendResult> {
@@ -72,32 +99,40 @@ export async function send(params: SendParams): Promise<SendResult> {
 
   if (!c) {
     console.log(
-      `[email] RESEND_API_KEY unset - logging instead. to=${finalTo.join(",")} subject="${finalSubject}"`,
+      `[email] POSTMARK_API_TOKEN unset - logging instead. to=${finalTo.join(",")} subject="${finalSubject}"`,
     );
     return { ok: true, messageId: "no-op", dryRun: true };
   }
 
+  const { tag, metadata } = splitTagsForPostmark(params.tags);
+
   try {
-    const res = await c.emails.send({
-      from: fromLine(),
-      to: finalTo,
-      replyTo: replyTo(),
-      bcc: finalBcc.length ? finalBcc : undefined,
-      subject: finalSubject,
-      html: params.html,
-      text: params.text,
-      tags: params.tags,
+    const res = await c.sendEmail({
+      From: fromLine(),
+      To: finalTo.join(", "),
+      Bcc: finalBcc.length ? finalBcc.join(", ") : undefined,
+      ReplyTo: replyTo(),
+      Subject: finalSubject,
+      HtmlBody: params.html,
+      TextBody: params.text,
+      Tag: tag,
+      Metadata: metadata,
+      MessageStream: "outbound",
     });
-    if (res.error) {
-      // Resend returns a structured error - treat 4xx as non-retriable,
-      // 5xx + network as retriable.
-      const retriable = !/invalid|missing|unauthorized|forbidden/i.test(
-        res.error.message || "",
-      );
-      return { ok: false, error: res.error.message || "send failed", retriable };
-    }
-    return { ok: true, messageId: res.data?.id ?? "unknown", dryRun: !!dryTo };
+    return {
+      ok: true,
+      messageId: res.MessageID ?? "unknown",
+      dryRun: !!dryTo,
+    };
   } catch (err) {
-    return { ok: false, error: (err as Error).message, retriable: true };
+    // Postmark SDK throws on 4xx / 5xx. Mark anything containing
+    // "invalid" / "unauthorized" / "inactive" / "test mode" as
+    // non-retriable so we don't burn the retry budget on a permanent
+    // config issue.
+    const msg = (err as Error).message || "send failed";
+    const retriable = !/invalid|unauthorized|inactive|test mode|not found|approved sender/i.test(
+      msg,
+    );
+    return { ok: false, error: msg, retriable };
   }
 }

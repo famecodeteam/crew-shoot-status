@@ -20,10 +20,10 @@
     "googleapis": "^171.4.0",
     "hls.js": "^1.6.16",
     "next": "^15.0.0",
+    "postmark": "^4.0.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "redis": "^5.12.1",
-    "resend": "^6.12.3"
+    "redis": "^5.12.1"
   },
   "devDependencies": {
     "@types/node": "^22",
