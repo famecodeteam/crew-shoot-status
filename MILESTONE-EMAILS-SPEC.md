@@ -23,7 +23,7 @@ list change - the goal is signal, not noise.
 | 1 | Won                           | `booking-confirmed`    | `Your shoot is booked - here's what happens next #NNNN`       |
 | 2 | Searching For Crew            | `searching-for-crew`   | (no email - silent)                                           |
 | 3 | Crew Booked                   | `crew-confirmed`       | `Meet your crew - #NNNN`                                      |
-| 4 | Ready For Shoot               | `ready-for-shoot`      | `Your shoot is tomorrow - #NNNN`                              |
+| 4 | Ready For Shoot               | `ready-for-shoot`      | `Your upcoming shoot - #NNNN`                                 |
 | 5 | Shoot Complete                | `shoot-complete`       | (no email - collapsed into #6 to avoid two same-day sends)    |
 | 6 | Assets Received From Crew (PP)| `in-editing`           | `Footage is in - editing has started - #NNNN`                 |
 | 6 | Assets Received (crew-only)   | `in-editing`           | `Your raw footage is ready - #NNNN`                           |

@@ -32,7 +32,7 @@ export function ReadyForShootEmail({
 
   return (
     <EmailLayout
-      preview={`Your shoot ${shoot.shootNumber} is on - here's the plan`}
+      preview={`Your shoot ${shoot.shootNumber} is coming up - here's the plan`}
       hero={{
         shootNumber: shoot.shootNumber,
         title: shoot.clientName,
@@ -40,7 +40,7 @@ export function ReadyForShootEmail({
       }}
       signOffName={shoot.producerFirstName}
     >
-      <Text style={lede}>Shoot day is here</Text>
+      <Text style={lede}>Your shoot is coming up</Text>
       <Text style={paragraph}>{greeting}</Text>
       <Text style={paragraph}>
         Quick heads-up on {shoot.shootNumber}.

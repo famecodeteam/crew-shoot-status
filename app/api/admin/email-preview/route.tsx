@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
       break;
     }
     case "ready-for-shoot": {
-      const subject = `Your shoot is tomorrow - ${shoot.shootNumber}`;
+      const subject = `Your upcoming shoot - ${shoot.shootNumber}`;
       const { html, text } = await renderEmail(
         <ReadyForShootEmail
           shoot={shoot}

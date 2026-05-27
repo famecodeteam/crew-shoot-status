@@ -104,7 +104,12 @@ async function renderForMilestone(
       return { subject, html, text };
     }
     case "ready-for-shoot": {
-      const subject = `Your shoot is tomorrow - ${shoot.shootNumber}`;
+      // Subject avoids any "tomorrow" / "today" claim because this
+      // email is triggered by a Trello list move, not by a cron tied
+      // to shoot.shootDate. If the PM moves the card 2-3 days early
+      // (which can happen), a "tomorrow" subject would lie. Tom
+      // chose Option A from the timing audit: soften the copy.
+      const subject = `Your upcoming shoot - ${shoot.shootNumber}`;
       const { html, text } = await renderEmail(
         <ReadyForShootEmail
           shoot={shoot}
