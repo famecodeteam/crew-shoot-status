@@ -21,7 +21,7 @@ import { findShootDriveLinks } from "@/lib/drive";
 import { writeBackStatusUrl } from "@/lib/writeback";
 import { registerBrief } from "@/lib/brief-storage";
 import { extractDocId, shootSlugToBriefSlug } from "@/lib/brief-slug";
-import { enqueueMilestoneEmail } from "@/lib/emails/enqueue";
+import { scheduleMilestoneEmail } from "@/lib/emails/enqueue";
 
 // Defer the route to be dynamic - we always need to handle the live POST.
 export const dynamic = "force-dynamic";
@@ -151,21 +151,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Milestone email - best-effort, won't roll back the upsert. The
-  // enqueue is idempotent (KV-claimed per cardId+milestone), so the
-  // duplicate webhook events Trello sometimes fires on a single
-  // transition won't double-send. Phase 1 only handles crew-confirmed;
-  // other statuses log "no template yet" and move on.
+  // Milestone email - schedule into the 15-min buffer queue instead
+  // of sending now. The email-flush cron picks the pending record up
+  // later, re-checks the card's current status, and sends only if the
+  // card is still at that milestone. Catches accidental drags + lets
+  // a PM correct their move within the buffer without firing an email.
   try {
-    const result = await enqueueMilestoneEmail(existing, next);
+    const result = await scheduleMilestoneEmail(existing, next);
     if (result.status !== "no-op") {
       console.log(
-        `[trello-webhook] email enqueue: status=${result.status} milestone=${result.milestone ?? "-"} reason=${result.reason ?? "-"} card=${next.cardId}`,
+        `[trello-webhook] email schedule: status=${result.status} milestone=${result.milestone ?? "-"} firesAt=${result.firesAt ?? "-"} reason=${result.reason ?? "-"} card=${next.cardId}`,
       );
     }
   } catch (err) {
     console.warn(
-      `[trello-webhook] milestone email enqueue failed for ${next.shootNumber}:`,
+      `[trello-webhook] milestone email schedule failed for ${next.shootNumber}:`,
       (err as Error).message,
     );
   }

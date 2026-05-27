@@ -17,11 +17,13 @@ import type { Shoot } from "../types";
 import type { ShootStatus } from "../../app/[slug]/status";
 import {
   claim,
+  get as getSent,
   markError,
   markSent,
   markSkipped,
   type EmailMilestone,
 } from "../email-tracker";
+import { schedule as schedulePending } from "../pending-emails";
 import { send } from "./send";
 import { renderEmail } from "./render";
 import { BookingConfirmedEmail } from "./templates/booking-confirmed";
@@ -174,76 +176,131 @@ function firstNameFrom(full: string | undefined): string {
   return full.trim().split(/\s+/)[0] || "";
 }
 
-export type EnqueueResult = {
-  status: "sent" | "skipped" | "error" | "no-op";
+export type ScheduleResult = {
+  status: "scheduled" | "skipped" | "no-op";
+  milestone?: EmailMilestone;
+  reason?: string;
+  firesAt?: string;
+};
+
+export type DispatchResult = {
+  status: "sent" | "cancelled" | "skipped" | "error" | "no-op";
   milestone?: EmailMilestone;
   reason?: string;
   recipients?: string[];
   messageId?: string;
 };
 
-// Public entry: decide whether to send for this card transition, and
-// send (or skip) accordingly.
+// Webhook entry: decide whether THIS transition deserves a milestone
+// email. If yes, write a pending record into the 15-min buffer queue
+// instead of sending now - the email-flush cron picks it up later,
+// re-checks the card's current status, and only then sends. The buffer
+// catches accidental Trello drags: if the PM moves a card forward by
+// mistake and corrects within 15 min, the cron sees the corrected
+// state and cancels the send.
 //
 // `prev` is the shoot record we had BEFORE this webhook event;
 // `next` is what we just upserted.
-export async function enqueueMilestoneEmail(
+export async function scheduleMilestoneEmail(
   prev: Shoot | null,
   next: Shoot,
-): Promise<EnqueueResult> {
+): Promise<ScheduleResult> {
   const milestone = milestoneFor(next.status);
   if (!milestone) return { status: "no-op", reason: "status has no email" };
 
-  // No status change → nothing to do. The first webhook for a new card
-  // (prev === null) IS treated as a transition - that's what triggers
-  // the booking-confirmed email on the initial Won entry.
+  // No status change -> nothing to do.
   const prevStatus = prev?.status;
   if (prevStatus === next.status) {
     return { status: "no-op", reason: "no status change" };
   }
 
-  // Don't send on backwards transitions.
+  // Don't schedule on backwards transitions.
   if (prevStatus && STATUS_RANK[next.status] < STATUS_RANK[prevStatus]) {
     return { status: "no-op", reason: "backwards transition" };
   }
 
-  // Defensive: existing stored records (written before this field
-  // existed) deserialise without `clientEmails`. Treat undefined as
-  // empty and skip with a friendly log; the next webhook event will
-  // pick up the new value.
+  // Defensive: stored records written before clientEmails existed
+  // deserialise without it.
   const recipients = next.clientEmails ?? [];
   if (!recipients.length) {
     console.warn(
-      `[email] no clientEmails on ${next.shootNumber} (${next.cardId}); skipping ${milestone} send`,
+      `[email] no clientEmails on ${next.shootNumber} (${next.cardId}); skipping ${milestone}`,
     );
     await markSkipped(next.cardId, milestone, "no client email on Trello card");
     return { status: "skipped", milestone, reason: "no client email" };
   }
 
-  // Atomic claim - if another worker already started this send, bail.
-  const won = await claim(next.cardId, milestone);
+  // Already sent? Don't re-schedule.
+  const sent = await getSent(next.cardId, milestone);
+  if (sent?.status === "sent") {
+    return { status: "no-op", milestone, reason: "already sent" };
+  }
+
+  const { created, firesAt } = await schedulePending({
+    cardId: next.cardId,
+    shootSlug: next.slug,
+    milestone,
+    expectedStatus: next.status,
+  });
+
+  console.log(
+    `[email] ${created ? "scheduled" : "already pending"} ${milestone} for ${next.shootNumber} firesAt=${firesAt}`,
+  );
+
+  return { status: "scheduled", milestone, firesAt };
+}
+
+// Cron entry: the email-flush cron calls this for each pending record
+// past its firesAt. We re-read the live shoot (kept fresh by the
+// webhook) and only send if the card is still at the expected status.
+// Anything else (card moved on, claim already exists, no template,
+// send error) returns a structured result the cron logs.
+export async function dispatchPendingEmail(
+  shoot: Shoot,
+  milestone: EmailMilestone,
+  expectedStatus: Shoot["status"],
+): Promise<DispatchResult> {
+  // Card moved on inside the buffer? Cancel.
+  if (shoot.status !== expectedStatus) {
+    return {
+      status: "cancelled",
+      milestone,
+      reason: `status moved from ${expectedStatus} -> ${shoot.status} during buffer`,
+    };
+  }
+
+  // Already sent (paranoia - cron shouldn't see a pending record for
+  // a sent milestone, but the check is cheap).
+  const sent = await getSent(shoot.cardId, milestone);
+  if (sent?.status === "sent") {
+    return { status: "no-op", milestone, reason: "already sent" };
+  }
+
+  const recipients = shoot.clientEmails ?? [];
+  if (!recipients.length) {
+    await markSkipped(shoot.cardId, milestone, "no client email on Trello card");
+    return { status: "skipped", milestone, reason: "no client email" };
+  }
+
+  // Claim the slot - protects against a re-fired cron tick double-
+  // processing the same pending record (e.g. if two crons overlap).
+  const won = await claim(shoot.cardId, milestone);
   if (!won) {
     return { status: "no-op", milestone, reason: "already claimed" };
   }
 
   const ctx = {
-    statusPageUrl: `${publicBaseUrl()}/${next.slug}`,
-    feedbackUrl: `${publicBaseUrl()}/feedback/${next.slug}`,
-    // Greeting uses the personal contact name from Trello (e.g. "Andy")
-    // not the business name. Falls back to empty string -> template
-    // renders "Hi there,".
-    clientFirstName: firstNameFrom(next.clientContactName),
+    statusPageUrl: `${publicBaseUrl()}/${shoot.slug}`,
+    feedbackUrl: `${publicBaseUrl()}/feedback/${shoot.slug}`,
+    clientFirstName: firstNameFrom(shoot.clientContactName),
   };
 
-  const rendered = await renderForMilestone(milestone, next, ctx);
+  const rendered = await renderForMilestone(milestone, shoot, ctx);
   if (!rendered) {
-    await markSkipped(next.cardId, milestone, "no template");
+    await markSkipped(shoot.cardId, milestone, "no template");
     return { status: "skipped", milestone, reason: "no template" };
   }
 
-  // Send with one retry on retriable errors. Anything more than that
-  // and we're masking a real problem - mark error and let the next
-  // webhook event try again.
   let attempt = 0;
   let lastError = "unknown";
   while (attempt < 2) {
@@ -254,21 +311,21 @@ export async function enqueueMilestoneEmail(
       text: rendered.text,
       tags: [
         { name: "milestone", value: milestone },
-        { name: "card", value: next.cardId },
+        { name: "card", value: shoot.cardId },
       ],
     });
     if (res.ok) {
-      await markSent(next.cardId, milestone, {
+      await markSent(shoot.cardId, milestone, {
         messageId: res.messageId,
-        recipients: recipients,
+        recipients,
       });
       console.log(
-        `[email] sent ${milestone} for ${next.shootNumber} to ${recipients.join(",")} messageId=${res.messageId}${res.dryRun ? " (dry-run)" : ""}`,
+        `[email] sent ${milestone} for ${shoot.shootNumber} to ${recipients.join(",")} messageId=${res.messageId}${res.dryRun ? " (dry-run)" : ""}`,
       );
       return {
         status: "sent",
         milestone,
-        recipients: recipients,
+        recipients,
         messageId: res.messageId,
       };
     }
@@ -278,9 +335,33 @@ export async function enqueueMilestoneEmail(
     await new Promise((r) => setTimeout(r, 1500));
   }
 
-  await markError(next.cardId, milestone, lastError);
+  await markError(shoot.cardId, milestone, lastError);
   console.error(
-    `[email] FAILED ${milestone} for ${next.shootNumber}: ${lastError}`,
+    `[email] FAILED ${milestone} for ${shoot.shootNumber}: ${lastError}`,
   );
-  return { status: "error", milestone, reason: lastError };
+  return { status: "error", milestone, reason: lastError, recipients };
+}
+
+// Subject string used in cron logs + the Trello "Email sent: ..."
+// comment. Mirrors renderForMilestone's subject logic exactly.
+export function subjectForMilestone(
+  milestone: EmailMilestone,
+  shoot: Shoot,
+): string {
+  switch (milestone) {
+    case "booking-confirmed":
+      return `Your shoot is booked - here's what happens next ${shoot.shootNumber}`;
+    case "crew-confirmed":
+      return `Meet your crew - ${shoot.shootNumber}`;
+    case "ready-for-shoot":
+      return `Your upcoming shoot - ${shoot.shootNumber}`;
+    case "footage-in":
+      return shoot.hasPostProduction
+        ? `Footage is in - editing has started - ${shoot.shootNumber}`
+        : `Your raw footage is ready - ${shoot.shootNumber}`;
+    case "assets-ready":
+      return `Your videos are ready to review - ${shoot.shootNumber}`;
+    case "delivered":
+      return `How was your Fame shoot? - ${shoot.shootNumber}`;
+  }
 }

@@ -1,6 +1,7 @@
 {
   "crons": [
     { "path": "/api/sync-briefs", "schedule": "*/5 * * * *" },
-    { "path": "/api/sync-stream", "schedule": "*/5 * * * *" }
+    { "path": "/api/sync-stream", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/email-flush", "schedule": "*/5 * * * *" }
   ]
 }
