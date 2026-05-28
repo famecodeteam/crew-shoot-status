@@ -78,6 +78,11 @@ export function FootageInEmail({
             team takes it from here. Anything you need from us during
             your edit, just reply.
           </Text>
+          <Text style={paragraph}>
+            Also, if you would prefer that we do post production, just
+            hit reply and explain what you need editing and we'll get
+            right on it!
+          </Text>
         </>
       )}
 
