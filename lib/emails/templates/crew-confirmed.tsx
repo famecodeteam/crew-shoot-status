@@ -8,13 +8,19 @@
 // shoot) and a "questions?" block with reply + WhatsApp paths.
 
 import { Img, Section, Text } from "@react-email/components";
-import { EmailLayout, PrimaryButton } from "../layout";
+import { EmailLayout, OutlineButton, PrimaryButton } from "../layout";
 import { EmailTimeline } from "../timeline";
 import { QuestionsCTA } from "../questions-cta";
 import { fameTheme } from "../theme";
 import type { Shoot } from "../../types";
 
 const { colors } = fameTheme;
+
+// Pre-shoot prep call. Offered on the crew-confirmed email so the
+// client can book a 15-min run-through before the shoot. Single
+// Calendly link for now (Zandro's); if we ever want per-CPM links
+// this moves to lib/producer.ts.
+const PREP_CALL_URL = "https://calendly.com/zandro-fame/15min";
 
 export type CrewConfirmedProps = {
   shoot: Shoot;
@@ -93,6 +99,15 @@ export function CrewConfirmedEmail({
 
       <EmailTimeline shoot={shoot} />
 
+      <Text style={prepHeading}>Want a quick pre-shoot prep call?</Text>
+      <Text style={paragraph}>
+        If it'd help to run through the brief, the plan, or anything
+        on your mind before the day, grab a 15-minute slot that works
+        for you:
+      </Text>
+
+      <OutlineButton href={PREP_CALL_URL}>Book a prep call</OutlineButton>
+
       <Text style={paragraph}>
         Your status page has the full picture - shoot date, location,
         and everything else lined up so far. We'll keep it updated as
@@ -116,6 +131,13 @@ const lede = {
 
 const paragraph = {
   margin: "0 0 14px",
+  color: colors.dark,
+};
+
+const prepHeading = {
+  fontSize: "16px",
+  fontWeight: 700,
+  margin: "20px 0 8px",
   color: colors.dark,
 };
 
