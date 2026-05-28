@@ -8,7 +8,6 @@
 
 import { Text } from "@react-email/components";
 import { EmailLayout, OutlineButton, PrimaryButton } from "../layout";
-import { QuestionsCTA } from "../questions-cta";
 import { fameTheme } from "../theme";
 import type { Shoot } from "../../types";
 
@@ -64,7 +63,11 @@ export function DeliveredEmail({
 
       <OutlineButton href={statusPageUrl}>Open your status page</OutlineButton>
 
-      <QuestionsCTA whatsappUrl={shoot.clientWhatsappUrl} />
+      {/* No "Any questions?" block here. Unlike the pre/during-shoot
+          emails, post-delivery comms revert to plain email - the
+          WhatsApp group is wound down, and replies to this email
+          already route to the crew@fame.so Reply-To, so an explicit
+          "reply to us" line would be redundant. Per Tom. */}
     </EmailLayout>
   );
 }
