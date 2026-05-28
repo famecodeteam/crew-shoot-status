@@ -31,16 +31,6 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 export async function GET(req: NextRequest) {
-  if (!process.env.EMAIL_DRYRUN_TO) {
-    return NextResponse.json(
-      {
-        error:
-          "EMAIL_DRYRUN_TO not set. This endpoint only operates when dryrun mode is active.",
-      },
-      { status: 403 },
-    );
-  }
-
   const { searchParams } = new URL(req.url);
   const slug = searchParams.get("slug");
   const milestone = searchParams.get("milestone");
@@ -48,6 +38,24 @@ export async function GET(req: NextRequest) {
   // browser can display it directly. Useful for tone-checking templates
   // without triggering any actual delivery.
   const previewOnly = searchParams.get("preview") === "true";
+
+  // Auth model:
+  //   - preview=true is read-only (renders HTML, sends nothing) so it's
+  //     always allowed - lets Tom review templates anytime.
+  //   - the SEND path is gated on EMAIL_DRYRUN_TO being set, so an
+  //     admin-triggered send can ONLY ever go to the dryrun inbox,
+  //     never to a real client. With dryrun removed for production,
+  //     this endpoint refuses to send - exactly what we want for an
+  //     ops tool that bypasses the 15-min buffer.
+  if (!previewOnly && !process.env.EMAIL_DRYRUN_TO) {
+    return NextResponse.json(
+      {
+        error:
+          "Sending via this endpoint requires EMAIL_DRYRUN_TO (safety gate). Use ?preview=true to render without sending.",
+      },
+      { status: 403 },
+    );
+  }
 
   if (!slug) {
     return NextResponse.json({ error: "missing slug param" }, { status: 400 });
