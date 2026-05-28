@@ -24,6 +24,12 @@ import {
   readClientComments,
   toClientComment,
 } from "@/lib/activity";
+import {
+  applyApprovalToAsset,
+  makeApproval,
+  syncTrelloForShoot,
+} from "@/lib/approval";
+import { clientVersions } from "@/lib/asset-versions";
 import { newAuthorToken } from "@/lib/comment-id";
 import { addCardComment } from "@/lib/trello";
 
@@ -103,6 +109,34 @@ export async function POST(
     } catch (err) {
       console.warn("[comments] Trello write-back failed:", (err as Error).message);
     }
+  }
+
+  // A client comment is feedback to action - flip the asset to "changes
+  // requested" so it surfaces for the editor + CPM (member-side
+  // deriveLifecycle reads this approval). Use the latest client-visible
+  // version so the verdict counts as current. Best-effort - never block
+  // the comment write on it.
+  try {
+    const visible = clientVersions(lookup.asset);
+    const onVersion = visible.length
+      ? Math.max(...visible.map((v) => v.n))
+      : version;
+    await applyApprovalToAsset({
+      cardId,
+      assetSlug: slug,
+      approval: makeApproval({
+        status: "changes_requested",
+        onVersion,
+        authorName,
+        changeRequestText: null,
+      }),
+    });
+    await syncTrelloForShoot({ cardId });
+  } catch (err) {
+    console.warn(
+      "[comments] flip to changes-requested failed:",
+      (err as Error).message,
+    );
   }
 
   return Response.json({
