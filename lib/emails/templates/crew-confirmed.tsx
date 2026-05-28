@@ -99,6 +99,14 @@ export function CrewConfirmedEmail({
 
       <EmailTimeline shoot={shoot} />
 
+      <Text style={paragraph}>
+        Your status page has the full picture - shoot date, location,
+        and everything else lined up so far. We'll keep it updated as
+        we move through the next steps.
+      </Text>
+
+      <PrimaryButton href={statusPageUrl}>View your status page</PrimaryButton>
+
       <Text style={prepHeading}>Want a quick pre-shoot prep call?</Text>
       <Text style={paragraph}>
         If it'd help to run through the brief, the plan, or anything
@@ -107,14 +115,6 @@ export function CrewConfirmedEmail({
       </Text>
 
       <OutlineButton href={PREP_CALL_URL}>Book a prep call</OutlineButton>
-
-      <Text style={paragraph}>
-        Your status page has the full picture - shoot date, location,
-        and everything else lined up so far. We'll keep it updated as
-        we move through the next steps.
-      </Text>
-
-      <PrimaryButton href={statusPageUrl}>View your status page</PrimaryButton>
 
       <QuestionsCTA whatsappUrl={shoot.clientWhatsappUrl} />
     </EmailLayout>

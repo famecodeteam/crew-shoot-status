@@ -175,7 +175,7 @@ export function OutlineButton({
       cellPadding={0}
       cellSpacing={0}
       border={0}
-      style={{ margin: "12px 0 0" }}
+      style={{ margin: "14px 0 18px" }}
     >
       <tbody>
         <tr>
