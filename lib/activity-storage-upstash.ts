@@ -34,6 +34,42 @@ function authKey(activityId: string): string {
   return `comment-auth:${activityId}`;
 }
 
+// Global cross-portal activity feed - read by delivery.fame.so's
+// Activity page. member.fame.so mirrors its own asset events into this
+// same list; we mirror client comments + approvals here so they show up
+// in the unified feed alongside everything else. Shape MUST match
+// delivery's GlobalAssetFeedEntry: { cardId, assetSlug, assetName, entry }.
+const GLOBAL_ASSET_FEED_KEY = "asset-feed:global";
+const GLOBAL_ASSET_FEED_CAP = 500;
+
+async function mirrorToGlobalFeed(
+  cardId: string,
+  assetSlug: string,
+  entry: AssetActivity,
+): Promise<void> {
+  // Only the entry types delivery's feed surfaces - keeps the shared
+  // list lean. This repo writes comment_client (incl. approval decision
+  // notes); mirror those.
+  if (
+    entry.type !== "comment_client" &&
+    entry.type !== "comment_internal" &&
+    entry.type !== "system_version_published"
+  ) {
+    return;
+  }
+  try {
+    await client().lpush(
+      GLOBAL_ASSET_FEED_KEY,
+      JSON.stringify({ cardId, assetSlug, assetName: null, entry }),
+    );
+    await client().ltrim(GLOBAL_ASSET_FEED_KEY, 0, GLOBAL_ASSET_FEED_CAP - 1);
+  } catch (err) {
+    // Best-effort: a failed mirror must never fail the primary comment
+    // write (the per-asset stream is the source of truth).
+    console.warn("[activity-upstash] global feed mirror failed:", err);
+  }
+}
+
 // A list element comes back either already-parsed (Upstash deserialises
 // JSON) or as a raw string - handle both, and drop anything unparseable
 // (e.g. a delete tombstone observed mid-LREM).
@@ -56,6 +92,9 @@ export async function appendActivity(
   entry: AssetActivity,
 ): Promise<void> {
   await client().rpush(activityKey(cardId, assetSlug), JSON.stringify(entry));
+  // Mirror into the cross-portal global feed so client comments +
+  // approvals appear on delivery.fame.so/ alongside everything else.
+  await mirrorToGlobalFeed(cardId, assetSlug, entry);
 }
 
 export async function listActivity(
