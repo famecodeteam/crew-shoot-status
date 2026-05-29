@@ -47,6 +47,14 @@ const LISTS: Record<string, Mapping> = {
     publishable: true,
     showTimeline: true,
   },
+  // Live board uses the longer name "Edited Assets Shared With Client" -
+  // keep both aliases so a future board-rename either way doesn't drop
+  // the mapping and silently 404 every card in this list.
+  "edited assets shared with client": {
+    status: "assets-ready",
+    publishable: true,
+    showTimeline: true,
+  },
   "assets approved by client": {
     status: "delivered",
     publishable: true,
