@@ -17,8 +17,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getBySlug } from "@/lib/storage";
 import { getAsset } from "@/lib/asset-storage";
+import { findAssetBySlug } from "@/lib/asset-lookup";
 import { clientVersions } from "@/lib/asset-versions";
-import type { Asset } from "@/lib/types";
+import type { Asset, Shoot } from "@/lib/types";
 import { ReviewShell } from "./review-shell";
 
 export const dynamic = "force-dynamic";
@@ -26,18 +27,32 @@ export const dynamic = "force-dynamic";
 const FAME_LOGO_URL =
   "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65bcbe23cfb0eb14d2ce0063_logo.svg";
 
+// Resolve the shoot + asset for this URL. The asset slug is globally unique
+// (random suffix), so when the shoot slug in the URL is stale - e.g. it was
+// regenerated in a data migration - we still recover the asset and its real
+// shoot by asset slug alone, keeping old /<shoot>/asset/<asset> links alive.
+async function resolveShootAsset(
+  slug: string,
+  assetSlug: string,
+): Promise<{ shoot: Shoot; asset: Asset } | null> {
+  const shoot = await getBySlug(slug);
+  if (shoot) {
+    const asset = await getAsset(shoot.cardId, assetSlug);
+    if (asset) return { shoot, asset };
+  }
+  const found = await findAssetBySlug(assetSlug);
+  return found ? { shoot: found.shoot, asset: found.asset } : null;
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string; asset: string }>;
 }): Promise<Metadata> {
   const { slug, asset: assetSlug } = await params;
-  const shoot = await getBySlug(slug);
-  if (!shoot) return { title: "Fame Crew" };
-  const asset = await getAsset(shoot.cardId, assetSlug);
-  if (!asset) {
-    return { title: `Fame Crew - Shoot Status - ${shoot.shootNumber}` };
-  }
+  const resolved = await resolveShootAsset(slug, assetSlug);
+  if (!resolved) return { title: "Fame Crew" };
+  const { shoot, asset } = resolved;
   return {
     title: `${asset.name} · ${shoot.clientName} · Fame Crew`,
     description: `Review and approve ${asset.name} for ${shoot.clientName}'s shoot (${shoot.shootNumber}).`,
@@ -50,10 +65,9 @@ export default async function AssetReviewPage({
   params: Promise<{ slug: string; asset: string }>;
 }) {
   const { slug, asset: assetSlug } = await params;
-  const shoot = await getBySlug(slug);
-  if (!shoot) notFound();
-  const asset = await getAsset(shoot.cardId, assetSlug);
-  if (!asset) notFound();
+  const resolved = await resolveShootAsset(slug, assetSlug);
+  if (!resolved) notFound();
+  const { shoot, asset } = resolved;
 
   // Publish gate (contract v2 §4). Filter at the server boundary:
   // <ReviewShell> serialises its entire `asset` prop into the public
@@ -73,13 +87,13 @@ export default async function AssetReviewPage({
     <main className="shell">
       <header className="hero">
         <div className="hero-top">
-          <Link href={`/${slug}`} aria-label="Back to shoot status">
+          <Link href={`/${shoot.slug}`} aria-label="Back to shoot status">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="hero-logo" src={FAME_LOGO_URL} alt="Fame" />
           </Link>
         </div>
         <div className="hero-shoot-no">
-          <Link href={`/${slug}`}>
+          <Link href={`/${shoot.slug}`}>
             Shoot {shoot.shootNumber} · {shoot.clientName}
           </Link>
         </div>

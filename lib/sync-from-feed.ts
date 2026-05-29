@@ -43,10 +43,28 @@ type FeedShoot = {
   depositReceiptUrl: string | null;
   balanceReceiptUrl: string | null;
   clientFootageUrl: string | null;
+  statusPageUrl: string | null;
   labels: string[] | null;
   milestoneDates: Record<string, string> | null;
   updatedAt: string | null;
 };
+
+// The client-facing slug is owned by the portal: it lives in the shoot's
+// status_page_url - the URL in client emails, bookmarks, and the portal's
+// "Client review" links. Honour it so those URLs keep resolving. Earlier
+// feed-pulls minted a fresh random slug whenever a shoot wasn't already in
+// our store, silently changing live URLs (→ 404s); pinning to the canonical
+// slug both repairs those and stops them drifting again.
+function slugFromStatusPageUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    if (!u.hostname.endsWith("shoots.fame.so")) return null;
+    return u.pathname.split("/").filter(Boolean)[0] ?? null;
+  } catch {
+    return null;
+  }
+}
 
 function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | null {
   if (!f.cardId) return null;
@@ -87,11 +105,14 @@ function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | nu
     ? undefined
     : projectDeliveredDate(f.shootDate ?? "", hasPostProduction, undefined);
 
-  // Preserve an existing, non-provisional slug; otherwise generate one.
+  // Prefer the portal's canonical client-facing slug; only fall back to an
+  // existing non-provisional slug, then a freshly generated one, when the
+  // portal has no status-page URL for this shoot.
   const slug =
-    existingSlug && !existingSlug.startsWith("card-")
+    slugFromStatusPageUrl(f.statusPageUrl) ??
+    (existingSlug && !existingSlug.startsWith("card-")
       ? existingSlug
-      : generateSlug(shootNumber, clientName);
+      : generateSlug(shootNumber, clientName));
 
   const producer =
     PRODUCERS.find(
