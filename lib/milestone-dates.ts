@@ -41,6 +41,26 @@ const LIST_TO_MILESTONE: Record<string, keyof MilestoneDates> = {
   closed: "delivered",
 };
 
+/**
+ * Convert a {trelloListName: ISO timestamp} map (as produced by the crew
+ * portal's /api/sync/shoots feed, derived from its activity log) into
+ * MilestoneDates. The feed-pull sync uses this instead of
+ * deriveMilestoneDates (which needs raw Trello action history). Earliest
+ * timestamp wins when multiple lists map to the same milestone.
+ */
+export function milestoneDatesFromListDates(
+  listDates: Record<string, string>,
+): MilestoneDates {
+  const out: MilestoneDates = {};
+  for (const [listName, date] of Object.entries(listDates)) {
+    const milestone = LIST_TO_MILESTONE[listName.trim().toLowerCase()];
+    if (!milestone) continue;
+    const prev = out[milestone];
+    if (!prev || date < prev) out[milestone] = date;
+  }
+  return out;
+}
+
 // Walk the card's action history chronologically; record the FIRST time
 // each milestone was reached.
 export function deriveMilestoneDates(actions: TrelloAction[]): MilestoneDates {
