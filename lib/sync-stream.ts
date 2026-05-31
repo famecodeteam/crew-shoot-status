@@ -168,6 +168,14 @@ export async function syncStreamOnce(deadline: number): Promise<StreamSyncSummar
     }
     const assets = await getAssetsForShoot(shoot.cardId);
     for (const asset of assets) {
+      // Approved assets are done: the approve route deletes their Stream
+      // copies + clears the version fields, so the player falls back to
+      // Drive. Skip them here or we'd re-ingest what we just deleted. If
+      // the client un-approves later, the status changes and the next
+      // tick picks the asset back up.
+      if (asset.approval?.status === "approved") {
+        continue;
+      }
       for (const version of asset.versions) {
         if (Date.now() > deadline) {
           timedOut = true;

@@ -10,7 +10,12 @@
 import type { NextRequest } from "next/server";
 import { findAssetBySlug } from "@/lib/asset-lookup";
 import { clientVersions } from "@/lib/asset-versions";
-import { applyApprovalToAsset, makeApproval, syncTrelloForShoot } from "@/lib/approval";
+import {
+  applyApprovalToAsset,
+  makeApproval,
+  releaseStreamCopiesForAsset,
+  syncTrelloForShoot,
+} from "@/lib/approval";
 import { addCardComment } from "@/lib/trello";
 import { appendActivity } from "@/lib/activity-storage";
 import { newDecisionNote } from "@/lib/activity";
@@ -58,6 +63,23 @@ export async function POST(
     assetSlug: slug,
     approval,
   });
+
+  // Approved → drop the Cloudflare Stream delivery copies and let the
+  // player fall back to the Drive proxy (stop paying for Stream once the
+  // decision's made). Best-effort - never block the approval write.
+  try {
+    const released = await releaseStreamCopiesForAsset(lookup.shoot.cardId, slug);
+    if (released.deleted || released.failed) {
+      console.log(
+        `[approve] stream release for ${slug}: ${released.deleted} deleted, ${released.failed} failed`,
+      );
+    }
+  } catch (err) {
+    console.warn(
+      `[approve] stream release for ${slug} failed:`,
+      (err as Error).message,
+    );
+  }
 
   // §6: an approval note (optional) also lands in the shared activity
   // stream as a comment_client entry. Best-effort - never block the

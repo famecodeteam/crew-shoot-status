@@ -18,7 +18,8 @@
 // approval + comments survive even if the field update fails.
 
 import { getBoardCustomFields, setCustomFieldText } from "./trello";
-import { getAssetsForShoot, upsertAsset } from "./asset-storage";
+import { getAsset, getAssetsForShoot, upsertAsset } from "./asset-storage";
+import { deleteVideo } from "./stream";
 import type { Asset, AssetApproval } from "./types";
 
 // Reflect the shoot-level summary string the brief specifies:
@@ -112,4 +113,65 @@ export async function applyApprovalToAsset(args: {
       updatedAt: new Date().toISOString(),
     };
   });
+}
+
+// On client approval, release the asset's Cloudflare Stream delivery
+// copies. The decision's been made, so there's no reason to keep paying
+// for Stream storage - the review player falls back to the (slower) Drive
+// proxy automatically when a version has no ready streamUid.
+//
+// Deletes EVERY version's Stream video (all versions' copies are wasted
+// storage once the asset is signed off, not just the approved one) and
+// clears streamUid/streamStatus/streamError so the fallback kicks in even
+// if the Cloudflare delete fails. Best-effort + idempotent: a failed
+// delete leaves an orphan the prune script reaps, and never blocks the
+// approval write.
+//
+// The sync-stream cron skips approved assets, so it won't re-ingest these.
+// If the client later un-approves (reset-approval / request-changes), the
+// status changes and the cron re-creates the copies on its next tick.
+export async function releaseStreamCopiesForAsset(
+  cardId: string,
+  assetSlug: string,
+): Promise<{ deleted: number; failed: number }> {
+  const asset = await getAsset(cardId, assetSlug);
+  if (!asset) return { deleted: 0, failed: 0 };
+
+  let deleted = 0;
+  let failed = 0;
+  let touchedAny = false;
+  for (const v of asset.versions) {
+    if (!v.streamUid) continue;
+    touchedAny = true;
+    try {
+      await deleteVideo(v.streamUid);
+      deleted++;
+    } catch (err) {
+      failed++;
+      console.warn(
+        `[approval] deleteVideo(${v.streamUid}) for ${assetSlug} failed:`,
+        (err as Error).message,
+      );
+    }
+  }
+
+  // Clear the stream fields on every version regardless of delete success -
+  // a stale streamUid would make the player try a now-deleted Stream copy
+  // instead of falling back to Drive.
+  if (touchedAny) {
+    await upsertAsset(cardId, assetSlug, (existing) => {
+      if (!existing) throw new Error(`asset ${assetSlug} vanished mid-release`);
+      return {
+        ...existing,
+        versions: existing.versions.map((ver) => ({
+          ...ver,
+          streamUid: null,
+          streamStatus: null,
+          streamError: null,
+        })),
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }
+  return { deleted, failed };
 }
