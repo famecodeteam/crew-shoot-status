@@ -13,6 +13,7 @@
 
 import { listAll as listShoots } from "./storage";
 import { getAssetsForShoot, upsertAsset } from "./asset-storage";
+import { releaseStreamCopiesForAsset } from "./approval";
 import { copyFromUrl, getVideo, STREAM_APP_TAG } from "./stream";
 import type { Asset, AssetVersion } from "./types";
 
@@ -168,12 +169,27 @@ export async function syncStreamOnce(deadline: number): Promise<StreamSyncSummar
     }
     const assets = await getAssetsForShoot(shoot.cardId);
     for (const asset of assets) {
-      // Approved assets are done: the approve route deletes their Stream
-      // copies + clears the version fields, so the player falls back to
-      // Drive. Skip them here or we'd re-ingest what we just deleted. If
-      // the client un-approves later, the status changes and the next
-      // tick picks the asset back up.
+      // Approved assets are done: free any Stream delivery copies they
+      // still hold, then skip (never re-ingest an approved asset). The
+      // approve route already releases on new approvals; doing it here too
+      // backfills assets approved BEFORE that shipped and catches any
+      // approve-time delete that failed. Idempotent - once cleansed there's
+      // no streamUid, so later ticks are a no-op. Un-approval flips the
+      // status and the next tick picks the asset back up.
       if (asset.approval?.status === "approved") {
+        if (asset.versions.some((v) => v.streamUid)) {
+          try {
+            const res = await releaseStreamCopiesForAsset(shoot.cardId, asset.slug);
+            console.log(
+              `[sync-stream] cleansed approved ${asset.slug}: ${res.deleted} deleted, ${res.failed} failed`,
+            );
+          } catch (err) {
+            console.warn(
+              `[sync-stream] cleanse approved ${asset.slug} failed:`,
+              (err as Error).message,
+            );
+          }
+        }
         continue;
       }
       for (const version of asset.versions) {
