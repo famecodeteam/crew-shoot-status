@@ -26,6 +26,8 @@ async function main() {
   const apply = process.argv.includes("--apply");
 
   const shoots = await listShoots();
+  let assetsScanned = 0;
+  let approvedAssets = 0;
   let approvedWithStream = 0;
   let totalCopies = 0;
   let deleted = 0;
@@ -33,7 +35,9 @@ async function main() {
 
   for (const shoot of shoots) {
     for (const asset of await getAssetsForShoot(shoot.cardId)) {
+      assetsScanned++;
       if (asset.approval?.status !== "approved") continue;
+      approvedAssets++;
       const withStream = asset.versions.filter((v) => v.streamUid);
       if (withStream.length === 0) continue;
 
@@ -54,8 +58,12 @@ async function main() {
   }
 
   console.log("");
+  console.log(
+    `Scanned ${shoots.length} shoot(s), ${assetsScanned} asset(s); ` +
+      `${approvedAssets} approved, ${approvedWithStream} of those hold Stream copies.`,
+  );
   if (approvedWithStream === 0) {
-    console.log("No approved assets hold Stream copies - nothing to cleanse.");
+    console.log("Nothing to cleanse.");
     return;
   }
   if (apply) {
