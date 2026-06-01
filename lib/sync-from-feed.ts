@@ -17,6 +17,7 @@ import {
 import { DEFAULT_PRODUCER, PRODUCERS } from "./producer";
 import { getByCardId, upsertByCardId } from "./storage";
 import { generateSlug } from "./transform";
+import { scheduleMilestoneEmail } from "./emails/enqueue";
 import type { CrewStatus, Shoot } from "./types";
 
 const FEED_URL =
@@ -155,6 +156,8 @@ export type FeedSyncSummary = {
   fetched: number;
   upserted: number;
   skipped: number;
+  /** Milestone emails scheduled this run (status transitions detected). */
+  emailsScheduled: number;
   error?: string;
   /** Only in dry-run: a few mapped shoots to eyeball before writing. */
   sample?: Array<Pick<
@@ -178,7 +181,13 @@ export async function syncFromFeed(opts?: {
   const dryRun = opts?.dryRun ?? false;
   const secret = process.env.SYNC_API_SECRET?.trim();
   if (!secret) {
-    return { fetched: 0, upserted: 0, skipped: 0, error: "SYNC_API_SECRET unset" };
+    return {
+      fetched: 0,
+      upserted: 0,
+      skipped: 0,
+      emailsScheduled: 0,
+      error: "SYNC_API_SECRET unset",
+    };
   }
 
   let shoots: FeedShoot[];
@@ -188,16 +197,29 @@ export async function syncFromFeed(opts?: {
       cache: "no-store",
     });
     if (!res.ok) {
-      return { fetched: 0, upserted: 0, skipped: 0, error: `feed ${res.status}` };
+      return {
+        fetched: 0,
+        upserted: 0,
+        skipped: 0,
+        emailsScheduled: 0,
+        error: `feed ${res.status}`,
+      };
     }
     const body = (await res.json()) as { shoots?: FeedShoot[] };
     shoots = body.shoots ?? [];
   } catch (err) {
-    return { fetched: 0, upserted: 0, skipped: 0, error: (err as Error).message };
+    return {
+      fetched: 0,
+      upserted: 0,
+      skipped: 0,
+      emailsScheduled: 0,
+      error: (err as Error).message,
+    };
   }
 
   let upserted = 0;
   let skipped = 0;
+  let emailsScheduled = 0;
   const sample: FeedSyncSummary["sample"] = [];
   for (const f of shoots) {
     const existing = await getByCardId(f.cardId);
@@ -226,6 +248,39 @@ export async function syncFromFeed(opts?: {
     }
     await upsertByCardId(f.cardId, () => shoot);
     upserted += 1;
+
+    // Fire the milestone email on a status transition. The Trello
+    // webhook used to own this, but the Crew Delivery board is
+    // decommissioned - the feed is now the ONLY source of status
+    // changes, so the email trigger has to live here too.
+    //
+    // Safe against a catch-up burst: this sync has been keeping the
+    // KV current all along (just without emailing), so for every
+    // stable shoot `existing.status` already equals the feed status
+    // and scheduleMilestoneEmail no-ops on "no status change". Only
+    // transitions that happen AFTER this ships will schedule. The
+    // 15-min buffer + per-(card,milestone) idempotency key apply
+    // exactly as they did on the webhook path.
+    try {
+      const r = await scheduleMilestoneEmail(existing, shoot);
+      if (r.status === "scheduled") emailsScheduled += 1;
+      if (r.status !== "no-op") {
+        console.log(
+          `[sync-shoots] email ${shoot.shootNumber}: ${r.status} ${r.milestone ?? ""} ${r.reason ?? ""}`.trim(),
+        );
+      }
+    } catch (err) {
+      console.warn(
+        `[sync-shoots] email schedule failed for ${shoot.shootNumber}:`,
+        (err as Error).message,
+      );
+    }
   }
-  return { fetched: shoots.length, upserted, skipped, ...(dryRun ? { sample } : {}) };
+  return {
+    fetched: shoots.length,
+    upserted,
+    skipped,
+    emailsScheduled,
+    ...(dryRun ? { sample } : {}),
+  };
 }
