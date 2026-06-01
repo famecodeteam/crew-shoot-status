@@ -118,6 +118,7 @@ export function ReviewShell({
         onSeek={seekTo}
         streamCustomerCode={streamCustomerCode}
       />
+      <VersionDownloadBar asset={asset} version={version} />
       <CommentBar
         currentTime={currentTime}
         onAdd={onAddCommentClick}
@@ -184,16 +185,29 @@ function Player({
   onSeek: (seconds: number) => void;
   streamCustomerCode: string | null;
 }) {
-  // We get the video duration once metadata loads so we can position
-  // comment markers proportionally.
+  // We get the video duration so we can position comment markers
+  // proportionally. HLS-via-MSE sources (Cloudflare Stream) frequently
+  // settle their duration on a `durationchange` event *after* the initial
+  // `loadedmetadata`, and sometimes only report a finite duration once
+  // playback has actually started - so we listen to all three and also
+  // read the current value on mount, so the comment timeline doesn't stay
+  // hidden waiting for an event that already fired.
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    const onMeta = () => setDuration(Number.isFinite(v.duration) ? v.duration : 0);
-    v.addEventListener("loadedmetadata", onMeta);
-    return () => v.removeEventListener("loadedmetadata", onMeta);
+    const sync = () =>
+      setDuration(Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 0);
+    sync();
+    v.addEventListener("loadedmetadata", sync);
+    v.addEventListener("durationchange", sync);
+    v.addEventListener("loadeddata", sync);
+    return () => {
+      v.removeEventListener("loadedmetadata", sync);
+      v.removeEventListener("durationchange", sync);
+      v.removeEventListener("loadeddata", sync);
+    };
   }, [videoRef, version]);
 
   // Resolve the video source for the selected version. Cloudflare Stream
@@ -273,14 +287,14 @@ function Player({
           poster={posterUrl}
           className="asset-video"
         />
-        {duration > 0 && comments.length > 0 && (
-          <CommentScrubMarkers
-            comments={comments}
-            duration={duration}
-            onSeek={onSeek}
-          />
-        )}
       </div>
+      {duration > 0 && comments.length > 0 && (
+        <CommentTimeline
+          comments={comments}
+          duration={duration}
+          onSeek={onSeek}
+        />
+      )}
       {showSelector && (
         <VersionSelector
           versions={asset.versions}
@@ -292,7 +306,13 @@ function Player({
   );
 }
 
-function CommentScrubMarkers({
+// A dedicated comment timeline strip rendered *below* the video rather
+// than overlaid on the native control bar. Overlaying meant the browser's
+// own scrubber fought the markers for hover/click events (and auto-hid
+// them), so neither the tooltip nor seek-on-click worked reliably. This
+// strip owns its own space: hovering a pin shows the full comment in a
+// popover, clicking it seeks the player to that timestamp.
+function CommentTimeline({
   comments,
   duration,
   onSeek,
@@ -302,18 +322,38 @@ function CommentScrubMarkers({
   onSeek: (s: number) => void;
 }) {
   return (
-    <div className="comment-markers" aria-hidden="true">
+    <div className="comment-timeline">
+      <div className="comment-timeline-track" aria-hidden="true" />
       {comments.map((c) => {
-        const pct = Math.min(100, Math.max(0, (c.timestampSeconds / duration) * 100));
+        const pct = Math.min(
+          100,
+          Math.max(0, (c.timestampSeconds / duration) * 100),
+        );
+        // Pin tooltips near the edges would clip; nudge their popover
+        // anchor inward so the bubble stays on-screen.
+        const edge = pct < 12 ? "is-left" : pct > 88 ? "is-right" : "";
         return (
           <button
             key={c.id}
             type="button"
-            className={"comment-marker" + (c.resolved ? " resolved" : "")}
+            className={
+              "comment-pin" +
+              (c.resolved ? " resolved" : "") +
+              (edge ? " " + edge : "")
+            }
             style={{ left: `${pct}%` }}
             onClick={() => onSeek(c.timestampSeconds)}
-            title={`${c.authorName} · ${formatMmSs(c.timestampSeconds)}`}
-          />
+            aria-label={`Jump to comment by ${c.authorName} at ${formatMmSs(
+              c.timestampSeconds,
+            )}: ${c.text}`}
+          >
+            <span className="comment-pin-pop" role="tooltip">
+              <span className="comment-pin-head">
+                {c.authorName} · {formatMmSs(c.timestampSeconds)}
+              </span>
+              <span className="comment-pin-text">{c.text}</span>
+            </span>
+          </button>
         );
       })}
     </div>
@@ -363,6 +403,60 @@ function CommentBar({
         + Add comment at <strong>{formatMmSs(currentTime)}</strong>
       </button>
     </div>
+  );
+}
+
+// ---------- Per-version download ----------
+//
+// Drive's `uc?export=download` endpoint serves the file with
+// Content-Disposition: attachment, so the browser drops it straight into
+// the user's downloads tray rather than trying to render it in-tab. The
+// same pattern is used by the Live Moments card grid - we keep the
+// styling intentionally lightweight so it doesn't compete with the
+// primary Approve / Request changes call-to-action below.
+function VersionDownloadBar({
+  asset,
+  version,
+}: {
+  asset: Asset;
+  version: number;
+}) {
+  const cv = asset.versions.find((v) => v.n === version);
+  if (!cv?.driveFileId) return null;
+  const href = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(
+    cv.driveFileId,
+  )}`;
+  return (
+    <div className="version-download-bar">
+      <a
+        className="version-download"
+        href={href}
+        aria-label={`Download ${asset.name} v${version}`}
+      >
+        <DownloadIcon />
+        <span>Download v{version}</span>
+      </a>
+    </div>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
   );
 }
 

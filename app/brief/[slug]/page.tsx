@@ -151,7 +151,7 @@ function UnlockedView({
 
         <StatusPageCTA statusUrl={statusUrl} />
 
-        <BriefFooter rec={rec} statusUrl={statusUrl} />
+        <BriefFooter rec={rec} />
       </div>
     </div>
   );
@@ -207,7 +207,7 @@ function PendingView({ slug, rec }: { slug: string; rec: BriefRecord }) {
             a minute or two. Refresh the page to check.
           </p>
         </div>
-        <BriefFooter rec={rec} statusUrl={statusUrl} />
+        <BriefFooter rec={rec} />
       </div>
     </div>
   );
@@ -242,13 +242,7 @@ function StatusPageCTA({ statusUrl }: { statusUrl: string }) {
   );
 }
 
-function BriefFooter({
-  rec,
-  statusUrl,
-}: {
-  rec: BriefRecord;
-  statusUrl: string;
-}) {
+function BriefFooter({ rec }: { rec: BriefRecord }) {
   const syncedText = rec.lastSyncedAt
     ? `Last synced from source · ${relativeTime(rec.lastSyncedAt)}`
     : "Awaiting first sync";
@@ -265,7 +259,6 @@ function BriefFooter({
   return (
     <footer className="brief-footer">
       <span className="brief-updated">{syncedText}</span>
-      <a href={statusUrl}>View live status →</a>
       {showSyncError && (
         <span className="brief-sync-error">
           Sync paused. Please notify Fame.

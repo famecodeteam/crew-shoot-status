@@ -80,15 +80,14 @@ function ShootView({
   const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
   const isOnHold = shoot.status === "on-hold";
   const isDelivered = shoot.status === "delivered";
-  // The Footage section appears only once the card has reached "Assets
-  // Received From Crew" or any list to the right (status mapped to
-  // in-editing / assets-ready / delivered). The footageUrl itself is the
-  // "index has been generated" signal - member.fame.so only writes that
-  // hashed URL into the Trello custom field after building the index, so
-  // its presence is sufficient. (We intentionally don't gate on an asset
-  // count here - the count field isn't written yet, and would just hide
-  // ready footage if added unconditionally.)
+  // Footage section gate. The footageUrl alone isn't sufficient because
+  // member.fame.so can pre-generate a hashed URL for the shoot folder
+  // before any files are uploaded - which would surface a "Browse your
+  // footage" card on shoots that haven't even happened yet. We require
+  // the shoot to have at least reached "Shoot Complete" so the URL is
+  // only shown once footage actually has a chance of being there.
   const footageAvailable =
+    shoot.status === "shoot-complete" ||
     shoot.status === "in-editing" ||
     shoot.status === "assets-ready" ||
     shoot.status === "delivered";
@@ -447,7 +446,7 @@ function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
       <div className="asset-card-meta">
         {latest
           ? `v${latest.n} · uploaded ${formatShortDateOrToday(latest.uploadedAt)}`
-          : "Pending upload"}
+          : "Editing in progress"}
       </div>
       <span className={`asset-card-pill ${pill.cls}`}>{pill.label}</span>
     </Link>
@@ -459,7 +458,10 @@ function pickAssetPill(a: Asset): { label: string; cls: string } {
   // the pill off "Pending upload" or surface a "new version".
   const versions = clientVersions(a);
   if (versions.length === 0) {
-    return { label: "Pending upload", cls: "pending" };
+    // No publishable version yet - frame it as in-progress editing
+    // rather than an upload-pipeline state ("Pending upload" was
+    // crew-facing language; the client only cares that work is happening).
+    return { label: "Editing in progress", cls: "pending" };
   }
   // Stale decision: a newer version has landed since the client's last
   // approve / request-changes decision. Surface it as "new version ready"

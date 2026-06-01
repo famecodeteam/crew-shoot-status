@@ -923,43 +923,135 @@ img {
   position: relative;
 }
 
-.comment-markers {
-  position: absolute;
-  /* Hover just above the native scrub bar - most browsers put it about
-     14px above the bottom edge of the player, with some variance. The
-     position works "well enough" without per-browser tuning. */
-  left: 0;
-  right: 0;
-  bottom: 38px;
-  height: 18px;
-  pointer-events: none;
+/* Comment timeline strip - lives below the video, not overlaid on the
+   native controls, so hover + click are reliable. */
+.comment-timeline {
+  position: relative;
+  height: 26px;
+  margin: 12px 4px 2px;
 }
 
-.comment-marker {
+.comment-timeline-track {
   position: absolute;
+  top: 12px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.comment-pin {
+  position: absolute;
+  top: 7px;
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid white;
+  border: 2px solid var(--card);
   background: var(--pink);
   transform: translateX(-50%);
-  pointer-events: auto;
   cursor: pointer;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3);
   padding: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
   transition: transform 0.1s;
 }
 
-.comment-marker:hover {
-  transform: translateX(-50%) scale(1.25);
+.comment-pin:hover,
+.comment-pin:focus-visible {
+  transform: translateX(-50%) scale(1.3);
+  outline: none;
 }
 
-.comment-marker.resolved {
+.comment-pin.resolved {
   background: var(--marker-muted);
+}
+
+/* Hover/focus popover showing the full comment. */
+.comment-pin-pop {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  min-width: 150px;
+  max-width: 260px;
+  width: max-content;
+  background: var(--text);
+  color: #fff;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s, transform 0.12s;
+  z-index: 6;
+}
+
+.comment-pin:hover .comment-pin-pop,
+.comment-pin:focus-visible .comment-pin-pop {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Keep edge tooltips on-screen by anchoring them inward. */
+.comment-pin.is-left .comment-pin-pop {
+  left: 0;
+  transform: translateX(0) translateY(4px);
+}
+.comment-pin.is-left:hover .comment-pin-pop,
+.comment-pin.is-left:focus-visible .comment-pin-pop {
+  transform: translateX(0) translateY(0);
+}
+.comment-pin.is-right .comment-pin-pop {
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(4px);
+}
+.comment-pin.is-right:hover .comment-pin-pop,
+.comment-pin.is-right:focus-visible .comment-pin-pop {
+  transform: translateX(0) translateY(0);
+}
+
+.comment-pin-head {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 3px;
+  white-space: nowrap;
+}
+
+.comment-pin-text {
+  display: block;
+  opacity: 0.85;
 }
 
 .comment-bar {
   margin-bottom: 20px;
+}
+
+.version-download-bar {
+  margin-bottom: 12px;
+}
+
+.version-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.version-download:hover {
+  border-color: var(--pink);
+  background: var(--pink-light);
+  color: var(--pink);
 }
 
 .comment-add {
