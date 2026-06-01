@@ -20,10 +20,19 @@ export const maxDuration = 60;
 const TIME_BUDGET_MS = 55_000;
 
 export async function GET(req: NextRequest) {
-  const expected = process.env.CRON_SECRET;
-  if (expected) {
+  // CRON_SECRET is what Vercel cron sends. ADMIN_RESYNC_TOKEN is the
+  // operator escape hatch for manual triggers (e.g. forcing a re-ingest
+  // pass right after clearing a Cloudflare Stream limit) without waiting
+  // for the 5-min cron - CRON_SECRET is sensitive and can't be pulled to
+  // a laptop. Same pattern as /api/admin/resync-card + /api/admin/health.
+  const cronSecret = process.env.CRON_SECRET;
+  const adminToken = process.env.ADMIN_RESYNC_TOKEN;
+  if (cronSecret || adminToken) {
     const auth = req.headers.get("authorization") ?? "";
-    if (auth !== `Bearer ${expected}`) {
+    const ok =
+      (cronSecret && auth === `Bearer ${cronSecret}`) ||
+      (adminToken && auth === `Bearer ${adminToken}`);
+    if (!ok) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
   }

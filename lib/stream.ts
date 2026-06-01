@@ -102,6 +102,21 @@ export function getVideo(uid: string): Promise<StreamVideo> {
   });
 }
 
+// Account-level Stream storage usage. Cloudflare Stream bills by stored
+// *minutes* (video duration), not bytes - so this is what the "10011
+// Storage capacity exceeded" error is measured against. Used by the
+// stream-usage diagnostic to quantify how far over quota the account is.
+export type StreamStorageUsage = {
+  totalStorageMinutes: number;
+  totalStorageMinutesLimit: number;
+  videoCount: number;
+};
+export function getStorageUsage(): Promise<StreamStorageUsage> {
+  return cfJson<StreamStorageUsage>("/stream/storage-usage", {
+    method: "GET",
+  });
+}
+
 // Every Stream video on the account. Not paginated - the default
 // response covers up to 1000 videos, ample here. Used by the
 // orphan-prune script to find videos no AssetVersion references.
