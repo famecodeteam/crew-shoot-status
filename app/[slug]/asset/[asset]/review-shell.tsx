@@ -107,6 +107,12 @@ export function ReviewShell({
 
   const onApprovalCleared = useCallback(() => setApproval(null), []);
 
+  // Client-facing number for the version currently being viewed - used for
+  // every number the client reads (modal titles, the "may be chargeable"
+  // heads-up). The chargeability rule is "3rd revision onward" as the CLIENT
+  // counts them, so it keys off this, not the internal version number.
+  const clientVersion = clientVersionLabel(asset.versions, version);
+
   return (
     <>
       <Player
@@ -127,6 +133,7 @@ export function ReviewShell({
         approval={approval}
         version={version}
         latestVersionN={latest.n}
+        versions={asset.versions}
         assetSlug={asset.slug}
         onCleared={onApprovalCleared}
       />
@@ -148,6 +155,7 @@ export function ReviewShell({
         <ComposerModal
           assetSlug={asset.slug}
           version={version}
+          clientVersion={clientVersion}
           initialSeconds={composerSeconds}
           onPosted={onCommentPosted}
           onClose={() => setComposerOpen(false)}
@@ -158,6 +166,7 @@ export function ReviewShell({
           assetSlug={asset.slug}
           assetName={asset.name}
           version={version}
+          clientVersion={clientVersion}
           onApproved={(a) => setApproval(a)}
           onChangesRequested={(a) => setApproval(a)}
         />
@@ -369,19 +378,21 @@ function VersionSelector({
   current: number;
   onChange: (n: number) => void;
 }) {
-  const latestN = versions[versions.length - 1].n;
+  // Label by position (contiguous v1, v2, v3 the client can see); switch by
+  // internal `n` so comments / video / approval all stay keyed correctly.
+  const lastIndex = versions.length - 1;
   return (
     <div className="asset-versions">
       <span className="asset-versions-label">Version</span>
-      {versions.map((v) => (
+      {versions.map((v, i) => (
         <button
           key={v.n}
           type="button"
           className={"asset-version-pill" + (v.n === current ? " is-active" : "")}
           onClick={() => onChange(v.n)}
         >
-          v{v.n}
-          {v.n === latestN && <span className="asset-version-latest"> · latest</span>}
+          v{i + 1}
+          {i === lastIndex && <span className="asset-version-latest"> · latest</span>}
         </button>
       ))}
     </div>
@@ -423,6 +434,7 @@ function VersionDownloadBar({
 }) {
   const cv = asset.versions.find((v) => v.n === version);
   if (!cv?.driveFileId) return null;
+  const label = clientVersionLabel(asset.versions, version);
   const href = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(
     cv.driveFileId,
   )}`;
@@ -431,10 +443,10 @@ function VersionDownloadBar({
       <a
         className="version-download"
         href={href}
-        aria-label={`Download ${asset.name} v${version}`}
+        aria-label={`Download ${asset.name} v${label}`}
       >
         <DownloadIcon />
-        <span>Download v{version}</span>
+        <span>Download v{label}</span>
       </a>
     </div>
   );
@@ -465,12 +477,14 @@ function DownloadIcon() {
 function ComposerModal({
   assetSlug,
   version,
+  clientVersion,
   initialSeconds,
   onPosted,
   onClose,
 }: {
   assetSlug: string;
   version: number;
+  clientVersion: number;
   initialSeconds: number;
   onPosted: (c: ClientComment) => void;
   onClose: () => void;
@@ -525,7 +539,7 @@ function ComposerModal({
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Leave a comment at {formatMmSs(initialSeconds)}</h2>
-        {version >= 3 && (
+        {clientVersion >= 3 && (
           <p className="modal-help">
             Heads up: comments asking for changes count as a revision, which
             <strong> may be chargeable</strong> - we will always confirm with
@@ -802,12 +816,14 @@ function ApprovalState({
   approval,
   version,
   latestVersionN,
+  versions,
   assetSlug,
   onCleared,
 }: {
   approval: Asset["approval"];
   version: number;
   latestVersionN: number;
+  versions: AssetVersion[];
   assetSlug: string;
   onCleared: () => void;
 }) {
@@ -871,7 +887,8 @@ function ApprovalState({
           year: "numeric",
         })}
         {approval.authorName && ` by ${approval.authorName}`}
-        {approval.onVersion !== version && ` (on v${approval.onVersion})`}
+        {approval.onVersion !== version &&
+          ` (on v${clientVersionLabel(versions, approval.onVersion)})`}
         <button
           type="button"
           className="approval-state-undo"
@@ -908,12 +925,14 @@ function ApprovalBar({
   assetSlug,
   assetName,
   version,
+  clientVersion,
   onApproved,
   onChangesRequested,
 }: {
   assetSlug: string;
   assetName: string;
   version: number;
+  clientVersion: number;
   onApproved: (a: NonNullable<Asset["approval"]>) => void;
   onChangesRequested: (a: NonNullable<Asset["approval"]>) => void;
 }) {
@@ -941,6 +960,7 @@ function ApprovalBar({
           assetSlug={assetSlug}
           assetName={assetName}
           version={version}
+          clientVersion={clientVersion}
           onDone={(a) => {
             setMode(null);
             onApproved(a);
@@ -953,6 +973,7 @@ function ApprovalBar({
           assetSlug={assetSlug}
           assetName={assetName}
           version={version}
+          clientVersion={clientVersion}
           onDone={(a) => {
             setMode(null);
             onChangesRequested(a);
@@ -968,12 +989,14 @@ function ApproveModal({
   assetSlug,
   assetName,
   version,
+  clientVersion,
   onDone,
   onClose,
 }: {
   assetSlug: string;
   assetName: string;
   version: number;
+  clientVersion: number;
   onDone: (a: NonNullable<Asset["approval"]>) => void;
   onClose: () => void;
 }) {
@@ -1018,7 +1041,7 @@ function ApproveModal({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2>Approve {assetName} (v{version})</h2>
+        <h2>Approve {assetName} (v{clientVersion})</h2>
         <label className="modal-label">
           Your name
           <input
@@ -1047,12 +1070,14 @@ function ChangesModal({
   assetSlug,
   assetName,
   version,
+  clientVersion,
   onDone,
   onClose,
 }: {
   assetSlug: string;
   assetName: string;
   version: number;
+  clientVersion: number;
   onDone: (a: NonNullable<Asset["approval"]>) => void;
   onClose: () => void;
 }) {
@@ -1099,12 +1124,12 @@ function ChangesModal({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2>Request changes on {assetName} (v{version})</h2>
+        <h2>Request changes on {assetName} (v{clientVersion})</h2>
         <p className="modal-help">
           Use timestamped comments above for specifics - this note is just an
           overall direction for the editor.
         </p>
-        {version >= 3 && (
+        {clientVersion >= 3 && (
           <p className="modal-help">
             Heads up: <strong>this revision may be chargeable</strong> - we
             will always confirm with you before any charge.
@@ -1146,6 +1171,18 @@ function ChangesModal({
 }
 
 // ---------- Helpers ----------
+
+// Client-facing version label for an internal version number `n`. `versions`
+// here is always the publish-gated, client-visible list (page.tsx filters it
+// through clientVersions() before it reaches this shell), so the label the
+// client should see is simply that version's 1-based position in the list -
+// a contiguous v1, v2, v3 with no gaps from internal-only cuts. The internal
+// `n` is still what every API call uses; this is display only. Falls back to
+// `n` if the version isn't in the visible list (shouldn't happen).
+function clientVersionLabel(versions: AssetVersion[], n: number): number {
+  const i = versions.findIndex((v) => v.n === n);
+  return i === -1 ? n : i + 1;
+}
 
 function formatMmSs(seconds: number): string {
   const total = Math.max(0, Math.floor(seconds));

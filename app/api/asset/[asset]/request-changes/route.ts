@@ -9,7 +9,7 @@
 
 import type { NextRequest } from "next/server";
 import { findAssetBySlug } from "@/lib/asset-lookup";
-import { clientVersions } from "@/lib/asset-versions";
+import { clientFacingVersionNumber, clientVersions } from "@/lib/asset-versions";
 import { applyApprovalToAsset, makeApproval, syncTrelloForShoot } from "@/lib/approval";
 import { addCardComment } from "@/lib/trello";
 import { appendActivity } from "@/lib/activity-storage";
@@ -87,9 +87,15 @@ export async function POST(
   }
 
   const reviewUrl = clientReviewUrl(lookup.shoot.slug, slug);
+  // Client sees a contiguous version number; the team works internally. Show
+  // both in the writeback, and tell the CPM the number the CLIENT used (the
+  // chargeability conversation is with the client about "v3").
+  const clientNo = clientFacingVersionNumber(lookup.asset, onVersion) ?? onVersion;
+  const versionLabel =
+    clientNo === onVersion ? `v${onVersion}` : `v${clientNo} · internal v${onVersion}`;
   const trelloText = text
-    ? `[${authorName}] requested changes on ${lookup.asset.name} (v${onVersion}): ${text}\n${reviewUrl}`
-    : `[${authorName}] requested changes on ${lookup.asset.name} (v${onVersion}). See comments on the review page.\n${reviewUrl}`;
+    ? `[${authorName}] requested changes on ${lookup.asset.name} (${versionLabel}): ${text}\n${reviewUrl}`
+    : `[${authorName}] requested changes on ${lookup.asset.name} (${versionLabel}). See comments on the review page.\n${reviewUrl}`;
 
   try {
     await addCardComment(lookup.shoot.cardId, trelloText);
@@ -105,7 +111,9 @@ export async function POST(
   await notifyCpmRevision({
     cardId: lookup.shoot.cardId,
     assetName: lookup.asset.name,
-    version: onVersion,
+    // The client's own version number (display-only on the member side), so
+    // the CPM's @mention reads the same "v3" the client is referring to.
+    version: clientNo,
     clientName: authorName,
     changeText: text,
     reviewUrl,

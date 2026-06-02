@@ -445,7 +445,7 @@ function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
       <div className="asset-card-name">{asset.name}</div>
       <div className="asset-card-meta">
         {latest
-          ? `v${latest.n} · uploaded ${formatShortDateOrToday(latest.uploadedAt)}`
+          ? `v${versions.length} · uploaded ${formatShortDateOrToday(latest.uploadedAt)}`
           : "Editing in progress"}
       </div>
       <span className={`asset-card-pill ${pill.cls}`}>{pill.label}</span>

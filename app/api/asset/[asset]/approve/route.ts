@@ -9,7 +9,7 @@
 
 import type { NextRequest } from "next/server";
 import { findAssetBySlug } from "@/lib/asset-lookup";
-import { clientVersions } from "@/lib/asset-versions";
+import { clientFacingVersionNumber, clientVersions } from "@/lib/asset-versions";
 import {
   applyApprovalToAsset,
   makeApproval,
@@ -111,8 +111,14 @@ export async function POST(
     year: "numeric",
   });
   const reviewUrl = clientReviewUrl(lookup.shoot.slug, slug);
+  // The client sees a contiguous version number (their Nth visible cut); the
+  // team works in internal version numbers. Show both so a "client v3"
+  // approval is unambiguous against internal v5.
+  const clientNo = clientFacingVersionNumber(lookup.asset, onVersion) ?? onVersion;
+  const versionLabel =
+    clientNo === onVersion ? `v${onVersion}` : `v${clientNo} · internal v${onVersion}`;
   const trelloText =
-    `[${authorName}] approved ${lookup.asset.name} (v${onVersion}) on ${todayHuman}` +
+    `[${authorName}] approved ${lookup.asset.name} (${versionLabel}) on ${todayHuman}` +
     (body.note?.trim() ? ` - note: ${body.note.trim()}` : "") +
     `\n${reviewUrl}`;
 
