@@ -29,7 +29,7 @@ import {
   makeApproval,
   syncTrelloForShoot,
 } from "@/lib/approval";
-import { clientVersions } from "@/lib/asset-versions";
+import { clientFacingVersionNumber, clientVersions } from "@/lib/asset-versions";
 import { newAuthorToken } from "@/lib/comment-id";
 import { addCardComment } from "@/lib/trello";
 import { notifyCpmRevision } from "@/lib/notify-cpm-revision";
@@ -101,10 +101,17 @@ export async function POST(
     authorUa: req.headers.get("user-agent") ?? null,
   });
 
+  // Client-facing version number (their Nth visible cut) vs the internal `n`.
+  // Show both internally, and reference the client's number when pinging the
+  // CPM about chargeability - it's what the client is talking about.
+  const clientNo = clientFacingVersionNumber(lookup.asset, version) ?? version;
+  const versionLabel =
+    clientNo === version ? `v${version}` : `v${clientNo} · internal v${version}`;
+
   // First-comment write-back to the Trello card (best-effort).
   if (isFirst) {
     const reviewUrl = reviewUrlFor(lookup.shoot.slug, slug);
-    const note = `[${authorName}] left comments on ${lookup.asset.name} (v${version}): ${reviewUrl}`;
+    const note = `[${authorName}] left comments on ${lookup.asset.name} (${versionLabel}): ${reviewUrl}`;
     try {
       await addCardComment(cardId, note);
     } catch (err) {
@@ -117,7 +124,9 @@ export async function POST(
     await notifyCpmRevision({
       cardId,
       assetName: lookup.asset.name,
-      version,
+      // Client's own version number (display-only on the member side), so the
+      // CPM @mention reads the same "v3" the client is referring to.
+      version: clientNo,
       clientName: authorName,
       changeText: text,
       reviewUrl,
