@@ -32,6 +32,7 @@ import {
 import { clientVersions } from "@/lib/asset-versions";
 import { newAuthorToken } from "@/lib/comment-id";
 import { addCardComment } from "@/lib/trello";
+import { notifyCpmRevision } from "@/lib/notify-cpm-revision";
 
 export const dynamic = "force-dynamic";
 
@@ -109,6 +110,18 @@ export async function POST(
     } catch (err) {
       console.warn("[comments] Trello write-back failed:", (err as Error).message);
     }
+    // The first comment on a version flips the asset to changes-requested
+    // (below), i.e. the client is requesting a revision via comments rather
+    // than the "Request changes" button. Ping the shoot's CPM on the portal
+    // to confirm chargeability - once per version (isFirst), not per comment.
+    await notifyCpmRevision({
+      cardId,
+      assetName: lookup.asset.name,
+      version,
+      clientName: authorName,
+      changeText: text,
+      reviewUrl,
+    });
   }
 
   // A client comment is feedback to action - flip the asset to "changes
