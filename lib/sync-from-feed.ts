@@ -15,7 +15,7 @@ import {
   projectDeliveredDate,
 } from "./milestone-dates";
 import { DEFAULT_PRODUCER, PRODUCERS } from "./producer";
-import { getByCardId, upsertByCardId } from "./storage";
+import { deleteByCardId, getByCardId, upsertByCardId } from "./storage";
 import { generateSlug } from "./transform";
 import { scheduleMilestoneEmail } from "./emails/enqueue";
 import type { CrewStatus, Shoot } from "./types";
@@ -158,6 +158,8 @@ export type FeedSyncSummary = {
   skipped: number;
   /** Milestone emails scheduled this run (status transitions detected). */
   emailsScheduled: number;
+  /** Local copies deleted because the portal marked the card retired. */
+  retired?: number;
   error?: string;
   /** Only in dry-run: a few mapped shoots to eyeball before writing. */
   sample?: Array<Pick<
@@ -283,6 +285,7 @@ export async function syncFromFeed(opts?: {
   }
 
   let shoots: FeedShoot[];
+  let retiredCardIds: string[] = [];
   try {
     const res = await fetch(FEED_URL, {
       headers: { Authorization: `Bearer ${secret}` },
@@ -297,8 +300,12 @@ export async function syncFromFeed(opts?: {
         error: `feed ${res.status}`,
       };
     }
-    const body = (await res.json()) as { shoots?: FeedShoot[] };
+    const body = (await res.json()) as {
+      shoots?: FeedShoot[];
+      retiredCardIds?: string[];
+    };
     shoots = body.shoots ?? [];
+    retiredCardIds = body.retiredCardIds ?? [];
   } catch (err) {
     return {
       fetched: 0,
@@ -368,11 +375,34 @@ export async function syncFromFeed(opts?: {
       );
     }
   }
+  // Delete the client's local copy of any shoot the portal has retired
+  // (archived / soft-deleted) so its public status page 404s. Reversible:
+  // unarchiving re-adds the card to the feed and the next sync re-creates
+  // the local copy. Explicit list from the portal, so no risk of pruning a
+  // still-active shoot that just blipped out of the feed.
+  let retired = 0;
+  if (!dryRun) {
+    for (const cardId of retiredCardIds) {
+      try {
+        if (await getByCardId(cardId)) {
+          await deleteByCardId(cardId);
+          retired += 1;
+        }
+      } catch (err) {
+        console.warn(
+          `[sync-shoots] retire-delete failed for ${cardId}:`,
+          (err as Error).message,
+        );
+      }
+    }
+  }
+
   return {
     fetched: shoots.length,
     upserted,
     skipped,
     emailsScheduled,
+    retired,
     ...(dryRun ? { sample } : {}),
   };
 }
