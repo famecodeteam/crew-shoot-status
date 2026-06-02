@@ -212,6 +212,61 @@ export async function refreshOneFromFeed(cardId: string): Promise<Shoot | null> 
   return shoot;
 }
 
+// Email-readiness report: for every publishable shoot in the feed,
+// flag whether it has a client email (without which all milestone
+// emails silently skip) and a contact name (without which the
+// greeting falls back to "Hi there,"). Read-only - does NOT upsert
+// or send. Powers /api/admin/email-readiness.
+export type ReadinessRow = {
+  cardId: string;
+  shootNumber: string;
+  clientName: string;
+  status: string;
+  statusLabel: string;
+  hasEmail: boolean;
+  hasContactName: boolean;
+  clientEmails: string[];
+};
+
+export async function emailReadinessFromFeed(): Promise<
+  | {
+      total: number;
+      missingEmailCount: number;
+      missingContactNameCount: number;
+      missingEmail: ReadinessRow[];
+      missingContactName: ReadinessRow[];
+    }
+  | { error: string }
+> {
+  const shoots = await fetchFeed();
+  if (!shoots) return { error: "feed unreachable or SYNC_API_SECRET unset" };
+
+  const rows: ReadinessRow[] = [];
+  for (const f of shoots) {
+    const shoot = feedToShoot(f, undefined);
+    if (!shoot) continue; // non-publishable (pre-Won, unrecognised list)
+    rows.push({
+      cardId: shoot.cardId,
+      shootNumber: shoot.shootNumber,
+      clientName: shoot.clientName,
+      status: shoot.status,
+      statusLabel: shoot.statusLabel,
+      hasEmail: (shoot.clientEmails ?? []).length > 0,
+      hasContactName: !!shoot.clientContactName,
+      clientEmails: shoot.clientEmails ?? [],
+    });
+  }
+  rows.sort((a, b) => a.shootNumber.localeCompare(b.shootNumber));
+
+  return {
+    total: rows.length,
+    missingEmailCount: rows.filter((r) => !r.hasEmail).length,
+    missingContactNameCount: rows.filter((r) => !r.hasContactName).length,
+    missingEmail: rows.filter((r) => !r.hasEmail),
+    missingContactName: rows.filter((r) => !r.hasContactName),
+  };
+}
+
 export async function syncFromFeed(opts?: {
   dryRun?: boolean;
 }): Promise<FeedSyncSummary> {
