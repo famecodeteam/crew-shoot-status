@@ -97,6 +97,47 @@ export async function POST(
   }
   await syncTrelloForShoot({ cardId: lookup.shoot.cardId });
 
+  // Notify the shoot's CPM on the delivery portal: it resolves the CPM
+  // (production_manager_email), drops a comment on the shoot card, and fires
+  // the in-app @mention bell asking them to confirm chargeability with the
+  // client. The portal is now where the team works (Trello comments above
+  // go unseen). Best-effort - never block the change request on it.
+  try {
+    const secret = process.env.SYNC_API_SECRET?.trim();
+    if (secret) {
+      const portalBase = (() => {
+        try {
+          return new URL(
+            process.env.CREW_FEED_URL ?? "https://delivery.fame.so/api/sync/shoots",
+          ).origin;
+        } catch {
+          return "https://delivery.fame.so";
+        }
+      })();
+      await fetch(`${portalBase}/api/client-event/revision`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          Authorization: `Bearer ${secret}`,
+        },
+        cache: "no-store",
+        body: JSON.stringify({
+          cardId: lookup.shoot.cardId,
+          assetName: lookup.asset.name,
+          version: onVersion,
+          clientName: authorName,
+          changeText: text,
+          reviewUrl,
+        }),
+      });
+    }
+  } catch (err) {
+    console.warn(
+      "[request-changes] CPM chargeability notify failed:",
+      (err as Error).message,
+    );
+  }
+
   return Response.json({ asset: updated });
 }
 
