@@ -38,16 +38,39 @@ type BackfillSummary = {
 };
 
 export async function POST(req: NextRequest) {
-  const expected = process.env.CRON_SECRET;
-  if (expected) {
+  // Accept CRON_SECRET (Vercel cron / CLI), ADMIN_RESYNC_TOKEN (manual), or
+  // the shared SYNC_API_SECRET - the last lets the crew portal trigger a
+  // re-register after a slug rename orphans a hosted brief. Bearer or ?token=.
+  const accepts = [
+    process.env.CRON_SECRET,
+    process.env.ADMIN_RESYNC_TOKEN,
+    process.env.SYNC_API_SECRET,
+  ].filter(Boolean) as string[];
+  if (accepts.length > 0) {
     const auth = req.headers.get("authorization") ?? "";
-    if (auth !== `Bearer ${expected}`) {
+    const token = req.nextUrl.searchParams.get("token") ?? "";
+    const ok = accepts.some((s) => auth === `Bearer ${s}` || token === s);
+    if (!ok) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
   }
 
   const deadline = Date.now() + TIME_BUDGET_MS;
-  const shoots = await listShoots();
+  // Optional single-shoot scope (?cardId= or ?shootNumber=): a slug rename
+  // orphans just one brief, so the portal triggers a targeted re-register
+  // rather than chewing through every shoot (which would outlast the
+  // caller's request timeout). Unscoped = the original full backfill.
+  const onlyCard = req.nextUrl.searchParams.get("cardId")?.trim();
+  const onlyNum = req.nextUrl.searchParams.get("shootNumber")?.trim();
+  const allShoots = await listShoots();
+  const shoots =
+    onlyCard || onlyNum
+      ? allShoots.filter(
+          (s) =>
+            (!onlyCard || s.cardId === onlyCard) &&
+            (!onlyNum || s.shootNumber === onlyNum),
+        )
+      : allShoots;
   const summary: BackfillSummary = {
     totalShoots: shoots.length,
     eligible: 0,
