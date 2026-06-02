@@ -21,6 +21,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getByCardId } from "@/lib/storage";
 import { addCardComment } from "@/lib/trello";
+import { refreshOneFromFeed } from "@/lib/sync-from-feed";
 import {
   dispatchPendingEmail,
   subjectForMilestone,
@@ -40,10 +41,49 @@ const VALID_MILESTONES: EmailMilestone[] = [
   "delivered",
 ];
 
-export async function POST(req: NextRequest) {
+function authed(req: NextRequest): boolean {
   const secret = process.env.ADMIN_SEND_SECRET;
   const auth = req.headers.get("authorization") ?? "";
-  if (!secret || auth !== `Bearer ${secret}`) {
+  return !!secret && auth === `Bearer ${secret}`;
+}
+
+// GET preflight: refresh the card from the feed and report its current
+// state WITHOUT sending. Lets an operator (or me) verify the status,
+// client email, and PP flag are what's expected before firing a real
+// client send.
+export async function GET(req: NextRequest) {
+  if (!authed(req)) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  const cardId = req.nextUrl.searchParams.get("cardId") ?? "";
+  if (!cardId) {
+    return NextResponse.json({ error: "missing cardId" }, { status: 400 });
+  }
+  const refreshed = await refreshOneFromFeed(cardId);
+  const shoot = refreshed ?? (await getByCardId(cardId));
+  if (!shoot) {
+    return NextResponse.json(
+      { error: `no shoot found for cardId: ${cardId}` },
+      { status: 404 },
+    );
+  }
+  return NextResponse.json({
+    refreshedFromFeed: !!refreshed,
+    shoot: {
+      shootNumber: shoot.shootNumber,
+      clientName: shoot.clientName,
+      slug: shoot.slug,
+      status: shoot.status,
+      statusLabel: shoot.statusLabel,
+      hasPostProduction: shoot.hasPostProduction,
+      clientEmails: shoot.clientEmails ?? [],
+      clientContactName: shoot.clientContactName ?? null,
+    },
+  });
+}
+
+export async function POST(req: NextRequest) {
+  if (!authed(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -69,7 +109,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const shoot = await getByCardId(cardId);
+  // Refresh this card from the delivery.fame.so feed first so a
+  // just-edited client email / status is reflected immediately,
+  // rather than acting on whatever the last 5-min sync left in KV.
+  // Falls back to the existing KV record if the feed is unreachable.
+  const refreshed = await refreshOneFromFeed(cardId);
+  const shoot = refreshed ?? (await getByCardId(cardId));
   if (!shoot) {
     return NextResponse.json(
       { error: `no shoot found for cardId: ${cardId}` },

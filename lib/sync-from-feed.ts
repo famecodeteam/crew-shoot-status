@@ -175,6 +175,43 @@ export type FeedSyncSummary = {
   >>;
 };
 
+// Fetch the whole feed once. Shared by syncFromFeed (all cards) and
+// refreshOneFromFeed (a single card). Returns null on any failure so
+// callers can fall back to whatever's already in KV.
+async function fetchFeed(): Promise<FeedShoot[] | null> {
+  const secret = process.env.SYNC_API_SECRET?.trim();
+  if (!secret) return null;
+  try {
+    const res = await fetch(FEED_URL, {
+      headers: { Authorization: `Bearer ${secret}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { shoots?: FeedShoot[] };
+    return body.shoots ?? [];
+  } catch {
+    return null;
+  }
+}
+
+// Pull the latest data for ONE card from the feed and upsert it into
+// KV, returning the mapped Shoot. Used by the manual-send admin
+// endpoint so an operator send always acts on current delivery.fame.so
+// data (e.g. a client email added moments ago) without waiting for the
+// 5-min sync cron. Returns null if the feed is unreachable or the card
+// isn't in it - the caller then falls back to the existing KV record.
+export async function refreshOneFromFeed(cardId: string): Promise<Shoot | null> {
+  const shoots = await fetchFeed();
+  if (!shoots) return null;
+  const f = shoots.find((s) => s.cardId === cardId);
+  if (!f) return null;
+  const existing = await getByCardId(cardId);
+  const shoot = feedToShoot(f, existing?.slug);
+  if (!shoot) return null;
+  await upsertByCardId(cardId, () => shoot);
+  return shoot;
+}
+
 export async function syncFromFeed(opts?: {
   dryRun?: boolean;
 }): Promise<FeedSyncSummary> {
