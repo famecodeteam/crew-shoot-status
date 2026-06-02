@@ -525,11 +525,13 @@ function ComposerModal({
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Leave a comment at {formatMmSs(initialSeconds)}</h2>
-        <p className="modal-help">
-          Heads up: comments asking for changes count as a revision, which
-          <strong> may be chargeable</strong> - we will always confirm with you
-          before any charge.
-        </p>
+        {version >= 3 && (
+          <p className="modal-help">
+            Heads up: comments asking for changes count as a revision, which
+            <strong> may be chargeable</strong> - we will always confirm with
+            you before any charge.
+          </p>
+        )}
         <label className="modal-label">
           Your name
           <input
@@ -1102,10 +1104,12 @@ function ChangesModal({
           Use timestamped comments above for specifics - this note is just an
           overall direction for the editor.
         </p>
-        <p className="modal-help">
-          Heads up: <strong>this revision may be chargeable</strong> - we will
-          always confirm with you before any charge.
-        </p>
+        {version >= 3 && (
+          <p className="modal-help">
+            Heads up: <strong>this revision may be chargeable</strong> - we
+            will always confirm with you before any charge.
+          </p>
+        )}
         <label className="modal-label">
           Your name
           <input
