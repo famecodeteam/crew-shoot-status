@@ -35,6 +35,13 @@ const config: NextConfig = {
         destination: "/:slug",
         permanent: true,
       },
+      // Status-page slugs that were minted from a client email instead of
+      // the company name, then renamed - keep the old links resolving.
+      {
+        source: "/0230-exodusfilms-hushmail-com-577089e6",
+        destination: "/0230-fusion-productions-limited-577089e6",
+        permanent: true,
+      },
     ];
   },
 };
