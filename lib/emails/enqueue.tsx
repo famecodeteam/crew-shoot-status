@@ -24,6 +24,7 @@ import {
   type EmailMilestone,
 } from "../email-tracker";
 import { schedule as schedulePending } from "../pending-emails";
+import { notifyEmailSent } from "../notify-email-sent";
 import { send } from "./send";
 import { renderEmail } from "./render";
 import { BookingConfirmedEmail } from "./templates/booking-confirmed";
@@ -322,6 +323,17 @@ export async function dispatchPendingEmail(
       console.log(
         `[email] sent ${milestone} for ${shoot.shootNumber} to ${recipients.join(",")} messageId=${res.messageId}${res.dryRun ? " (dry-run)" : ""}`,
       );
+      // Tell the portal so it logs a permanent email_sent activity row (the
+      // 15-min countdown vanishes once sent). Skip dry-run - test traffic
+      // shouldn't pollute the real audit trail. Best-effort.
+      if (!res.dryRun) {
+        await notifyEmailSent({
+          cardId: shoot.cardId,
+          milestone,
+          recipient: recipients[0] ?? null,
+          messageId: res.messageId,
+        });
+      }
       return {
         status: "sent",
         milestone,
