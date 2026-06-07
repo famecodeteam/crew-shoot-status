@@ -75,6 +75,23 @@ export type Asset = {
   // client switches in the version selector. Null until the client
   // interacts (comments / approves / requests changes).
   approval: AssetApproval | null;
+  // Member.fame.so-owned lifecycle stage (single writer: member; we never
+  // write it). Mirrored read-only. We act on ONE value here: "on_hold" - a
+  // CPM has paused this specific asset, so the sync-stream cron tears down
+  // its Cloudflare Stream copies (see syncStreamOnce). Every other value is
+  // informational on this side. Optional: older records predate the field.
+  lifecycle?:
+    | "awaiting_brief"
+    | "awaiting_clip_selection"
+    | "ready_for_editor"
+    | "in_edit"
+    | "internal_review"
+    | "awaiting_client_review"
+    | "revisions_requested"
+    | "approved"
+    | "delivered"
+    | "on_hold"
+    | null;
   createdAt: string;
   updatedAt: string;
   createdBy: string | null;

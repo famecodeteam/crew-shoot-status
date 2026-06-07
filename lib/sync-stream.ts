@@ -192,6 +192,32 @@ export async function syncStreamOnce(deadline: number): Promise<StreamSyncSummar
         }
         continue;
       }
+
+      // On-hold assets: tear down their Stream delivery copies too. Two
+      // hold cases, both meaning "this work is paused - take it off
+      // Cloudflare": (a) the whole shoot is in the "On Hold" list
+      // (shoot.status === "on-hold", synced from the member feed), or (b) a
+      // CPM paused this single asset (member writes lifecycle "on_hold").
+      // Same release-and-skip pattern as approved: idempotent (a cleared
+      // streamUid makes later ticks a no-op) and reversible - once the shoot
+      // leaves On Hold / the asset resumes, the next tick re-ingests.
+      if (shoot.status === "on-hold" || asset.lifecycle === "on_hold") {
+        if (asset.versions.some((v) => v.streamUid)) {
+          try {
+            const res = await releaseStreamCopiesForAsset(shoot.cardId, asset.slug);
+            console.log(
+              `[sync-stream] released on-hold ${asset.slug}: ${res.deleted} deleted, ${res.failed} failed`,
+            );
+          } catch (err) {
+            console.warn(
+              `[sync-stream] release on-hold ${asset.slug} failed:`,
+              (err as Error).message,
+            );
+          }
+        }
+        continue;
+      }
+
       for (const version of asset.versions) {
         if (Date.now() > deadline) {
           timedOut = true;
