@@ -1,9 +1,14 @@
-// Shared logic for the sync-stream cron: keep every asset version's
-// Cloudflare Stream delivery copy in step with Drive.
+// Shared logic for the sync-stream cron: keep every CLIENT-FACING asset
+// version's Cloudflare Stream delivery copy in step with Drive. Only
+// published versions belong on Stream - the client review page is its sole
+// consumer; CPM/editor review runs on Mux. An unpublished, on-hold, or
+// approved version is torn down (if it has a copy) and skipped, so Stream
+// only ever holds what a client can actually watch.
 //
-//   - version with no streamUid       → copyFromUrl, mark "pending"
-//   - version "pending"               → poll Stream, flip ready / error
-//   - version "ready" / "error"       → settled, skipped
+//   - published, no streamUid          → copyFromUrl, mark "pending"
+//   - published, "pending"             → poll Stream, flip ready / error
+//   - published, "ready" / "error"     → settled, skipped
+//   - unpublished / on-hold / approved → release Stream copy, skip
 //
 // One pass is non-blocking: copyFromUrl returns immediately with a uid
 // while Cloudflare downloads + transcodes async, so the pending → ready
@@ -14,7 +19,7 @@
 import { listAll as listShoots } from "./storage";
 import { getAssetsForShoot, upsertAsset } from "./asset-storage";
 import { releaseStreamCopiesForAsset } from "./approval";
-import { copyFromUrl, getVideo, STREAM_APP_TAG } from "./stream";
+import { copyFromUrl, deleteVideo, getVideo, STREAM_APP_TAG } from "./stream";
 import type { Asset, AssetVersion } from "./types";
 
 export type StreamSyncOutcome =
@@ -44,13 +49,12 @@ function publicBase(): string {
   return base;
 }
 
-// The video proxy 404s unpublished versions for client requests (the
-// contract v2 §4 publish gate). But this cron must ingest EVERY version
-// into Stream, published or not (§12). Cloudflare's copy-from-URL fetch
-// can't send an auth header, so we mark the ingest pull with
-// ?ingest=<CRON_SECRET> in the URL - the one signal the proxy honours to
-// skip the gate. Empty when CRON_SECRET is unset (local dev: the publish
-// gate is a no-op there anyway).
+// We ingest ONLY client-facing (published) versions now (the version loop
+// gates on isPublishedToClient), so an ingest pull is for a version the §4
+// publish gate already serves to clients. The ?ingest=<CRON_SECRET> marker
+// stays as belt-and-braces so the pull can never trip the gate mid-publish
+// (Cloudflare's copy-from-URL fetch can't send an auth header). Empty when
+// CRON_SECRET is unset (local dev: the publish gate is a no-op there anyway).
 function ingestQuery(): string {
   const secret = process.env.CRON_SECRET;
   return secret ? `?ingest=${encodeURIComponent(secret)}` : "";
@@ -222,6 +226,36 @@ export async function syncStreamOnce(deadline: number): Promise<StreamSyncSummar
         if (Date.now() > deadline) {
           timedOut = true;
           break outer;
+        }
+        // Publish gate: only client-facing versions belong on Cloudflare
+        // Stream. An unpublished version is never shown to the client (CPM /
+        // editor review it on Mux), so tear down any Stream copy it still
+        // holds - one ingested before this gate existed, or unpublished
+        // since - and skip it. Reversible: once (re)published, a later tick
+        // has no streamUid and re-ingests. The clear-write is guarded so an
+        // unpublished version that was never on Stream is a true no-op.
+        if (!version.isPublishedToClient) {
+          if (version.streamUid) {
+            try {
+              await deleteVideo(version.streamUid);
+              console.log(
+                `[sync-stream] released unpublished ${asset.slug} v${version.n}`,
+              );
+            } catch (err) {
+              console.warn(
+                `[sync-stream] release unpublished ${asset.slug} v${version.n} failed:`,
+                (err as Error).message,
+              );
+            }
+          }
+          if (version.streamUid || version.streamStatus || version.streamError) {
+            await patchVersion(shoot.cardId, asset.slug, version.n, {
+              streamUid: null,
+              streamStatus: null,
+              streamError: null,
+            });
+          }
+          continue;
         }
         // Settled versions need no API call - skip before touching Stream.
         if (version.streamStatus === "ready" || version.streamStatus === "error") {
