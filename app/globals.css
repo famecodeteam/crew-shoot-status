@@ -747,6 +747,22 @@ img {
   background: black;
 }
 
+/* Vertical (9:16) clips: shrink the player to the clip and centre it,
+   instead of letterboxing a portrait video in the full-width 16:9 box.
+   review-shell adds .is-vertical + an inline aspect-ratio once the video
+   reports portrait dimensions. */
+.asset-player.is-vertical {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+.asset-player.is-vertical .asset-video {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 80vh;
+}
+
 .asset-versions {
   display: flex;
   align-items: center;

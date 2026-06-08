@@ -202,12 +202,20 @@ function Player({
   // read the current value on mount, so the comment timeline doesn't stay
   // hidden waiting for an event that already fired.
   const [duration, setDuration] = useState(0);
+  // The clip's intrinsic aspect ratio (width / height), learned once the
+  // video reports its dimensions. Lets a vertical (9:16) clip drive a
+  // portrait player instead of being letterboxed in the 16:9 box.
+  const [aspect, setAspect] = useState<number | null>(null);
 
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    const sync = () =>
+    const sync = () => {
       setDuration(Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 0);
+      if (v.videoWidth > 0 && v.videoHeight > 0) {
+        setAspect(v.videoWidth / v.videoHeight);
+      }
+    };
     sync();
     v.addEventListener("loadedmetadata", sync);
     v.addEventListener("durationchange", sync);
@@ -287,7 +295,9 @@ function Player({
 
   return (
     <section className="section asset-player-section">
-      <div className="asset-player">
+      <div
+        className={`asset-player${aspect !== null && aspect < 1 ? " is-vertical" : ""}`}
+      >
         <video
           ref={videoRef}
           controls
@@ -295,6 +305,9 @@ function Player({
           preload="metadata"
           poster={posterUrl}
           className="asset-video"
+          // Once known, the clip's real ratio overrides the 16/9 default so
+          // non-16:9 clips (esp. vertical) aren't letterboxed.
+          style={aspect !== null ? { aspectRatio: String(aspect) } : undefined}
         />
       </div>
       {duration > 0 && comments.length > 0 && (
