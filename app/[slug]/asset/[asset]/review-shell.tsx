@@ -244,6 +244,26 @@ function Player({
       ? `https://customer-${streamCustomerCode}.cloudflarestream.com/${streamUid}/thumbnails/thumbnail.jpg`
       : undefined;
 
+  // Learn the clip's aspect ratio from the Stream poster - a native-ratio
+  // thumbnail that loads immediately, so a vertical clip gets a portrait
+  // player BEFORE playback. (HLS reports videoWidth=0 until it decodes a
+  // frame, so the `sync` listener above only catches dimensions once the
+  // posterless Drive-proxy fallback plays.)
+  useEffect(() => {
+    if (!posterUrl) return;
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => {
+      if (!cancelled && img.naturalWidth > 0 && img.naturalHeight > 0) {
+        setAspect(img.naturalWidth / img.naturalHeight);
+      }
+    };
+    img.src = posterUrl;
+    return () => {
+      cancelled = true;
+    };
+  }, [posterUrl]);
+
   // Wire the source onto the <video>. HLS plays natively on Safari and
   // via hls.js (MSE) on Chrome/Firefox/Edge; the Drive-proxy fallback is
   // a plain MP4. Re-runs on version change, which reloads the element.
