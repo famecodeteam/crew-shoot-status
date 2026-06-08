@@ -152,6 +152,25 @@ test("parseBriefDoc: Brief #0214 (TikTok)", async (t) => {
     assert.match(blob, /<strong>On-Site Coverage<\/strong>/);
   });
 
+  await t.test("bulleted 'Deliverables:' content bullet is kept, not eaten", () => {
+    // Regression (#0218b): a *bulleted* "Deliverables:" line is a content
+    // grouping with nested items, not a section subheading. It must render
+    // with its bold label + children rather than being consumed as a bucket
+    // marker and dropped. (Canonical non-bulleted subheadings still parse -
+    // see #0219.)
+    const s = result.sections.find((x) => x.kind === "production");
+    assert.ok(s && s.kind === "production");
+    if (!s || s.kind !== "production") return;
+    const blob = s.deliverables.map((b) => b.html).join("\n");
+    // Bold label preserved (colon may sit in or out of the bold run). Before
+    // the fix this whole line was consumed and only its value survived.
+    assert.match(blob, /<strong>Deliverables<\/strong>/);
+    assert.match(blob, /2x LinkedIn-optimized sizzle reels/);
+    assert.match(blob, /File Transfer Plan/);
+    // Nesting carried through so children render under their group.
+    assert.ok(s.deliverables.some((b) => (b.level ?? 0) >= 1));
+  });
+
   await t.test("unknown section title falls through to prose", () => {
     // "5. Shoot Status" isn't in SECTION_KIND_BY_TITLE; should render
     // as the prose fallback.

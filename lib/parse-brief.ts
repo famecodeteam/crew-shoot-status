@@ -271,6 +271,13 @@ function detectSubheading(p: Paragraph): {
   // first item (e.g. "Equipment Requirements: Cameras: 2x 4K Camera Kits.").
   inlineRemainder?: string;
 } | null {
+  // A production subheading ("Confirmed Schedule" / "Equipment Requirements"
+  // / "Deliverables") is a NON-bulleted section divider in the canonical
+  // template. A *bulleted* "Deliverables:" line is instead a content grouping
+  // with its own nested items (e.g. brief #0218b) - keep it as a normal
+  // bullet so it renders with its bold label + children, rather than being
+  // silently consumed as a bucket marker and dropped.
+  if (isBulleted(p)) return null;
   const split = splitLabelValue(p);
   if (!split) return null;
   const key = split.label.toLowerCase().trim();
