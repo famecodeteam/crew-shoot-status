@@ -24,6 +24,14 @@ const FEED_URL =
   process.env.CREW_FEED_URL?.trim() ||
   "https://delivery.fame.so/api/sync/shoots";
 
+// Where to tell the portal the status-page slug we're serving (so it can
+// adopt ours when it hasn't minted one). Same origin as the feed - derived
+// from FEED_URL so a custom CREW_FEED_URL keeps both in step.
+const ADOPT_SLUG_URL = FEED_URL.replace(
+  /\/api\/sync\/shoots\/?$/,
+  "/api/sync/adopt-status-slug",
+);
+
 type FeedShoot = {
   cardId: string;
   shootNumber: string | null;
@@ -196,6 +204,34 @@ async function fetchFeed(): Promise<FeedShoot[] | null> {
   }
 }
 
+// Tell the portal the status-page slug we're already serving for a shoot it
+// hasn't minted a status_page_url for, so it adopts ours as canonical. The
+// portal owns this slug (see feedToShoot); writing ours back means the CPM
+// sees + can share the real client URL and asset review URLs resolve, with
+// nothing a client already holds ever changing (zero orphan). Best-effort:
+// the portal no-ops if it already has a URL, and on failure it simply learns
+// on a later sync while our page keeps serving at this slug regardless.
+async function writeBackStatusSlug(
+  cardId: string,
+  slug: string,
+  secret: string,
+): Promise<void> {
+  if (ADOPT_SLUG_URL === FEED_URL) return; // FEED_URL wasn't the expected shape
+  try {
+    await fetch(ADOPT_SLUG_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${secret}`,
+      },
+      cache: "no-store",
+      body: JSON.stringify({ cardId, slug }),
+    });
+  } catch {
+    // Non-fatal - see note above.
+  }
+}
+
 // Pull the latest data for ONE card from the feed and upsert it into
 // KV, returning the mapped Shoot. Used by the manual-send admin
 // endpoint so an operator send always acts on current delivery.fame.so
@@ -347,6 +383,13 @@ export async function syncFromFeed(opts?: {
     }
     await upsertByCardId(f.cardId, () => shoot);
     upserted += 1;
+
+    // Zero-orphan backfill: when the portal hasn't minted a status_page_url
+    // (older Supabase-era shoots), tell it the slug we're serving so it
+    // adopts ours. Once it has one, f.statusPageUrl is set and this no-ops.
+    if (!f.statusPageUrl && shoot.slug && !shoot.slug.startsWith("card-")) {
+      await writeBackStatusSlug(f.cardId, shoot.slug, secret);
+    }
 
     // Fire the milestone email on a status transition. The Trello
     // webhook used to own this, but the Crew Delivery board is
