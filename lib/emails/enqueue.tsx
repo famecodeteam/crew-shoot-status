@@ -25,6 +25,7 @@ import {
 } from "../email-tracker";
 import { schedule as schedulePending } from "../pending-emails";
 import { notifyEmailSent } from "../notify-email-sent";
+import { notifyEmailPending } from "../notify-email-pending";
 import { send } from "./send";
 import { renderEmail } from "./render";
 import { BookingConfirmedEmail } from "./templates/booking-confirmed";
@@ -247,6 +248,18 @@ export async function scheduleMilestoneEmail(
   console.log(
     `[email] ${created ? "scheduled" : "already pending"} ${milestone} for ${next.shootNumber} firesAt=${firesAt}`,
   );
+
+  // Fire once, only when this schedule actually created the pending entry:
+  // ping #crew so anyone can review + cancel it from the Activity tab during
+  // the 15-min window. Best-effort - never blocks scheduling.
+  if (created) {
+    await notifyEmailPending({
+      cardId: next.cardId,
+      milestone,
+      shootSlug: next.slug,
+      firesAt,
+    });
+  }
 
   return { status: "scheduled", milestone, firesAt };
 }
