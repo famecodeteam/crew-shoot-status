@@ -1,15 +1,17 @@
 // Shared logic for the sync-stream cron: keep every CLIENT-FACING asset
-// version's Cloudflare Stream delivery copy in step with Drive. Only
-// published versions belong on Stream - the client review page is its sole
-// consumer; CPM/editor review runs on Mux. A version that's unpublished,
-// on-hold, approved, or on a delivered/paid/closed shoot is torn down (if it
-// has a copy) and skipped, so Stream only ever holds what a client can
-// actually watch.
+// version's Cloudflare Stream delivery copy in step with Drive. Only the
+// LATEST published version of each asset belongs on Stream - the client
+// review page is its sole consumer, CPM/editor review runs on Mux, and older
+// published cuts stay visible on the review page via the Drive-proxy
+// fallback. A version that's unpublished, superseded by a newer published
+// cut, on-hold, approved, or on a delivered/paid/closed shoot is torn down
+// (if it has a copy) and skipped, so Stream only ever holds the cut the
+// client is reviewing.
 //
-//   - published, no streamUid                  → copyFromUrl, mark "pending"
-//   - published, "pending"                     → poll Stream, flip ready / error
-//   - published, "ready" / "error"             → settled, skipped
-//   - unpublished / on-hold / approved         → release Stream copy, skip
+//   - latest published, no streamUid           → copyFromUrl, mark "pending"
+//   - latest published, "pending"              → poll Stream, flip ready / error
+//   - latest published, "ready" / "error"      → settled, skipped
+//   - unpublished / superseded / on-hold / approved → release Stream copy, skip
 //   - shoot delivered / paid / closed          → release ALL its copies, skip
 //
 // One pass is non-blocking: copyFromUrl returns immediately with a uid
@@ -249,28 +251,41 @@ export async function syncStreamOnce(deadline: number): Promise<StreamSyncSummar
         continue;
       }
 
+      // Only the LATEST published version of an asset belongs on Cloudflare
+      // Stream - it's the cut the client is actively reviewing. Older
+      // published versions stay VISIBLE on the review page (the client keeps
+      // the full version history) but play via the Drive-proxy fallback, so
+      // their Stream copy is torn down. "Published" matches the client's own
+      // visibility filter (clientVersions): an absent isPublishedToClient
+      // counts as published, for legacy records.
+      const latestPublishedN = asset.versions.reduce(
+        (max, v) => (v.isPublishedToClient !== false ? Math.max(max, v.n) : max),
+        0,
+      );
+
       for (const version of asset.versions) {
         if (Date.now() > deadline) {
           timedOut = true;
           break outer;
         }
-        // Publish gate: only client-facing versions belong on Cloudflare
-        // Stream. An unpublished version is never shown to the client (CPM /
-        // editor review it on Mux), so tear down any Stream copy it still
-        // holds - one ingested before this gate existed, or unpublished
-        // since - and skip it. Reversible: once (re)published, a later tick
-        // has no streamUid and re-ingests. The clear-write is guarded so an
-        // unpublished version that was never on Stream is a true no-op.
-        if (!version.isPublishedToClient) {
+        // On Stream only if this is the single latest published version.
+        // Everything else - unpublished (CPM/editor review on Mux) or an
+        // older published cut superseded by a newer one - is torn down (if it
+        // has a copy) and skipped. Reversible: (re)publishing or a new latest
+        // flips it and a later tick re-ingests. The clear-write is guarded so
+        // a version that was never on Stream is a true no-op.
+        const published = version.isPublishedToClient !== false;
+        if (!published || version.n !== latestPublishedN) {
           if (version.streamUid) {
+            const reason = published ? "superseded" : "unpublished";
             try {
               await deleteVideo(version.streamUid);
               console.log(
-                `[sync-stream] released unpublished ${asset.slug} v${version.n}`,
+                `[sync-stream] released ${reason} ${asset.slug} v${version.n}`,
               );
             } catch (err) {
               console.warn(
-                `[sync-stream] release unpublished ${asset.slug} v${version.n} failed:`,
+                `[sync-stream] release ${reason} ${asset.slug} v${version.n} failed:`,
                 (err as Error).message,
               );
             }
