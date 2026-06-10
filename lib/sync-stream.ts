@@ -1,14 +1,16 @@
 // Shared logic for the sync-stream cron: keep every CLIENT-FACING asset
 // version's Cloudflare Stream delivery copy in step with Drive. Only
 // published versions belong on Stream - the client review page is its sole
-// consumer; CPM/editor review runs on Mux. An unpublished, on-hold, or
-// approved version is torn down (if it has a copy) and skipped, so Stream
-// only ever holds what a client can actually watch.
+// consumer; CPM/editor review runs on Mux. A version that's unpublished,
+// on-hold, approved, or on a delivered/paid/closed shoot is torn down (if it
+// has a copy) and skipped, so Stream only ever holds what a client can
+// actually watch.
 //
-//   - published, no streamUid          → copyFromUrl, mark "pending"
-//   - published, "pending"             → poll Stream, flip ready / error
-//   - published, "ready" / "error"     → settled, skipped
-//   - unpublished / on-hold / approved → release Stream copy, skip
+//   - published, no streamUid                  → copyFromUrl, mark "pending"
+//   - published, "pending"                     → poll Stream, flip ready / error
+//   - published, "ready" / "error"             → settled, skipped
+//   - unpublished / on-hold / approved         → release Stream copy, skip
+//   - shoot delivered / paid / closed          → release ALL its copies, skip
 //
 // One pass is non-blocking: copyFromUrl returns immediately with a uid
 // while Cloudflare downloads + transcodes async, so the pending → ready
@@ -215,6 +217,31 @@ export async function syncStreamOnce(deadline: number): Promise<StreamSyncSummar
           } catch (err) {
             console.warn(
               `[sync-stream] release on-hold ${asset.slug} failed:`,
+              (err as Error).message,
+            );
+          }
+        }
+        continue;
+      }
+
+      // Delivered / paid / closed: the whole shoot is done with client
+      // review, so take every one of its assets off Cloudflare Stream. These
+      // shoots have moved to "Assets Approved By Client", "Awaiting Payment",
+      // or "Closed" on the board - all three map to the "delivered" status
+      // here (lib/list-mapping). Same release-and-skip pattern as on-hold, and
+      // a backstop to the per-asset "approved" teardown above: it also catches
+      // a published asset on the shoot that was never individually approved.
+      // Reversible - moved back to an earlier list, the next tick re-ingests.
+      if (shoot.status === "delivered") {
+        if (asset.versions.some((v) => v.streamUid)) {
+          try {
+            const res = await releaseStreamCopiesForAsset(shoot.cardId, asset.slug);
+            console.log(
+              `[sync-stream] released delivered ${asset.slug}: ${res.deleted} deleted, ${res.failed} failed`,
+            );
+          } catch (err) {
+            console.warn(
+              `[sync-stream] release delivered ${asset.slug} failed:`,
               (err as Error).message,
             );
           }
