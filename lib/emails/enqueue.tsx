@@ -26,6 +26,7 @@ import {
 import { schedule as schedulePending } from "../pending-emails";
 import { notifyEmailSent } from "../notify-email-sent";
 import { notifyEmailPending } from "../notify-email-pending";
+import { notifyEmailSkipped } from "../notify-email-skipped";
 import { send } from "./send";
 import { renderEmail } from "./render";
 import { BookingConfirmedEmail } from "./templates/booking-confirmed";
@@ -229,6 +230,11 @@ export async function scheduleMilestoneEmail(
       `[email] no clientEmails on ${next.shootNumber} (${next.cardId}); skipping ${milestone}`,
     );
     await markSkipped(next.cardId, milestone, "no client email on Trello card");
+    await notifyEmailSkipped({
+      cardId: next.cardId,
+      milestone,
+      reason: "no client email on file",
+    });
     return { status: "skipped", milestone, reason: "no client email" };
   }
 
@@ -293,6 +299,11 @@ export async function dispatchPendingEmail(
   const recipients = shoot.clientEmails ?? [];
   if (!recipients.length) {
     await markSkipped(shoot.cardId, milestone, "no client email on Trello card");
+    await notifyEmailSkipped({
+      cardId: shoot.cardId,
+      milestone,
+      reason: "no client email on file",
+    });
     return { status: "skipped", milestone, reason: "no client email" };
   }
 
@@ -312,6 +323,11 @@ export async function dispatchPendingEmail(
   const rendered = await renderForMilestone(milestone, shoot, ctx);
   if (!rendered) {
     await markSkipped(shoot.cardId, milestone, "no template");
+    await notifyEmailSkipped({
+      cardId: shoot.cardId,
+      milestone,
+      reason: "no email template",
+    });
     return { status: "skipped", milestone, reason: "no template" };
   }
 
