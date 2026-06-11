@@ -173,8 +173,11 @@ async function renderForMilestone(
 // day-of reminder), so we skip it. Empty/unknown shootDate → allow, so a
 // missing date never silently swallows a legitimate send.
 function readyForShootIsStale(shoot: Shoot): boolean {
-  const d = (shoot.shootDate ?? "").trim();
-  if (!d) return false;
+  // Compare date parts only - shootDate is normally "YYYY-MM-DD" but tolerate a
+  // full ISO timestamp so a same-day shoot with a time component still counts
+  // as today (a plain `<=` on the raw string would treat "...T10:00" as later).
+  const d = (shoot.shootDate ?? "").trim().slice(0, 10);
+  if (d.length < 10) return false;
   return d <= todayDateStr(); // shoot date is today or earlier → not upcoming
 }
 
