@@ -165,6 +165,30 @@ async function renderForMilestone(
   }
 }
 
+// "Your upcoming shoot" only makes sense while the shoot is still ahead.
+// This email fires on a list move (card → "Ready for shoot"), not on a date,
+// and that move can land on - or after - the shoot day, especially for
+// back-to-back recurring shoots (e.g. Tracy Doyle's 0218a-f). Once the shoot
+// is today or in the past the heads-up is wrong (the crew already had their
+// day-of reminder), so we skip it. Empty/unknown shootDate → allow, so a
+// missing date never silently swallows a legitimate send.
+function readyForShootIsStale(shoot: Shoot): boolean {
+  const d = (shoot.shootDate ?? "").trim();
+  if (!d) return false;
+  return d <= todayDateStr(); // shoot date is today or earlier → not upcoming
+}
+
+// Today as YYYY-MM-DD in Fame's operating timezone (UK), so the "is the shoot
+// still upcoming" boundary lands on local midnight rather than UTC's.
+function todayDateStr(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/London",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 function publicBaseUrl(): string {
   const explicit = process.env.PUBLIC_BASE_URL;
   if (explicit) return explicit.replace(/\/$/, "");
@@ -220,6 +244,19 @@ export async function scheduleMilestoneEmail(
   // Don't schedule on backwards transitions.
   if (prevStatus && STATUS_RANK[next.status] < STATUS_RANK[prevStatus]) {
     return { status: "no-op", reason: "backwards transition" };
+  }
+
+  // "Upcoming shoot" heads-up is pointless once the shoot is today or past -
+  // the card just reached "Ready for shoot" late. Record a skip so it shows on
+  // the Activity feed instead of silently sending a stale email.
+  if (milestone === "ready-for-shoot" && readyForShootIsStale(next)) {
+    await markSkipped(next.cardId, milestone, "shoot date is today or in the past");
+    await notifyEmailSkipped({
+      cardId: next.cardId,
+      milestone,
+      reason: "shoot already today/past - no upcoming-shoot email",
+    });
+    return { status: "skipped", milestone, reason: "shoot not upcoming" };
   }
 
   // Defensive: stored records written before clientEmails existed
@@ -287,6 +324,19 @@ export async function dispatchPendingEmail(
       milestone,
       reason: `status moved from ${expectedStatus} -> ${shoot.status} during buffer`,
     };
+  }
+
+  // Shoot date reached today/past while this sat in the 15-min buffer (or it
+  // was scheduled before the staleness guard shipped) - don't send a stale
+  // "upcoming shoot" email.
+  if (milestone === "ready-for-shoot" && readyForShootIsStale(shoot)) {
+    await markSkipped(shoot.cardId, milestone, "shoot date is today or in the past");
+    await notifyEmailSkipped({
+      cardId: shoot.cardId,
+      milestone,
+      reason: "shoot already today/past - no upcoming-shoot email",
+    });
+    return { status: "skipped", milestone, reason: "shoot not upcoming" };
   }
 
   // Already sent (paranoia - cron shouldn't see a pending record for
