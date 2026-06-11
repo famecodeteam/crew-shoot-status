@@ -163,6 +163,9 @@ export type Shoot = {
   shootType?: string;
   location: string;
   shootDate: string; // ISO YYYY-MM-DD or ""
+  /** Client-required shots, synced from member.fame.so. Rendered as a
+   *  "Must-have shots" section on the brief page. */
+  mustHaveShots?: string[];
   status: ShootStatus;
   statusLabel: string; // client-facing label (already mapped from Trello list)
   crew?: {

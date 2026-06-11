@@ -145,6 +145,18 @@ function UnlockedView({
           )}
         </div>
 
+        {shoot?.mustHaveShots && shoot.mustHaveShots.length > 0 && (
+          <section className="brief-section">
+            <h2>🎬 Must-have shots</h2>
+            <p>Shots the client specifically needs captured on the day.</p>
+            <ul style={{ margin: "8px 0 0", paddingLeft: "20px", lineHeight: 1.7 }}>
+              {shoot.mustHaveShots.map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {sections.map((s, i) => (
           <SectionCard key={`${s.kind}-${i}`} section={s} num={i + 1} />
         ))}

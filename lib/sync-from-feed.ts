@@ -54,6 +54,7 @@ type FeedShoot = {
   clientFootageUrl: string | null;
   statusPageUrl: string | null;
   labels: string[] | null;
+  mustHaveShots: string[] | null;
   milestoneDates: Record<string, string> | null;
   updatedAt: string | null;
 };
@@ -136,6 +137,7 @@ function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | nu
     shootType: shootType || undefined,
     location: f.shootLocation ?? "",
     shootDate: f.shootDate ?? "",
+    mustHaveShots: f.mustHaveShots ?? [],
     status: mapping.status,
     statusLabel: statusLabel(mapping.status, crewFirstName, hasPostProduction),
     crew,
