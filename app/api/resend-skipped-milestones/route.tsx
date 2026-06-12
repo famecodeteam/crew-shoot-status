@@ -23,7 +23,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getByCardId } from "@/lib/storage";
 import { refreshOneFromFeed } from "@/lib/sync-from-feed";
 import { dispatchPendingEmail, subjectForMilestone } from "@/lib/emails/enqueue";
-import { get as getSent, type EmailMilestone } from "@/lib/email-tracker";
+import {
+  clear as clearTracker,
+  get as getSent,
+  type EmailMilestone,
+} from "@/lib/email-tracker";
 import { addCardComment } from "@/lib/trello";
 
 export const dynamic = "force-dynamic";
@@ -80,6 +84,12 @@ export async function POST(req: NextRequest) {
     // exists for a status the shoot actually moved into, so re-sending is
     // always in-context. Never-fired (null) and already-sent are left alone.
     if (sent?.status !== "skipped") continue;
+    // The "skipped" record sits on the SAME tracker key dispatch's claim()
+    // does SET NX against - so without clearing it first, claim() always
+    // fails and dispatch no-ops. Clear the stale skip so the re-send can
+    // actually claim + send. (Safe: we only reach here for a skipped record,
+    // and dispatch re-renders + marks sent fresh.)
+    await clearTracker(cardId, milestone);
     // Live status as the expected status -> dispatch's move-guard is a no-op.
     const result = await dispatchPendingEmail(shoot, milestone, shoot.status);
     resent.push({ milestone, status: result.status });
