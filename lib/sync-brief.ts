@@ -62,8 +62,19 @@ function computeHealth(parsed: ParsedBrief): ParseHealth {
   return { sections, overviewFields, crewMembers, proseFallback, suspicious };
 }
 
+// Bump whenever parseBriefDoc's output for an unchanged Doc could differ
+// (a parser fix, a new section mapping, etc.). It's folded into the
+// content-hash key below so a parser change invalidates every stored parse
+// - the next cron tick re-parses all briefs with the new code instead of
+// short-circuiting on the unchanged Doc hash. (v2: split sections on any
+// heading level + strip the must-have-shots fence.)
+const PARSER_VERSION = 2;
+
 function hashStructure(doc: unknown): string {
-  return createHash("sha256").update(JSON.stringify(doc)).digest("hex");
+  const docHash = createHash("sha256")
+    .update(JSON.stringify(doc))
+    .digest("hex");
+  return `v${PARSER_VERSION}:${docHash}`;
 }
 
 export async function syncOne(rec: BriefRecord): Promise<SyncResult> {
