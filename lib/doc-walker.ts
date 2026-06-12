@@ -27,6 +27,18 @@ export function isHeading2(p: Paragraph): boolean {
   return p.paragraphStyle?.namedStyleType === "HEADING_2";
 }
 
+// True for any Docs heading level (HEADING_1..HEADING_6). The section
+// splitter uses this rather than isHeading3 alone because producers (and
+// the AI brief generator) don't apply the heading style consistently -
+// brief #0233 styled its "N. Title" dividers as HEADING_2, which made the
+// HEADING_3-only splitter miss every section and render an empty brief.
+// The numbered "N. Title" regex guard in the splitter is what actually
+// distinguishes a section divider, so widening the style match is safe.
+export function isHeading(p: Paragraph): boolean {
+  const t = p.paragraphStyle?.namedStyleType;
+  return t != null && /^HEADING_[1-6]$/.test(t);
+}
+
 export function isBulleted(p: Paragraph): boolean {
   return p.bullet != null;
 }

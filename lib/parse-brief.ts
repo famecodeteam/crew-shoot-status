@@ -16,7 +16,7 @@ import {
   escapeHtml,
   firstLink,
   isBulleted,
-  isHeading3,
+  isHeading,
   paragraphs as docParagraphs,
   plainTextTrimmed,
   renderRichText,
@@ -110,8 +110,35 @@ const SECTION_KIND_BY_TITLE: Record<string, Exclude<Section["kind"], "prose">> =
   "communications timeline": "comms",
 };
 
+// The crew portal auto-writes a fenced "must-have shots" block into the
+// source Doc (⟦must-have-shots:start⟧ … ⟦must-have-shots:end⟧) so it shows
+// for whoever opens the Doc. The client brief page renders must-have shots
+// from the synced shoot record instead, so we strip the fenced range here -
+// otherwise the fence markers + their content render as duplicate prose under
+// whatever section they happen to follow.
+const MUST_HAVE_FENCE_START = "must-have-shots:start";
+const MUST_HAVE_FENCE_END = "must-have-shots:end";
+
+function stripMustHaveFence(ps: Paragraph[]): Paragraph[] {
+  const out: Paragraph[] = [];
+  let inFence = false;
+  for (const p of ps) {
+    const text = plainTextTrimmed(p);
+    if (!inFence && text.includes(MUST_HAVE_FENCE_START)) {
+      inFence = true;
+      continue;
+    }
+    if (inFence) {
+      if (text.includes(MUST_HAVE_FENCE_END)) inFence = false;
+      continue;
+    }
+    out.push(p);
+  }
+  return out;
+}
+
 export function parseBriefDoc(doc: docs_v1.Schema$Document): ParsedBrief {
-  const ps = docParagraphs(doc);
+  const ps = stripMustHaveFence(docParagraphs(doc));
   const header = parseHeader(doc.title ?? "");
   const chunks = splitSections(ps);
 
@@ -170,7 +197,7 @@ function splitSections(ps: Paragraph[]): SectionChunk[] {
   const out: SectionChunk[] = [];
   let current: SectionChunk | null = null;
   for (const p of ps) {
-    if (isHeading3(p)) {
+    if (isHeading(p)) {
       const titleRaw = plainTextTrimmed(p);
       if (SECTION_HEADER_RX.test(titleRaw)) {
         if (current) out.push(current);
@@ -181,8 +208,9 @@ function splitSections(ps: Paragraph[]): SectionChunk[] {
         };
         continue;
       }
-      // HEADING_3 styling on a non-numbered line — producer drift.
-      // Fall through and treat it as a regular paragraph below.
+      // Heading styling on a non-numbered line (e.g. the Doc-title line, or
+      // a field label a producer accidentally styled as a heading) — producer
+      // drift. Fall through and treat it as a regular paragraph below.
     }
     if (!current) continue; // pre-heading content (doc title etc.) ignored
     current.body.push(p);
