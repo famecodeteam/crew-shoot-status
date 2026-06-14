@@ -43,19 +43,20 @@ export function FootageInEmail({
       signOffName={shoot.producerFirstName}
     >
       <Text style={lede}>
-        {pp ? "Footage is in - editing has started" : "Your raw footage is ready"}
+        {pp ? "Your raw footage is in - editing has started" : "Your raw footage is ready"}
       </Text>
       <Text style={paragraph}>{greeting}</Text>
 
       {pp ? (
         <>
           <Text style={paragraph}>
-            Footage from {shoot.shootNumber} just landed - the day went
-            well. Our editors are on it now. You can expect the first
-            cut ready to review in around 5 business days.
+            The raw footage from {shoot.shootNumber} just landed - the day
+            went well. This is the unedited footage straight from the shoot;
+            our editors are on it now, and you can expect the first cut ready
+            to review in around 5 business days.
           </Text>
           <Text style={paragraph}>
-            We'll send you a notification the moment your videos are
+            We'll send you a notification the moment your edited videos are
             ready. In the meantime, your status page has the latest:
           </Text>
         </>
