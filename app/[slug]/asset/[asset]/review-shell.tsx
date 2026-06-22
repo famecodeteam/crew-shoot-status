@@ -468,9 +468,12 @@ function VersionDownloadBar({
   const cv = asset.versions.find((v) => v.n === version);
   if (!cv?.driveFileId) return null;
   const label = clientVersionLabel(asset.versions, version);
-  const href = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(
-    cv.driveFileId,
-  )}`;
+  // Download via our own proxy (streams through the service account) rather
+  // than a direct drive.google.com link - those need the file shared
+  // "anyone with link", which the transcode pipeline revokes, so they kept
+  // failing for clients. The proxy resolves the file server-side from the
+  // asset slug + version and only serves published versions.
+  const href = `/api/asset/${encodeURIComponent(asset.slug)}/v${version}/download`;
   return (
     <div className="version-download-bar">
       <a

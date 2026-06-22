@@ -46,6 +46,42 @@ function escapeQuery(s: string): string {
 }
 
 /**
+ * Stream a Drive file's bytes via the service account (which always has
+ * access), plus its metadata. Used by the asset-download proxy so client
+ * downloads never depend on the file being shared "anyone with link" -
+ * the proxy/transcode pipeline grants then REVOKES that sharing, which is
+ * why direct drive.google.com/uc?export=download links kept failing for
+ * clients. Returns null if the file is missing / inaccessible.
+ */
+export async function getDriveDownload(fileId: string): Promise<{
+  stream: NodeJS.ReadableStream;
+  name: string;
+  mimeType: string;
+  size: number | null;
+} | null> {
+  const d = drive();
+  try {
+    const meta = await d.files.get({
+      fileId,
+      fields: "name, mimeType, size",
+      supportsAllDrives: true,
+    });
+    const res = await d.files.get(
+      { fileId, alt: "media", supportsAllDrives: true },
+      { responseType: "stream" },
+    );
+    return {
+      stream: res.data as unknown as NodeJS.ReadableStream,
+      name: meta.data.name ?? "download",
+      mimeType: meta.data.mimeType ?? "application/octet-stream",
+      size: meta.data.size ? Number(meta.data.size) : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Find a single shoot's brief + quote URLs.
  *
  * Brief lookup is anchored on the shoot NUMBER (see the module header):
