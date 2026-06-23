@@ -30,7 +30,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const shoot = await loadShoot(slug, showWelcome);
+  const shoot = await loadShoot(slug);
   if (!shoot) return { title: "Fame Crew" };
   return { title: `Fame Crew - Shoot Status - ${shoot.shootNumber}` };
 }
