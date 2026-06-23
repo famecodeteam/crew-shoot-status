@@ -458,6 +458,9 @@ function CommentBar({
 // same pattern is used by the Live Moments card grid - we keep the
 // styling intentionally lightweight so it doesn't compete with the
 // primary Approve / Request changes call-to-action below.
+// Video extensions - videos route their Download to Google Drive (see below).
+const VIDEO_EXT = /\.(mp4|mov|m4v|webm|mkv|avi|mpg|mpeg|wmv)$/i;
+
 function VersionDownloadBar({
   asset,
   version,
@@ -468,17 +471,24 @@ function VersionDownloadBar({
   const cv = asset.versions.find((v) => v.n === version);
   if (!cv?.driveFileId) return null;
   const label = clientVersionLabel(asset.versions, version);
-  // Download via our own proxy (streams through the service account) rather
-  // than a direct drive.google.com link - those need the file shared
-  // "anyone with link", which the transcode pipeline revokes, so they kept
-  // failing for clients. The proxy resolves the file server-side from the
-  // asset slug + version and only serves published versions.
-  const href = `/api/asset/${encodeURIComponent(asset.slug)}/v${version}/download`;
+  const base = `/api/asset/${encodeURIComponent(asset.slug)}/v${version}`;
+
+  // Videos can outrun the serverless time budget streaming through the proxy,
+  // so their Download opens the file in Google Drive (shared just-in-time by
+  // the drive-link route). Every other asset type is small enough to download
+  // directly through the proxy (which streams via the service account, so it
+  // doesn't depend on the file being publicly shared).
+  const isVideo = VIDEO_EXT.test(cv.filename ?? "") || !!cv.streamUid;
+  const href = isVideo ? `${base}/drive-link` : `${base}/download`;
+
   return (
     <div className="version-download-bar">
       <a
         className="version-download"
         href={href}
+        {...(isVideo
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : {})}
         aria-label={`Download ${asset.name} v${label}`}
       >
         <DownloadIcon />

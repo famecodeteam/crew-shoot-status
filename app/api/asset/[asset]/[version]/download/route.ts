@@ -30,7 +30,7 @@ function parseVersion(raw: string): number | null {
 }
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   ctx: { params: Promise<{ asset: string; version: string }> },
 ): Promise<Response> {
   const { asset: slug, version: vRaw } = await ctx.params;
@@ -46,42 +46,27 @@ export async function GET(
     return new Response("version not available", { status: 404 });
   }
 
-  // Pass the client's Range through to Drive so large downloads resume /
-  // chunk instead of restarting from zero on a dropped connection.
-  const range = req.headers.get("range");
-  const file = await getDriveDownload(version.driveFileId, { range });
+  // Direct download path - used for non-video assets (small enough to stream
+  // through here). Videos use the "Open in Google Drive" link instead (see the
+  // drive-link route), since they can outrun the serverless time budget.
+  const file = await getDriveDownload(version.driveFileId);
   if (!file) return new Response("file unavailable", { status: 502 });
 
   const filename = sanitizeFilename(
-    version.filename || `${lookup.asset.name} v${n}.mp4`,
+    version.filename || `${lookup.asset.name} v${n}`,
   );
   const headers: Record<string, string> = {
     "Content-Type": file.mimeType,
     "Content-Disposition": `attachment; filename="${filename}"`,
     "Cache-Control": "private, no-store",
-    // Advertise range support so download managers / browsers resume + chunk.
-    "Accept-Ranges": "bytes",
   };
+  if (file.size != null) headers["Content-Length"] = String(file.size);
 
-  // Drive honoured the Range → serve a 206 with the slice's Content-Range +
-  // Content-Length. Otherwise a normal 200 with the full size.
-  const isPartial = file.status === 206 && !!file.contentRange;
-  if (isPartial) {
-    headers["Content-Range"] = file.contentRange!;
-    if (file.contentLength != null) {
-      headers["Content-Length"] = String(file.contentLength);
-    }
-  } else if (file.size != null) {
-    headers["Content-Length"] = String(file.size);
-  }
-
-  // Node Readable -> web ReadableStream for the Response body. A mid-stream
-  // Drive blip propagates and aborts the response; the client retries the
-  // failed range rather than the whole file.
+  // Node Readable -> web ReadableStream for the Response body.
   const body = Readable.toWeb(
     file.stream as Readable,
   ) as unknown as ReadableStream;
-  return new Response(body, { status: isPartial ? 206 : 200, headers });
+  return new Response(body, { status: 200, headers });
 }
 
 /** Strip characters that would break the Content-Disposition header. */
