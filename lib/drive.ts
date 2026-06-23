@@ -52,33 +52,89 @@ function escapeQuery(s: string): string {
  * the proxy/transcode pipeline grants then REVOKES that sharing, which is
  * why direct drive.google.com/uc?export=download links kept failing for
  * clients. Returns null if the file is missing / inaccessible.
+ *
+ * Robustness for large finished cuts:
+ *   - Honours the client's `Range` header: passes it straight to Drive and
+ *     reports back the 206 status + Content-Range so the route can serve a
+ *     partial response. This is the key reliability lever - browsers and
+ *     download managers resume a dropped transfer (and can parallelise it)
+ *     instead of restarting a multi-GB file from zero, and no single request
+ *     has to survive the whole serverless time budget.
+ *   - Retries the open on transient (5xx / 429 / network) failures; fails
+ *     fast on 4xx (missing / no access won't get better).
  */
-export async function getDriveDownload(fileId: string): Promise<{
+export async function getDriveDownload(
+  fileId: string,
+  opts?: { range?: string | null },
+): Promise<{
   stream: NodeJS.ReadableStream;
   name: string;
   mimeType: string;
   size: number | null;
+  /** 206 when Drive honoured a Range request, else 200. */
+  status: number;
+  /** "bytes start-end/total" when partial, else null. */
+  contentRange: string | null;
+  /** Bytes in THIS response (the slice for a 206), if Drive reported it. */
+  contentLength: number | null;
 } | null> {
   const d = drive();
+  const range = opts?.range?.trim() || undefined;
   try {
-    const meta = await d.files.get({
-      fileId,
-      fields: "name, mimeType, size",
-      supportsAllDrives: true,
-    });
-    const res = await d.files.get(
-      { fileId, alt: "media", supportsAllDrives: true },
-      { responseType: "stream" },
+    const meta = await withDriveRetry(() =>
+      d.files.get({
+        fileId,
+        fields: "name, mimeType, size",
+        supportsAllDrives: true,
+      }),
     );
+    const res = await withDriveRetry(() =>
+      d.files.get(
+        { fileId, alt: "media", supportsAllDrives: true },
+        {
+          responseType: "stream",
+          ...(range ? { headers: { Range: range } } : {}),
+        },
+      ),
+    );
+    const headers = res.headers as Record<string, string | undefined>;
+    const cl = headers["content-length"];
     return {
       stream: res.data as unknown as NodeJS.ReadableStream,
       name: meta.data.name ?? "download",
       mimeType: meta.data.mimeType ?? "application/octet-stream",
       size: meta.data.size ? Number(meta.data.size) : null,
+      status: res.status ?? 200,
+      contentRange: headers["content-range"] ?? null,
+      contentLength: cl != null ? Number(cl) : null,
     };
   } catch {
     return null;
   }
+}
+
+/**
+ * Retry a Drive call on transient failures. 5xx / 429 / network blips get a
+ * short backoff; 4xx (404 missing, 403 no access) throw immediately since a
+ * retry can't fix them.
+ */
+async function withDriveRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      const status =
+        (err as { code?: number })?.code ??
+        (err as { response?: { status?: number } })?.response?.status;
+      const transient =
+        typeof status !== "number" || status >= 500 || status === 429;
+      if (!transient || i === attempts - 1) throw err;
+      await new Promise((r) => setTimeout(r, 300 * (i + 1)));
+    }
+  }
+  throw lastErr;
 }
 
 /**
