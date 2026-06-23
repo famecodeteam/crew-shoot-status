@@ -39,3 +39,22 @@ export function getDemoShoot(): Shoot {
     updatedAt: new Date().toISOString(),
   };
 }
+
+// The just-booked state: what a client sees the moment they land on the page
+// after paying their deposit - status "booking-confirmed", no crew sourced yet.
+// Used for /demo?welcome=1 so the thank-you page previews realistically
+// (welcome banner + step 1, no mid-shoot data like an assigned crew member).
+export function getJustBookedDemoShoot(): Shoot {
+  return {
+    ...getDemoShoot(),
+    status: "booking-confirmed",
+    statusLabel: "Booking confirmed",
+    crew: undefined,
+    crewStatus: undefined,
+    briefUrl: undefined,
+    milestoneDates: {
+      bookingConfirmed: "2026-04-22T10:00:00.000Z",
+    },
+    trelloListName: "Won",
+  };
+}
