@@ -35,10 +35,28 @@ export async function generateMetadata({
   return { title: `Fame Crew - Shoot Status - ${shoot.shootNumber}` };
 }
 
-export default async function ShootPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ShootPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ welcome?: string }>;
+}) {
   const { slug } = await params;
+  const { welcome } = await searchParams;
+  const showWelcome = welcome === "1";
+
   const shoot = await loadShoot(slug);
-  if (!shoot) notFound();
+
+  // If the shoot hasn't synced yet but the client just paid, show a
+  // "Booking confirmed" holding page instead of a jarring 404. The cron
+  // runs every 5 minutes so this window is short.
+  if (!shoot) {
+    if (showWelcome) {
+      return <BookingConfirmedHolding />;
+    }
+    notFound();
+  }
 
   // Assets - empty unless the editor has pushed at least one finished
   // version. Skip the lookup for the demo slug (no real cardId).
@@ -51,7 +69,41 @@ export default async function ShootPage({ params }: { params: Promise<{ slug: st
   const briefHref = slug === "demo" ? null : await resolveBriefHref(slug);
 
   return (
-    <ShootView shoot={shoot} assets={assets} shootSlug={slug} briefHref={briefHref} />
+    <ShootView
+      shoot={shoot}
+      assets={assets}
+      shootSlug={slug}
+      briefHref={briefHref}
+      showWelcome={showWelcome}
+    />
+  );
+}
+
+const FAME_LOGO_URL_HOLDING =
+  "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65bcbe23cfb0eb14d2ce0063_logo.svg";
+
+function BookingConfirmedHolding() {
+  return (
+    <main className="shell">
+      <header className="hero">
+        <div className="hero-top">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="hero-logo" src={FAME_LOGO_URL_HOLDING} alt="Fame" />
+        </div>
+        <h1 className="hero-title">Booking confirmed</h1>
+      </header>
+      <div className="welcome-banner" role="status">
+        <div className="welcome-banner-title">🎉 Booking confirmed - thank you!</div>
+        <p>
+          Your deposit has been received and your booking is confirmed. We&apos;re now
+          sourcing your crew - this page will update as things progress.
+        </p>
+        <p style={{ marginTop: "10px" }}>
+          Your status page is being set up and will be ready in a few minutes. Bookmark
+          this page and check back shortly.
+        </p>
+      </div>
+    </main>
   );
 }
 
@@ -70,11 +122,13 @@ function ShootView({
   assets,
   shootSlug,
   briefHref,
+  showWelcome,
 }: {
   shoot: Shoot;
   assets: Asset[];
   shootSlug: string;
   briefHref: string | null;
+  showWelcome: boolean;
 }) {
   const steps = timelineSteps(shoot.hasPostProduction);
   const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
@@ -145,6 +199,18 @@ function ShootView({
 
   return (
     <main className="shell">
+      {showWelcome && (
+        <div className="welcome-banner" role="status">
+          <div className="welcome-banner-title">🎉 Booking confirmed - thank you!</div>
+          <p>
+            Your deposit has been received and your booking is confirmed. We&apos;re now
+            sourcing your crew - this page will update as things progress.
+          </p>
+          <p style={{ marginTop: "10px" }}>
+            Bookmark this page to check back anytime.
+          </p>
+        </div>
+      )}
       <header className="hero">
         <div className="hero-top">
           {/* eslint-disable-next-line @next/next/no-img-element */}

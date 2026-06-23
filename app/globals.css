@@ -392,6 +392,25 @@ img {
   border-color: var(--pink);
 }
 
+/* ---------- Welcome banner (post-payment redirect) ---------- */
+
+.welcome-banner {
+  background: var(--success-bg);
+  color: var(--success-fg);
+  border: 1px solid var(--success-accent);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.welcome-banner-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
 /* ---------- Live crew-status banner (M7) ---------- */
 
 .live-banner {
