@@ -1059,34 +1059,15 @@ img {
   border-radius: 999px;
   padding: 8px 14px;
   font-size: 13px;
-  font-family: inherit;
   color: var(--text);
   text-decoration: none;
-  cursor: pointer;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
-.version-download:hover:not(:disabled) {
+.version-download:hover {
   border-color: var(--pink);
   background: var(--pink-light);
   color: var(--pink);
-}
-
-.version-download:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.version-download-fallback {
-  margin: 8px 0 0;
-  font-size: 12px;
-  color: var(--muted, #6b6b6b);
-}
-
-.version-download-fallback a {
-  color: var(--pink);
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 .comment-add {

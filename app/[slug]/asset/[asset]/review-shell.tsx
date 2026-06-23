@@ -458,6 +458,9 @@ function CommentBar({
 // same pattern is used by the Live Moments card grid - we keep the
 // styling intentionally lightweight so it doesn't compete with the
 // primary Approve / Request changes call-to-action below.
+// Video extensions - videos route their Download to Google Drive (see below).
+const VIDEO_EXT = /\.(mp4|mov|m4v|webm|mkv|avi|mpg|mpeg|wmv)$/i;
+
 function VersionDownloadBar({
   asset,
   version,
@@ -466,89 +469,31 @@ function VersionDownloadBar({
   version: number;
 }) {
   const cv = asset.versions.find((v) => v.n === version);
-  // Download via our own proxy (streams through the service account) rather
-  // than a direct drive.google.com link - those need the file shared
-  // "anyone with link", which the transcode pipeline revokes, so they kept
-  // failing for clients. The proxy resolves the file server-side from the
-  // asset slug + version and only serves published versions.
-  const base = `/api/asset/${encodeURIComponent(asset.slug)}/v${version}`;
-  const href = `${base}/download`;
-  const fallbackHref = `${base}/fallback`;
-
-  // idle → checking (probing the proxy) → either the real download starts, or
-  // failed (proxy couldn't open the file) → we fetch a one-off Drive link as
-  // an escape hatch and alert the team.
-  const [state, setState] = useState<"idle" | "checking" | "failed">("idle");
-  const [driveUrl, setDriveUrl] = useState<string | null>(null);
-
-  // All hooks above this line - only now is it safe to bail on a bad version.
   if (!cv?.driveFileId) return null;
   const label = clientVersionLabel(asset.versions, version);
+  const base = `/api/asset/${encodeURIComponent(asset.slug)}/v${version}`;
 
-  function triggerDownload() {
-    const a = document.createElement("a");
-    a.href = href; // server sets Content-Disposition: attachment
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
-
-  async function onDownload(e: React.MouseEvent) {
-    e.preventDefault();
-    setState("checking");
-    setDriveUrl(null);
-    try {
-      // Cheap pre-flight: a 1-byte range confirms the proxy can open the file
-      // before we commit to a (potentially multi-GB) download. 200 or 206 = OK.
-      const probe = await fetch(href, {
-        headers: { Range: "bytes=0-0" },
-        cache: "no-store",
-      });
-      if (!probe.ok) throw new Error(`probe ${probe.status}`);
-      setState("idle");
-      triggerDownload();
-    } catch {
-      setState("failed");
-      // Ask the server to share the file + alert the team, then show the link.
-      try {
-        const r = await fetch(fallbackHref, { method: "POST", cache: "no-store" });
-        const j = (await r.json().catch(() => ({}))) as { url?: string };
-        if (r.ok && j.url) setDriveUrl(j.url);
-      } catch {
-        /* leave driveUrl null - the failed message still shows */
-      }
-    }
-  }
+  // Videos can outrun the serverless time budget streaming through the proxy,
+  // so their Download opens the file in Google Drive (shared just-in-time by
+  // the drive-link route). Every other asset type is small enough to download
+  // directly through the proxy (which streams via the service account, so it
+  // doesn't depend on the file being publicly shared).
+  const isVideo = VIDEO_EXT.test(cv.filename ?? "") || !!cv.streamUid;
+  const href = isVideo ? `${base}/drive-link` : `${base}/download`;
 
   return (
     <div className="version-download-bar">
-      <button
-        type="button"
+      <a
         className="version-download"
-        onClick={onDownload}
-        disabled={state === "checking"}
+        href={href}
+        {...(isVideo
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : {})}
         aria-label={`Download ${asset.name} v${label}`}
       >
         <DownloadIcon />
-        <span>
-          {state === "checking" ? "Preparing…" : `Download v${label}`}
-        </span>
-      </button>
-      {state === "failed" && (
-        <p className="version-download-fallback" role="status">
-          {driveUrl ? (
-            <>
-              Download couldn&apos;t start.{" "}
-              <a href={driveUrl} target="_blank" rel="noopener noreferrer">
-                Open in Google Drive →
-              </a>
-            </>
-          ) : (
-            "Download couldn't start - preparing a Google Drive link…"
-          )}
-        </p>
-      )}
+        <span>Download v{label}</span>
+      </a>
     </div>
   );
 }

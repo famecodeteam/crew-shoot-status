@@ -1,9 +1,12 @@
-// POST /api/asset/<asset-slug>/v<n>/fallback
+// GET /api/asset/<asset-slug>/v<n>/drive-link
 //
-// Called by the review page when the in-app proxy download fails. Resolves the
-// published version to its Drive fileId, asks the portal (delivery.fame.so) to
-// (a) share that one file anyone-with-link just-in-time and (b) alert the
-// team, then returns the Drive link to show the client as an escape hatch.
+// "Open in Google Drive" target for video assets. Video deliverables can
+// outrun the serverless time budget streaming through the download proxy, so
+// the review page points their Download button straight here instead. We
+// resolve the published version to its Drive fileId, ask the portal
+// (delivery.fame.so) to share that one file anyone-with-link just-in-time
+// (finished deliverables are otherwise kept private), then 302-redirect the
+// client to the Drive view page.
 //
 // Same access model as the download route: only client-visible (published)
 // versions, the slug is unguessable, and we never accept a raw fileId from
@@ -21,8 +24,8 @@ function parseVersion(raw: string): number | null {
   return Number.isInteger(n) && n >= 1 ? n : null;
 }
 
-export async function POST(
-  req: NextRequest,
+export async function GET(
+  _req: NextRequest,
   ctx: { params: Promise<{ asset: string; version: string }> },
 ): Promise<Response> {
   const { asset: slug, version: vRaw } = await ctx.params;
@@ -38,9 +41,7 @@ export async function POST(
   }
 
   const secret = process.env.SYNC_API_SECRET?.trim();
-  if (!secret) {
-    return Response.json({ error: "fallback unavailable" }, { status: 503 });
-  }
+  if (!secret) return new Response("drive link unavailable", { status: 503 });
   const portalBase = (() => {
     try {
       return new URL(
@@ -52,29 +53,20 @@ export async function POST(
   })();
 
   try {
-    const resp = await fetch(`${portalBase}/api/client-event/download-fallback`, {
+    const resp = await fetch(`${portalBase}/api/client-event/share-asset-file`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
         Authorization: `Bearer ${secret}`,
       },
       cache: "no-store",
-      body: JSON.stringify({
-        cardId: lookup.shoot.cardId,
-        assetName: lookup.asset.name,
-        version: n,
-        clientName: lookup.shoot.clientName ?? null,
-        fileId: version.driveFileId,
-        reviewUrl: req.headers.get("referer") ?? null,
-      }),
+      body: JSON.stringify({ fileId: version.driveFileId }),
     });
-    if (!resp.ok) {
-      return Response.json({ error: "fallback failed" }, { status: 502 });
-    }
+    if (!resp.ok) return new Response("could not prepare link", { status: 502 });
     const j = (await resp.json()) as { url?: string };
-    if (!j.url) return Response.json({ error: "no link" }, { status: 502 });
-    return Response.json({ url: j.url }, { status: 200 });
+    if (!j.url) return new Response("could not prepare link", { status: 502 });
+    return Response.redirect(j.url, 302);
   } catch {
-    return Response.json({ error: "fallback failed" }, { status: 502 });
+    return new Response("could not prepare link", { status: 502 });
   }
 }

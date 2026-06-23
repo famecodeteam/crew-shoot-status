@@ -53,60 +53,38 @@ function escapeQuery(s: string): string {
  * why direct drive.google.com/uc?export=download links kept failing for
  * clients. Returns null if the file is missing / inaccessible.
  *
- * Robustness for large finished cuts:
- *   - Honours the client's `Range` header: passes it straight to Drive and
- *     reports back the 206 status + Content-Range so the route can serve a
- *     partial response. This is the key reliability lever - browsers and
- *     download managers resume a dropped transfer (and can parallelise it)
- *     instead of restarting a multi-GB file from zero, and no single request
- *     has to survive the whole serverless time budget.
- *   - Retries the open on transient (5xx / 429 / network) failures; fails
- *     fast on 4xx (missing / no access won't get better).
+ * This is the path for normal-sized cuts. Very large files can outrun the
+ * serverless time budget streaming through here - for those the review page
+ * also offers an "Open in Google Drive" link (see the drive-link route),
+ * which shares the single file just-in-time and sends the client straight to
+ * Drive. Retries the open on transient (5xx / 429 / network) failures; fails
+ * fast on 4xx (missing / no access won't get better).
  */
-export async function getDriveDownload(
-  fileId: string,
-  opts?: { range?: string | null },
-): Promise<{
+export async function getDriveDownload(fileId: string): Promise<{
   stream: NodeJS.ReadableStream;
   name: string;
   mimeType: string;
   size: number | null;
-  /** 206 when Drive honoured a Range request, else 200. */
-  status: number;
-  /** "bytes start-end/total" when partial, else null. */
-  contentRange: string | null;
-  /** Bytes in THIS response (the slice for a 206), if Drive reported it. */
-  contentLength: number | null;
 } | null> {
-  const d = drive();
-  const range = opts?.range?.trim() || undefined;
   try {
     const meta = await withDriveRetry(() =>
-      d.files.get({
+      drive().files.get({
         fileId,
         fields: "name, mimeType, size",
         supportsAllDrives: true,
       }),
     );
     const res = await withDriveRetry(() =>
-      d.files.get(
+      drive().files.get(
         { fileId, alt: "media", supportsAllDrives: true },
-        {
-          responseType: "stream",
-          ...(range ? { headers: { Range: range } } : {}),
-        },
+        { responseType: "stream" },
       ),
     );
-    const headers = res.headers as Record<string, string | undefined>;
-    const cl = headers["content-length"];
     return {
       stream: res.data as unknown as NodeJS.ReadableStream,
       name: meta.data.name ?? "download",
       mimeType: meta.data.mimeType ?? "application/octet-stream",
       size: meta.data.size ? Number(meta.data.size) : null,
-      status: res.status ?? 200,
-      contentRange: headers["content-range"] ?? null,
-      contentLength: cl != null ? Number(cl) : null,
     };
   } catch {
     return null;
