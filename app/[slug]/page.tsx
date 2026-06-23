@@ -8,7 +8,7 @@ import { getAssetsForShoot } from "@/lib/asset-storage";
 import { clientVersions } from "@/lib/asset-versions";
 import type { Asset, Shoot } from "@/lib/types";
 import { statusLabel } from "@/lib/list-mapping";
-import { getDemoShoot } from "./demo-data";
+import { getDemoShoot, getJustBookedDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
 import { currentStepIndex, timelineSteps } from "./status";
 
@@ -19,8 +19,8 @@ export const dynamic = "force-dynamic";
 const FAME_LOGO_URL =
   "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65bcbe23cfb0eb14d2ce0063_logo.svg";
 
-async function loadShoot(slug: string): Promise<Shoot | null> {
-  if (slug === "demo") return getDemoShoot();
+async function loadShoot(slug: string, justBooked = false): Promise<Shoot | null> {
+  if (slug === "demo") return justBooked ? getJustBookedDemoShoot() : getDemoShoot();
   return getBySlug(slug);
 }
 
@@ -46,7 +46,7 @@ export default async function ShootPage({
   const { welcome } = await searchParams;
   const showWelcome = welcome === "1";
 
-  const shoot = await loadShoot(slug);
+  const shoot = await loadShoot(slug, showWelcome);
 
   // If the shoot hasn't synced yet but the client just paid, show a
   // "Booking confirmed" holding page instead of a jarring 404. The cron
