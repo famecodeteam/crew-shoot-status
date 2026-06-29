@@ -155,6 +155,10 @@ export type CommentAuth = {
 // Public data model - what /[slug] reads. One blob per Trello card.
 export type Shoot = {
   slug: string;
+  /** Slugs this shoot used previously (e.g. a provisional "card-..." before a
+   *  number landed). getBySlug also matches these, and the status page 302s
+   *  them to the current slug - so already-shared/emailed links keep working. */
+  previousSlugs?: string[];
   cardId: string; // Trello card id (stable across renames)
   shootNumber: string; // "#0190"
   clientName: string; // "genOway"

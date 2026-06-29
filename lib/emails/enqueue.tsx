@@ -360,6 +360,18 @@ export async function dispatchPendingEmail(
     return { status: "skipped", milestone, reason: "no client email" };
   }
 
+  // Don't email a provisional status-page slug ("card-..."). It's minted when
+  // a card has no #NNNN number yet (a raw intake) and REGENERATES once the
+  // number lands - which would dead-link the URL baked into the email. Leave
+  // the pending record unclaimed + unmarked so a later cron tick sends it once
+  // the slug is final (no notify - this is a transient wait, not a real skip).
+  if (shoot.slug.startsWith("card-")) {
+    console.log(
+      `[email] deferring ${milestone} for ${shoot.cardId} - provisional slug "${shoot.slug}"`,
+    );
+    return { status: "no-op", milestone, reason: "provisional slug" };
+  }
+
   // Claim the slot - protects against a re-fired cron tick double-
   // processing the same pending record (e.g. if two crons overlap).
   const won = await claim(shoot.cardId, milestone);

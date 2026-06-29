@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getBySlug } from "@/lib/storage";
 import { getBySlug as getBriefBySlug } from "@/lib/brief-storage";
@@ -47,6 +47,12 @@ export default async function ShootPage({
   const showWelcome = welcome === "1";
 
   const shoot = await loadShoot(slug, showWelcome);
+
+  // Resolved via an old/previous slug → send them to the canonical URL so the
+  // address bar (and any reshare) uses the current slug.
+  if (shoot && slug !== "demo" && shoot.slug !== slug) {
+    redirect(`/${shoot.slug}${showWelcome ? "?welcome=1" : ""}`);
+  }
 
   // If the shoot hasn't synced yet but the client just paid, show a
   // "Booking confirmed" holding page instead of a jarring 404. The cron

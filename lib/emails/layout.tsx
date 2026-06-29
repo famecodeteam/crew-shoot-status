@@ -31,11 +31,9 @@ export type LayoutProps = {
     title: string; // big pink line (usually the client/show name)
     statusLabel?: string; // pill text e.g. "Crew confirmed"
   };
-  // Sign-off first name (CPM assigned to the card). Falls back to
-  // "the Fame team" if absent. Email address intentionally NOT
-  // included - replies route to the crew@fame.so Google Group via
-  // Reply-To, so a per-producer email line in the footer would be
-  // misleading.
+  // Deprecated + ignored: all client emails now sign off as "The Fame Crew
+  // team" (not the individual producer). Kept optional so existing callers
+  // that still pass it compile; the value is no longer rendered.
   signOffName?: string;
   children: ReactNode;
 };
@@ -43,7 +41,6 @@ export type LayoutProps = {
 export function EmailLayout({
   preview,
   hero,
-  signOffName,
   children,
 }: LayoutProps) {
   return (
@@ -114,12 +111,7 @@ export function EmailLayout({
 
           <Section style={footer}>
             <Text style={thanksLine}>Thanks so much,</Text>
-            <Text style={signOffLine}>
-              {signOffName || "The Fame Crew team"}
-            </Text>
-            {signOffName ? (
-              <Text style={signOffTitle}>Crew Production Manager</Text>
-            ) : null}
+            <Text style={signOffLine}>The Fame Crew team</Text>
             <Text style={footerSmallPrint}>
               Fame Crew &middot; fame.so/crew
             </Text>

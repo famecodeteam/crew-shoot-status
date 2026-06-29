@@ -51,7 +51,24 @@ export async function upsertByCardId(
   cardId: string,
   updater: (existing: Shoot | null) => Shoot,
 ): Promise<Shoot> {
-  return (await getImpl()).upsertByCardId(cardId, updater);
+  // Preserve old slugs on every write so already-shared links survive a slug
+  // change (provisional "card-..." → "NNNN-..."). Done centrally here so both
+  // sync paths (cron + manual refresh) get it for free.
+  return (await getImpl()).upsertByCardId(cardId, (existing) =>
+    withPreservedSlugs(existing, updater(existing)),
+  );
+}
+
+/** Roll the existing slug into next.previousSlugs when the slug changed, so
+ *  getBySlug can still resolve (and the page can redirect) the old URL. */
+function withPreservedSlugs(existing: Shoot | null, next: Shoot): Shoot {
+  if (!existing) return next;
+  const prev = new Set<string>(next.previousSlugs ?? []);
+  for (const s of existing.previousSlugs ?? []) prev.add(s);
+  if (existing.slug && existing.slug !== next.slug) prev.add(existing.slug);
+  prev.delete(next.slug); // the current slug is never its own "previous"
+  const list = [...prev].slice(-10); // keep the 10 most recent
+  return list.length ? { ...next, previousSlugs: list } : next;
 }
 
 export async function deleteByCardId(cardId: string): Promise<void> {

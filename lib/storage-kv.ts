@@ -59,10 +59,14 @@ async function writeAll(store: Store): Promise<void> {
 
 export async function getBySlug(slug: string): Promise<Shoot | null> {
   const store = await readAll();
+  // Prefer a current-slug match; fall back to a historical (previousSlugs)
+  // match so old/emailed links still resolve (the page redirects them).
+  let viaPrevious: Shoot | null = null;
   for (const shoot of Object.values(store)) {
     if (shoot.slug === slug) return shoot;
+    if (!viaPrevious && shoot.previousSlugs?.includes(slug)) viaPrevious = shoot;
   }
-  return null;
+  return viaPrevious;
 }
 
 export async function getByCardId(cardId: string): Promise<Shoot | null> {
