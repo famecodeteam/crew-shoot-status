@@ -20,6 +20,12 @@ export const dynamic = "force-dynamic";
 const FAME_LOGO_URL =
   "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65bcbe23cfb0eb14d2ce0063_logo.svg";
 
+// Client-facing "Questions?" contact - always the shared inbox, never an
+// individual producer's personal address. Emails already do this (Reply-To
+// routes to the crew@fame.so Google Group, see lib/emails/questions-cta.tsx);
+// this brings the status pages in line so no personal address is exposed.
+const SHARED_CREW_EMAIL = "crew@fame.so";
+
 async function loadShoot(slug: string, justBooked = false): Promise<Shoot | null> {
   if (slug === "demo") return justBooked ? getJustBookedDemoShoot() : getDemoShoot();
   return getBySlug(slug);
@@ -464,7 +470,7 @@ function ShootView({
       <footer className="footer">
         <div>
           Questions? Email{" "}
-          <a href={`mailto:${shoot.producerEmail}`}>{shoot.producerEmail}</a>
+          <a href={`mailto:${SHARED_CREW_EMAIL}`}>{SHARED_CREW_EMAIL}</a>
           {shoot.clientWhatsappUrl && (
             <>
               {" "}or{" "}

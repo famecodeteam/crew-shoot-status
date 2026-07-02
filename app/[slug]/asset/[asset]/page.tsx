@@ -27,6 +27,10 @@ export const dynamic = "force-dynamic";
 const FAME_LOGO_URL =
   "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65bcbe23cfb0eb14d2ce0063_logo.svg";
 
+// Client-facing "Questions?" contact - always the shared inbox, never an
+// individual producer's personal address. Mirrors app/[slug]/page.tsx.
+const SHARED_CREW_EMAIL = "crew@fame.so";
+
 // Resolve the shoot + asset for this URL. The asset slug is globally unique
 // (random suffix), so when the shoot slug in the URL is stale - e.g. it was
 // regenerated in a data migration - we still recover the asset and its real
@@ -112,7 +116,7 @@ export default async function AssetReviewPage({
       <footer className="footer" style={{ marginTop: 56 }}>
         <div>
           Questions? Email{" "}
-          <a href={`mailto:${shoot.producerEmail}`}>{shoot.producerEmail}</a>
+          <a href={`mailto:${SHARED_CREW_EMAIL}`}>{SHARED_CREW_EMAIL}</a>
           {shoot.clientWhatsappUrl && (
             <>
               {" "}or{" "}
