@@ -72,8 +72,12 @@ export default async function ShootPage({
   // Brief page link - points at /brief/<briefSlug>?code=<shoot number>
   // for one-tap auto-unlock. Hidden until the brief has actually been
   // synced (parsedJson present); otherwise the link would land the
-  // client on the "Brief is being prepared" placeholder.
-  const briefHref = slug === "demo" ? null : await resolveBriefHref(slug);
+  // client on the "Brief is being prepared" placeholder. `unready` covers
+  // a synced-but-unfinished doc (producer never replaced the template's
+  // "[[Project Name]]" / "#XXXX" placeholders) - in that case we hide the
+  // Brief card entirely rather than exposing the raw Doc fallback below.
+  const { href: briefHref, unready: briefUnready } =
+    slug === "demo" ? { href: null, unready: false } : await resolveBriefStatus(slug);
 
   return (
     <ShootView
@@ -81,6 +85,7 @@ export default async function ShootPage({
       assets={assets}
       shootSlug={slug}
       briefHref={briefHref}
+      briefUnready={briefUnready}
       showWelcome={showWelcome}
     />
   );
@@ -114,12 +119,36 @@ function BookingConfirmedHolding() {
   );
 }
 
-async function resolveBriefHref(shootSlug: string): Promise<string | null> {
+// A doc counts as "unready" when its title still carries the template's
+// placeholder tokens - producers duplicate the template Doc and sometimes
+// never rename it away from "Brief #XXXX - Client - [[Project Name]]"
+// before the sync/parse cron picks it up. A real client name/event name
+// would never contain a literal "[[...]]" bracket pair or a bare "XXXX"
+// brief number, so this is a safe, generic signal.
+function looksLikeUnfinishedTemplate(header: {
+  briefNumber: string;
+  clientName: string;
+  eventName: string;
+}): boolean {
+  const hasPlaceholderBrackets = (s: string) => /\[\[.*?\]\]/.test(s);
+  return (
+    hasPlaceholderBrackets(header.eventName) ||
+    hasPlaceholderBrackets(header.clientName) ||
+    /^x+$/i.test(header.briefNumber.trim())
+  );
+}
+
+async function resolveBriefStatus(
+  shootSlug: string,
+): Promise<{ href: string | null; unready: boolean }> {
   const split = shootSlugToBriefSlug(shootSlug);
-  if (!split) return null;
+  if (!split) return { href: null, unready: false };
   const rec = await getBriefBySlug(split.briefSlug);
-  if (!rec?.parsedJson) return null;
-  return `/brief/${split.briefSlug}`;
+  if (!rec?.parsedJson) return { href: null, unready: false };
+  if (looksLikeUnfinishedTemplate(rec.parsedJson.header)) {
+    return { href: null, unready: true };
+  }
+  return { href: `/brief/${split.briefSlug}`, unready: false };
 }
 
 function ShootView({
@@ -127,12 +156,14 @@ function ShootView({
   assets,
   shootSlug,
   briefHref,
+  briefUnready,
   showWelcome,
 }: {
   shoot: Shoot;
   assets: Asset[];
   shootSlug: string;
   briefHref: string | null;
+  briefUnready: boolean;
   showWelcome: boolean;
 }) {
   const steps = timelineSteps(shoot.hasPostProduction);
@@ -336,9 +367,13 @@ function ShootView({
           findShootDriveLinks during the Trello webhook. The new page
           will take over automatically on the next cron tick once the
           brief is registered + synced.
+        - briefUnready skips BOTH of the above - the Doc itself still has
+          the template's "[[Project Name]]" / "#XXXX" placeholders (the
+          producer duplicated the template but never renamed it), so the
+          raw-Doc fallback would be just as broken as the parsed page.
       */}
       {(() => {
-        const linkHref = briefHref ?? shoot.briefUrl ?? null;
+        const linkHref = briefUnready ? null : (briefHref ?? shoot.briefUrl ?? null);
         if (!linkHref && !shoot.quoteUrl) return null;
         return (
           <section className="section">
