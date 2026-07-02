@@ -16,6 +16,8 @@ import {
 } from "./milestone-dates";
 import { DEFAULT_PRODUCER, PRODUCERS } from "./producer";
 import { deleteByCardId, getByCardId, upsertByCardId } from "./storage";
+import { registerBrief } from "./brief-storage";
+import { extractDocId, shootSlugToBriefSlug } from "./brief-slug";
 import { generateSlug } from "./transform";
 import { scheduleMilestoneEmail } from "./emails/enqueue";
 import type { CrewStatus, Shoot } from "./types";
@@ -418,6 +420,33 @@ export async function syncFromFeed(opts?: {
         `[sync-shoots] email schedule failed for ${shoot.shootNumber}:`,
         (err as Error).message,
       );
+    }
+
+    // Register the brief mapping so /brief/[slug] exists and the
+    // sync-briefs cron parses it. The Trello webhook used to own this,
+    // but the feed is now the only source of shoot data - without this,
+    // feed-created shoots never get a BriefRecord, so the status page
+    // falls back to the raw Google Doc instead of the hosted HTML brief.
+    // Best-effort: a failure here never blocks the shoot upsert.
+    if (shoot.briefUrl) {
+      try {
+        const docId = extractDocId(shoot.briefUrl);
+        const split = shootSlugToBriefSlug(shoot.slug);
+        if (docId && split) {
+          await registerBrief({
+            briefSlug: split.briefSlug,
+            hash: split.hash,
+            docId,
+            cardId: shoot.cardId,
+            shootNumber: shoot.shootNumber || undefined,
+          });
+        }
+      } catch (err) {
+        console.warn(
+          `[sync-shoots] brief register failed for ${shoot.shootNumber}:`,
+          (err as Error).message,
+        );
+      }
     }
   }
   // Delete the client's local copy of any shoot the portal has retired
