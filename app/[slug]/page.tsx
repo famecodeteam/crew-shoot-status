@@ -261,15 +261,14 @@ function ShootView({
         </div>
         <div className="hero-shoot-no">Shoot {shoot.shootNumber}</div>
         <h1 className="hero-title">{shoot.clientName}</h1>
-        <div className="hero-meta">
-          {/* Build from whichever parts exist, then join with separators -
-              so a missing shoot date doesn't leave a stray "·" or an
-              "Invalid Date" segment. */}
+        {/* Key facts as rounded chips, mirroring the quote page hero.
+            Built from whichever parts exist so a missing date leaves no
+            empty chip. */}
+        <div className="hero-pills">
           {[shoot.shootType, shoot.location, formatDate(shoot.shootDate), countdown]
             .filter((part): part is string => Boolean(part))
             .map((part, i) => (
-              <span key={i}>
-                {i > 0 && <span className="hero-meta-sep">·</span>}
+              <span key={i} className="hero-pill">
                 {part}
               </span>
             ))}
