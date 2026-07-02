@@ -17,7 +17,7 @@ import type { Shoot } from "../../types";
 const { colors } = fameTheme;
 
 // Pre-shoot prep call. Offered on the crew-confirmed email so the
-// client can book a 15-min run-through before the shoot.
+// client can book a 30-min run-through before the shoot.
 const PREP_CALL_URL = "https://team.fame.so/book/production";
 
 export type CrewConfirmedProps = {
@@ -108,7 +108,7 @@ export function CrewConfirmedEmail({
       <Text style={prepHeading}>Want a quick pre-shoot prep call?</Text>
       <Text style={paragraph}>
         If it'd help to run through the brief, the plan, or anything
-        on your mind before the day, grab a 15-minute slot that works
+        on your mind before the day, grab a 30-minute slot that works
         for you:
       </Text>
 
