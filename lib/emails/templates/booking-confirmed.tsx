@@ -130,7 +130,10 @@ export function BookingConfirmedEmail({
         keep it updated as we go. Bookmark it:
       </Text>
 
-      <PrimaryButton href={statusPageUrl}>View your status page</PrimaryButton>
+      {/* ?welcome=1 triggers the one-time "thank you" banner on the client's
+          first landing. The status page strips the param client-side after
+          it renders, so a later bookmark/refresh visit stays clean. */}
+      <PrimaryButton href={`${statusPageUrl}?welcome=1`}>View your status page</PrimaryButton>
 
       <QuestionsCTA whatsappUrl={shoot.clientWhatsappUrl} />
     </EmailLayout>

@@ -10,6 +10,7 @@ import type { Asset, Shoot } from "@/lib/types";
 import { statusLabel } from "@/lib/list-mapping";
 import { getDemoShoot, getJustBookedDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
+import { WelcomeSync } from "./welcome-sync";
 import { currentStepIndex, timelineSteps } from "./status";
 
 // Re-fetch on every request - we want ≤60s lag from a Trello move.
@@ -203,6 +204,7 @@ function ShootView({
 
   return (
     <main className="shell">
+      {showWelcome && <WelcomeSync />}
       {showWelcome && (
         <div className="welcome-banner" role="status">
           <div className="welcome-banner-title">🎉 Booking confirmed - thank you!</div>
