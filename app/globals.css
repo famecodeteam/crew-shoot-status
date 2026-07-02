@@ -43,6 +43,22 @@
   --red: #c0392b; /* errors + destructive actions only - brand has no red */
 
   --radius: 12px;
+
+  /* ---- Quote-page design language (grow.fame.so/q) ----
+     Ported so the client/crew status pages share the quote's premium
+     look: a dark hero, softer "paper" cards, larger radii. */
+  --ink: #0e0a1a; /* deep near-black with a violet tint - hero bg */
+  --ink-soft: #2e2e2e;
+  --line-soft: #e7ded4; /* warm hairline that reads on cream */
+  --pink-strong: #df558f;
+  --radius-lg: 20px; /* rounded-2xl-ish for hero + cards */
+  --shadow-card: 0 8px 30px rgba(14, 10, 26, 0.06);
+  --shadow-card-hover: 0 12px 34px rgba(14, 10, 26, 0.1);
+  --hero-glow: radial-gradient(
+    1200px 400px at 78% -20%,
+    rgba(255, 70, 124, 0.22),
+    transparent 60%
+  );
 }
 
 * {
@@ -93,9 +109,21 @@ img {
 /* ---------- Hero ---------- */
 
 .hero {
-  border-bottom: 2px solid var(--pink);
-  padding-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  background: var(--ink);
+  background-image: var(--hero-glow);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 32px 34px 36px;
   margin-bottom: 32px;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 26px 22px 30px;
+    border-radius: 16px;
+  }
 }
 
 .hero-top {
@@ -107,7 +135,7 @@ img {
 }
 
 .hero-logo {
-  height: 28px;
+  height: 26px;
   width: auto;
 }
 
@@ -115,29 +143,54 @@ img {
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  margin-bottom: 6px;
+  letter-spacing: 0.18em;
+  color: var(--pink);
+  margin-bottom: 8px;
 }
 
 .hero-title {
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--pink);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin-bottom: 14px;
+  font-size: 40px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  line-height: 1.03;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: 32px;
+  }
 }
 
 .hero-meta {
   font-size: 15px;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 20px;
 }
 
 .hero-meta-sep {
   margin: 0 8px;
-  opacity: 0.5;
+  opacity: 0.4;
+}
+
+/* Rounded-full fact chips in the hero, e.g. "Event · London · 6 Jul". */
+.hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .status-badge {
@@ -597,9 +650,10 @@ img {
 
 .card {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
   padding: 24px;
+  box-shadow: var(--shadow-card);
 }
 
 .card-h {
@@ -680,19 +734,21 @@ img {
 
 .link-card {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
   padding: 20px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  transition: border-color 0.15s, transform 0.15s;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .link-card:hover {
   border-color: var(--pink);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .link-card-label {
@@ -892,15 +948,17 @@ img {
 .asset-card {
   display: block;
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  transition: border-color 0.15s, transform 0.15s;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .asset-card:hover {
   border-color: var(--pink);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .asset-card-name {
