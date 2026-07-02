@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getBySlug } from "@/lib/storage";
 import { getBySlug as getBriefBySlug } from "@/lib/brief-storage";
-import { shootSlugToBriefSlug, briefAccessCode } from "@/lib/brief-slug";
+import { shootSlugToBriefSlug } from "@/lib/brief-slug";
 import { getAssetsForShoot } from "@/lib/asset-storage";
 import { clientVersions } from "@/lib/asset-versions";
 import type { Asset, Shoot } from "@/lib/types";
@@ -118,9 +118,7 @@ async function resolveBriefHref(shootSlug: string): Promise<string | null> {
   if (!split) return null;
   const rec = await getBriefBySlug(split.briefSlug);
   if (!rec?.parsedJson) return null;
-  // ?code= is the shoot number - the one-tap unlock the client arrives with.
-  const code = briefAccessCode(rec.slug, rec.hash);
-  return `/brief/${split.briefSlug}?code=${encodeURIComponent(code)}`;
+  return `/brief/${split.briefSlug}`;
 }
 
 function ShootView({

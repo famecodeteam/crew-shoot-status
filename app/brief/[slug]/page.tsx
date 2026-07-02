@@ -4,28 +4,15 @@
 // brief store and renders it section-by-section using the discriminated
 // union from lib/parse-brief.
 //
-// Access control: HttpOnly cookie unlocked via /api/brief/<slug>/unlock.
-// If the unlock cookie is missing AND the URL doesn't carry a matching
-// ?code= for one-tap unlock from the status page, we render the locked
-// view only — no brief content goes into the HTML at all.
-//
-// (Spec asked for localStorage; we follow the lifted Video Review Tool
-// pattern instead because cookie+SSR-validated keeps content out of the
-// HTML until unlock and removes the trivial "set localStorage" bypass.
-// Flagged in the PR.)
+// Briefs are public - no passcode required.
 
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getBySlug } from "@/lib/brief-storage";
 import { getBySlug as getShootBySlug } from "@/lib/storage";
 import type { BriefRecord, Shoot } from "@/lib/types";
 import type { ParsedBrief, Section } from "@/lib/parse-brief";
-import { PasscodeForm } from "./passcode-form";
-import { AutoUnlockSync } from "./auto-unlock-sync";
 import { SectionCard } from "./sections";
-import { briefUnlockCookieName } from "@/lib/brief-passcode";
-import { briefAccessCode } from "@/lib/brief-slug";
 import "./brief.css";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +22,6 @@ const FAME_F_ICON =
 
 type PageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ code?: string }>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -48,26 +34,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function BriefPage({ params, searchParams }: PageProps) {
+export default async function BriefPage({ params }: PageProps) {
   const { slug } = await params;
-  const { code: queryCode } = await searchParams;
   const rec = await getBySlug(slug);
   if (!rec) notFound();
-
-  const cookieStore = await cookies();
-  const unlocked = cookieStore.has(briefUnlockCookieName(slug));
-  const accessCode = briefAccessCode(rec.slug, rec.hash);
-  const codeMatches =
-    !!queryCode && queryCode.toLowerCase() === accessCode.toLowerCase();
-
-  if (!unlocked && !codeMatches) {
-    return <LockedView slug={slug} />;
-  }
-
-  // First render after arrival from the status page: SSR shows full
-  // content, and the AutoUnlockSync client component sets the cookie +
-  // strips ?code= from the URL so future loads stay clean.
-  const showSync = Boolean(!unlocked && codeMatches && queryCode);
 
   if (!rec.parsedJson) {
     // Registered but not yet synced — we know about the brief but the
@@ -83,7 +53,6 @@ export default async function BriefPage({ params, searchParams }: PageProps) {
 
   return (
     <>
-      {showSync && queryCode && <AutoUnlockSync slug={slug} code={queryCode} />}
       <UnlockedView
         slug={slug}
         rec={rec}
@@ -170,30 +139,6 @@ function UnlockedView({
 }
 
 // ---------- Locked view ----------
-
-function LockedView({ slug }: { slug: string }) {
-  return (
-    <div className="brief-root">
-      <div className="brief-wrap">
-        <header className="brief-header">
-          <div className="brief-logo">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={FAME_F_ICON} alt="Fame" />
-            <span>Fame Crew</span>
-          </div>
-        </header>
-        <div className="brief-lock-card">
-          <h2 className="brief-lock-title">This brief is locked</h2>
-          <p className="brief-lock-hint">
-            Enter the access code your Fame project manager shared with you to
-            view the brief.
-          </p>
-          <PasscodeForm slug={slug} />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ---------- Pending view ----------
 
@@ -353,7 +298,17 @@ function stripCrewOnlyDeliverables<T extends { html: string; level?: number }>(
 }
 
 function stripTagsToText(html: string): string {
-  return html.replace(/<[^>]+>/g, "").trim();
+  return decodeHtmlEntities(html.replace(/<[^>]+>/g, "").trim());
+}
+
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'");
 }
 
 // Producer templates name the last section several different ways, and
@@ -419,11 +374,13 @@ function deriveSubtitle(parsed: ParsedBrief): string | null {
     /<strong>\s*(Core Goal|Goal)\s*[:.]/i.test(b.html),
   );
   if (!goalBlock) return null;
-  // Strip the bold prefix + any HTML tags.
-  const stripped = goalBlock.html
-    .replace(/<strong>[^<]*<\/strong>\s*\.?\s*/i, "")
-    .replace(/<\/?[^>]+>/g, "")
-    .trim();
+  // Strip the bold prefix + any HTML tags, then decode entities.
+  const stripped = decodeHtmlEntities(
+    goalBlock.html
+      .replace(/<strong>[^<]*<\/strong>\s*\.?\s*/i, "")
+      .replace(/<\/?[^>]+>/g, "")
+      .trim(),
+  );
   return stripped || null;
 }
 
