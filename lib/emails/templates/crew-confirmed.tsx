@@ -17,10 +17,8 @@ import type { Shoot } from "../../types";
 const { colors } = fameTheme;
 
 // Pre-shoot prep call. Offered on the crew-confirmed email so the
-// client can book a 15-min run-through before the shoot. Single
-// Calendly link for now (Zandro's); if we ever want per-CPM links
-// this moves to lib/producer.ts.
-const PREP_CALL_URL = "https://calendly.com/zandro-fame/15min";
+// client can book a 15-min run-through before the shoot.
+const PREP_CALL_URL = "https://team.fame.so/book/production";
 
 export type CrewConfirmedProps = {
   shoot: Shoot;
