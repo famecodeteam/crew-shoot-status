@@ -562,21 +562,20 @@ function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
   const posterUrl = assetPosterUrl(latest);
   return (
     <Link className="asset-card" href={`/${shootSlug}/asset/${asset.slug}`}>
-      {/* No version uploaded yet - nothing to preview, so skip the poster
-          entirely rather than showing a play button over a fake thumbnail. */}
-      <div className={`asset-poster${latest ? "" : " asset-poster-pending"}`}>
-        {latest ? (
-          <>
-            {posterUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={posterUrl} alt="" loading="lazy" />
-            ) : (
-              <div className="asset-poster-glow" />
-            )}
-            <span className="asset-play" aria-hidden="true" />
-          </>
-        ) : null}
-      </div>
+      {/* No version uploaded yet - nothing to preview, so skip the whole
+          poster block rather than showing an empty box (or a play button
+          over a fake thumbnail). Just the name/meta/status pill. */}
+      {latest && (
+        <div className="asset-poster">
+          {posterUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={posterUrl} alt="" loading="lazy" />
+          ) : (
+            <div className="asset-poster-glow" />
+          )}
+          <span className="asset-play" aria-hidden="true" />
+        </div>
+      )}
       <div className="asset-card-body">
         <div className="asset-card-name">{asset.name}</div>
         <div className="asset-card-meta">
