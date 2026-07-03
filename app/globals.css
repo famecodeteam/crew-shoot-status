@@ -1079,6 +1079,12 @@ img {
   overflow: hidden;
 }
 
+/* No version uploaded yet - flat and muted, not the cinematic dark
+   gradient (which reads as "there's a video here, click to play"). */
+.asset-poster.asset-poster-pending {
+  background: var(--bg);
+}
+
 .asset-poster img {
   position: absolute;
   inset: 0;
