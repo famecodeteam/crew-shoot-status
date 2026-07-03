@@ -704,10 +704,27 @@ img {
   margin-bottom: 6px;
 }
 
-.crew-trust {
-  font-size: 13px;
-  color: var(--pink);
-  font-weight: 500;
+/* Crew trust/role chips (a row under the bio), matching the pill language. */
+.crew-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.crew-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+
+.crew-chip.vetted {
+  background: var(--pink-light);
+  color: #b12455;
 }
 
 @media (max-width: 480px) {
@@ -718,7 +735,7 @@ img {
   }
 }
 
-/* ---------- Link grid (brief + quote) ---------- */
+/* ---------- Link grid (quick links: brief / quote / receipts / footage) ---------- */
 
 .link-grid {
   display: grid;
@@ -726,10 +743,34 @@ img {
   gap: 16px;
 }
 
+/* Quick-links row: up to three cards across on wide screens. */
+.link-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 @media (max-width: 640px) {
-  .link-grid {
+  .link-grid,
+  .link-grid.cols-3 {
     grid-template-columns: 1fr;
   }
+}
+
+/* Leading icon tile (Idea 6) - makes each quick link scannable. */
+.link-card-tile {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  background: var(--pink-light);
+  font-size: 19px;
+  line-height: 1;
+}
+
+.link-card-body {
+  flex: 1;
+  min-width: 0;
 }
 
 .link-card {
