@@ -900,24 +900,57 @@ img {
 
 /* ---------- "Your final assets" section on shoot page ---------- */
 
+/* ---------- Delivery summary (leads the deliverables section) ---------- */
+
 .assets-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 20px 22px;
   margin-bottom: 18px;
 }
 
-.assets-summary-line {
+.assets-summary-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.assets-summary-count {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.assets-summary-count span {
   font-size: 13px;
+  font-weight: 600;
   color: var(--text-muted);
+  letter-spacing: 0;
+}
+
+.assets-summary-nudge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--pink);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 999px;
 }
 
 .assets-progress {
-  height: 6px;
-  background: var(--border);
-  border-radius: 3px;
+  height: 10px;
+  background: var(--bg);
+  border-radius: 999px;
   overflow: hidden;
   display: flex;
+  margin-top: 16px;
 }
 
 .assets-progress-bar {
@@ -925,18 +958,47 @@ img {
   transition: width 0.25s;
 }
 
+.assets-progress-bar.review {
+  background: var(--pink);
+}
+.assets-progress-bar.newver {
+  background: #1fb4fd;
+}
+.assets-progress-bar.changes {
+  background: var(--review-accent);
+}
 .assets-progress-bar.approved {
   background: var(--success-accent);
 }
 
-.assets-progress-bar.changes {
-  background: var(--review-accent);
+.assets-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 13px;
 }
+
+.assets-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.assets-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---------- Asset gallery ---------- */
 
 .assets-list {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 16px;
 }
 
 @media (min-width: 640px) {
@@ -950,64 +1012,143 @@ img {
   background: var(--card);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-lg);
-  padding: 18px;
+  overflow: hidden;
   box-shadow: var(--shadow-card);
-  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
 
 .asset-card:hover {
-  border-color: var(--pink);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-card-hover);
 }
 
+.asset-card:hover .asset-play {
+  transform: scale(1.06);
+}
+
+/* Video poster. Cloudflare Stream still when the version is ready; a dark
+   brand-tinted gradient otherwise (still encoding / no stream copy yet). */
+.asset-poster {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, #1a1330, #0e0a1a 72%);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.asset-poster img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.asset-poster-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    320px 130px at 72% 0%,
+    rgba(255, 70, 124, 0.18),
+    transparent 70%
+  );
+}
+
+.asset-play {
+  position: relative;
+  z-index: 1;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s;
+}
+
+.asset-play::before {
+  content: "";
+  border-style: solid;
+  border-width: 8px 0 8px 13px;
+  border-color: transparent transparent transparent var(--dark);
+  margin-left: 3px;
+}
+
+.asset-card-body {
+  padding: 14px 16px 16px;
+}
+
 .asset-card-name {
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 700;
-  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
 }
 
 .asset-card-meta {
   font-size: 12px;
   color: var(--text-muted);
-  margin-bottom: 10px;
+  margin-bottom: 11px;
 }
 
+/* Unified status pills: a leading dot + label, one shape, semantic colour. */
 .asset-card-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 7px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 5px 11px;
   border-radius: 999px;
 }
 
-.asset-card-pill.pending {
-  background: var(--border);
-  color: var(--text-muted);
+.asset-card-pill::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
 }
 
-/* Client has something to review - solid pink so it reads as a clear
-   "your turn" call to action, louder than the soft tinted pills. */
+.asset-card-pill.pending {
+  background: var(--bg);
+  color: var(--text-muted);
+}
+.asset-card-pill.pending::before {
+  background: var(--marker-muted);
+}
+
 .asset-card-pill.needs-review {
+  background: var(--pink-light);
+  color: #b12455;
+}
+.asset-card-pill.needs-review::before {
   background: var(--pink);
-  color: #fff;
 }
 
 .asset-card-pill.comments-open {
-  background: var(--pink-light);
-  color: var(--pink);
+  background: #d3ecf8;
+  color: #1670a8;
+}
+.asset-card-pill.comments-open::before {
+  background: #1670a8;
 }
 
 .asset-card-pill.approved {
   background: var(--success-bg);
   color: var(--success-fg);
 }
+.asset-card-pill.approved::before {
+  background: var(--success-fg);
+}
 
 .asset-card-pill.changes-requested {
   background: var(--review-bg);
   color: var(--review-fg);
+}
+.asset-card-pill.changes-requested::before {
+  background: var(--review-accent);
 }
 
 /* ---------- Comments + composer + approval (asset review) ---------- */
