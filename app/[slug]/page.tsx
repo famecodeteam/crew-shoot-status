@@ -8,6 +8,7 @@ import { getAssetsForShoot } from "@/lib/asset-storage";
 import { clientVersions } from "@/lib/asset-versions";
 import type { Asset, AssetVersion, Shoot } from "@/lib/types";
 import { statusLabel } from "@/lib/list-mapping";
+import { CrewPhoto } from "./crew-photo";
 import { getDemoShoot, getJustBookedDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
 import { WelcomeSync } from "./welcome-sync";
@@ -350,8 +351,7 @@ function ShootView({
           <div className="card crew-card">
             <div className="crew-photo">
               {shoot.crew.photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={shoot.crew.photoUrl} alt={shoot.crew.name} />
+                <CrewPhoto src={shoot.crew.photoUrl} name={shoot.crew.name} />
               ) : (
                 shoot.crew.name.charAt(0)
               )}
@@ -562,14 +562,20 @@ function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
   const posterUrl = assetPosterUrl(latest);
   return (
     <Link className="asset-card" href={`/${shootSlug}/asset/${asset.slug}`}>
-      <div className="asset-poster">
-        {posterUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={posterUrl} alt="" loading="lazy" />
-        ) : (
-          <div className="asset-poster-glow" />
-        )}
-        <span className="asset-play" aria-hidden="true" />
+      {/* No version uploaded yet - nothing to preview, so skip the poster
+          entirely rather than showing a play button over a fake thumbnail. */}
+      <div className={`asset-poster${latest ? "" : " asset-poster-pending"}`}>
+        {latest ? (
+          <>
+            {posterUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={posterUrl} alt="" loading="lazy" />
+            ) : (
+              <div className="asset-poster-glow" />
+            )}
+            <span className="asset-play" aria-hidden="true" />
+          </>
+        ) : null}
       </div>
       <div className="asset-card-body">
         <div className="asset-card-name">{asset.name}</div>
