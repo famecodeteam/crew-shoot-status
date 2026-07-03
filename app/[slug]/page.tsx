@@ -595,7 +595,12 @@ function assetPosterUrl(v: AssetVersion | null): string | null {
   // always the black fade-in - every gallery card came back a dark rectangle.
   // A few seconds in lands on real footage (clamped to the last frame for
   // very short clips), so the posters actually show the video.
-  return `https://customer-${code}.cloudflarestream.com/${v.streamUid}/thumbnails/thumbnail.jpg?time=3s&height=400`;
+  //
+  // Size by WIDTH, not height: a portrait 9:16 clip at height=400 is only
+  // ~224px wide, so object-fit:cover stretched it across the card and it
+  // looked blurry. width=900 gives both orientations enough pixels to stay
+  // crisp on a retina card.
+  return `https://customer-${code}.cloudflarestream.com/${v.streamUid}/thumbnails/thumbnail.jpg?time=3s&width=900`;
 }
 
 function pickAssetPill(a: Asset): { label: string; cls: string } {
