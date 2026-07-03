@@ -329,9 +329,10 @@ function ShootView({
               target="_blank"
               rel="noreferrer"
             >
-              <div>
-                <div className="link-card-label">All files</div>
-                <div className="link-card-text">Browse your footage</div>
+              <div className="link-card-tile">🎞️</div>
+              <div className="link-card-body">
+                <div className="link-card-label">All footage</div>
+                <div className="link-card-text">Browse your raw files</div>
               </div>
               <div className="link-card-arrow">→</div>
             </a>
@@ -358,7 +359,9 @@ function ShootView({
             <div>
               <div className="crew-name">{shoot.crew.name}</div>
               <div className="crew-bio">{shoot.crew.bio}</div>
-              <div className="crew-trust">Vetted by Fame</div>
+              <div className="crew-chips">
+                <span className="crew-chip vetted">✓ Vetted by Fame</span>
+              </div>
             </div>
           </div>
         </section>
@@ -377,71 +380,47 @@ function ShootView({
           producer duplicated the template but never renamed it), so the
           raw-Doc fallback would be just as broken as the parsed page.
       */}
+      {/* Quick links (Documents + Payments merged into one scannable row
+          with icon tiles). Each entry is added only when its link exists,
+          so the grid never shows an empty slot. */}
       {(() => {
-        const linkHref = briefUnready ? null : (briefHref ?? shoot.briefUrl ?? null);
-        if (!linkHref && !shoot.quoteUrl) return null;
+        const briefLinkHref = briefUnready
+          ? null
+          : (briefHref ?? shoot.briefUrl ?? null);
+        const links: { key: string; icon: string; label: string; text: string; href: string }[] = [];
+        if (briefLinkHref)
+          links.push({ key: "brief", icon: "📄", label: "Brief", text: "View your brief", href: briefLinkHref });
+        if (shoot.quoteUrl)
+          links.push({ key: "quote", icon: "🧾", label: "Quote", text: "View your quote", href: shoot.quoteUrl });
+        if (!isOnHold && shoot.depositReceiptUrl)
+          links.push({ key: "deposit", icon: "💳", label: "Deposit", text: "View receipt", href: shoot.depositReceiptUrl });
+        if (!isOnHold && shoot.balanceReceiptUrl)
+          links.push({ key: "balance", icon: "💳", label: "Balance", text: "View receipt", href: shoot.balanceReceiptUrl });
+        if (links.length === 0) return null;
         return (
           <section className="section">
-            <div className="card-h">Documents</div>
-            <div className="link-grid">
-              {linkHref && (
-                <a className="link-card" href={linkHref} target="_blank" rel="noopener">
-                  <div>
-                    <div className="link-card-label">Brief</div>
-                    <div className="link-card-text">View your brief</div>
+            <div className="card-h">Quick links</div>
+            <div className={`link-grid${links.length >= 3 ? " cols-3" : ""}`}>
+              {links.map((l) => (
+                <a
+                  key={l.key}
+                  className="link-card"
+                  href={l.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <div className="link-card-tile">{l.icon}</div>
+                  <div className="link-card-body">
+                    <div className="link-card-label">{l.label}</div>
+                    <div className="link-card-text">{l.text}</div>
                   </div>
                   <div className="link-card-arrow">→</div>
                 </a>
-              )}
-            {shoot.quoteUrl && (
-              <a className="link-card" href={shoot.quoteUrl} target="_blank" rel="noreferrer">
-                <div>
-                  <div className="link-card-label">Quote</div>
-                  <div className="link-card-text">View your quote</div>
-                </div>
-                <div className="link-card-arrow">→</div>
-              </a>
-            )}
+              ))}
             </div>
           </section>
         );
       })()}
-
-      {(shoot.depositReceiptUrl || shoot.balanceReceiptUrl) && !isOnHold && (
-        <section className="section">
-          <div className="card-h">Payments</div>
-          <div className="link-grid">
-            {shoot.depositReceiptUrl && (
-              <a
-                className="link-card"
-                href={shoot.depositReceiptUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <div>
-                  <div className="link-card-label">Deposit</div>
-                  <div className="link-card-text">View receipt</div>
-                </div>
-                <div className="link-card-arrow">→</div>
-              </a>
-            )}
-            {shoot.balanceReceiptUrl && (
-              <a
-                className="link-card"
-                href={shoot.balanceReceiptUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <div>
-                  <div className="link-card-label">Balance</div>
-                  <div className="link-card-text">View receipt</div>
-                </div>
-                <div className="link-card-arrow">→</div>
-              </a>
-            )}
-          </div>
-        </section>
-      )}
 
       {/* Feedback prompt. Visible once the shoot is delivered - the
           last impactful thing the client sees on the page after
