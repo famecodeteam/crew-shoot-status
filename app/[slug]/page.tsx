@@ -6,7 +6,7 @@ import { getBySlug as getBriefBySlug } from "@/lib/brief-storage";
 import { shootSlugToBriefSlug } from "@/lib/brief-slug";
 import { getAssetsForShoot } from "@/lib/asset-storage";
 import { clientVersions } from "@/lib/asset-versions";
-import type { Asset, Shoot } from "@/lib/types";
+import type { Asset, AssetVersion, Shoot } from "@/lib/types";
 import { statusLabel } from "@/lib/list-mapping";
 import { getDemoShoot, getJustBookedDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
@@ -507,34 +507,62 @@ function FinalAssetsSection({
   assets: Asset[];
   shootSlug: string;
 }) {
-  const summary = summarizeAssets(assets);
+  const s = summarizeAssets(assets);
   const total = assets.length;
-  // Show progress segments for approved + changes-requested. Pending bar
-  // is the remaining track colour (intentionally muted).
-  const approvedPct = total ? (summary.approved / total) * 100 : 0;
-  const changesPct = total ? (summary.changesRequested / total) * 100 : 0;
-  const changesNoun = summary.changesRequested === 1 ? "change" : "changes";
+  // "Waiting on you" = the client's own to-do: fresh videos to review plus
+  // any new version that landed after their last decision. Changes-requested
+  // is Fame's to-do, not theirs, so it's excluded from the nudge.
+  const waiting = s.review + s.newver;
+  const pct = (n: number) => (total ? (n / total) * 100 : 0);
 
   return (
     <section className="section">
       <div className="card-h">Your final assets</div>
       <div className="assets-summary">
-        <div className="assets-summary-line">
-          {total} {total === 1 ? "asset" : "assets"}
-          {summary.approved > 0 && ` · ${summary.approved} approved`}
-          {summary.changesRequested > 0 &&
-            ` · ${summary.changesRequested} ${changesNoun} requested`}
-          {summary.pending > 0 && ` · ${summary.pending} pending`}
+        <div className="assets-summary-top">
+          <div className="assets-summary-count">
+            {total}{" "}
+            <span>
+              {total === 1 ? "video" : "videos"}
+              {waiting > 0 && ` · ${waiting} waiting on you`}
+            </span>
+          </div>
+          {waiting > 0 && (
+            <span className="assets-summary-nudge">
+              ▸ Review {waiting} {waiting === 1 ? "video" : "videos"}
+            </span>
+          )}
         </div>
         <div className="assets-progress" aria-hidden="true">
-          <div
-            className="assets-progress-bar approved"
-            style={{ width: `${approvedPct}%` }}
-          />
-          <div
-            className="assets-progress-bar changes"
-            style={{ width: `${changesPct}%` }}
-          />
+          {s.review > 0 && (
+            <div className="assets-progress-bar review" style={{ width: `${pct(s.review)}%` }} />
+          )}
+          {s.newver > 0 && (
+            <div className="assets-progress-bar newver" style={{ width: `${pct(s.newver)}%` }} />
+          )}
+          {s.changes > 0 && (
+            <div className="assets-progress-bar changes" style={{ width: `${pct(s.changes)}%` }} />
+          )}
+          {s.approved > 0 && (
+            <div className="assets-progress-bar approved" style={{ width: `${pct(s.approved)}%` }} />
+          )}
+        </div>
+        <div className="assets-legend">
+          {s.review > 0 && (
+            <span><i style={{ background: "var(--pink)" }} />{s.review} awaiting your review</span>
+          )}
+          {s.newver > 0 && (
+            <span><i style={{ background: "#1fb4fd" }} />{s.newver} new version ready</span>
+          )}
+          {s.changes > 0 && (
+            <span><i style={{ background: "var(--review-accent)" }} />{s.changes} changes in progress</span>
+          )}
+          {s.approved > 0 && (
+            <span><i style={{ background: "var(--success-accent)" }} />{s.approved} approved</span>
+          )}
+          {s.editing > 0 && (
+            <span><i style={{ background: "var(--marker-muted)" }} />{s.editing} in editing</span>
+          )}
         </div>
       </div>
       <div className="assets-list">
@@ -552,17 +580,39 @@ function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
   const versions = clientVersions(asset);
   const latest = versions.length ? versions[versions.length - 1] : null;
   const pill = pickAssetPill(asset);
+  const posterUrl = assetPosterUrl(latest);
   return (
     <Link className="asset-card" href={`/${shootSlug}/asset/${asset.slug}`}>
-      <div className="asset-card-name">{asset.name}</div>
-      <div className="asset-card-meta">
-        {latest
-          ? `v${versions.length} · uploaded ${formatShortDateOrToday(latest.uploadedAt)}`
-          : "Editing in progress"}
+      <div className="asset-poster">
+        {posterUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={posterUrl} alt="" loading="lazy" />
+        ) : (
+          <div className="asset-poster-glow" />
+        )}
+        <span className="asset-play" aria-hidden="true" />
       </div>
-      <span className={`asset-card-pill ${pill.cls}`}>{pill.label}</span>
+      <div className="asset-card-body">
+        <div className="asset-card-name">{asset.name}</div>
+        <div className="asset-card-meta">
+          {latest
+            ? `v${versions.length} · uploaded ${formatShortDateOrToday(latest.uploadedAt)}`
+            : "Editing in progress"}
+        </div>
+        <span className={`asset-card-pill ${pill.cls}`}>{pill.label}</span>
+      </div>
     </Link>
   );
+}
+
+// Cloudflare Stream still for the client-facing poster. Only when the
+// version's Stream copy is `ready` (the sync-stream cron populates it after
+// upload); otherwise the card shows the dark gradient fallback. Same
+// customer-code + thumbnail path the review player uses.
+function assetPosterUrl(v: AssetVersion | null): string | null {
+  const code = process.env.CF_STREAM_CUSTOMER_CODE;
+  if (!v || !code || v.streamStatus !== "ready" || !v.streamUid) return null;
+  return `https://customer-${code}.cloudflarestream.com/${v.streamUid}/thumbnails/thumbnail.jpg?height=400&fit=crop`;
 }
 
 function pickAssetPill(a: Asset): { label: string; cls: string } {
@@ -659,17 +709,25 @@ function assetReviewBadge(
   return null;
 }
 
+// Bucket every asset by the SAME rule as its card pill (pickAssetPill), so
+// the summary bar + legend can never disagree with the pills below them:
+//   review  - "Pending review" (client hasn't engaged with the latest version)
+//   newver  - "New version ready" / "Comments open"
+//   changes - "Changes requested"
+//   approved
+//   editing - no publishable version yet ("Editing in progress")
 function summarizeAssets(assets: Asset[]) {
-  let approved = 0;
-  let changesRequested = 0;
-  let pending = 0;
+  const c = { review: 0, newver: 0, changes: 0, approved: 0, editing: 0 };
   for (const a of assets) {
-    const s = a.approval?.status;
-    if (s === "approved") approved++;
-    else if (s === "changes_requested") changesRequested++;
-    else pending++;
+    switch (pickAssetPill(a).cls) {
+      case "approved": c.approved++; break;
+      case "changes-requested": c.changes++; break;
+      case "comments-open": c.newver++; break;
+      case "needs-review": c.review++; break;
+      default: c.editing++; break; // "pending" = editing in progress
+    }
   }
-  return { approved, changesRequested, pending };
+  return c;
 }
 
 function formatShortDateOrToday(iso: string): string {
