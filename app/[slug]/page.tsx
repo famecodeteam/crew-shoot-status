@@ -612,7 +612,11 @@ function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
 function assetPosterUrl(v: AssetVersion | null): string | null {
   const code = process.env.CF_STREAM_CUSTOMER_CODE;
   if (!v || !code || v.streamStatus !== "ready" || !v.streamUid) return null;
-  return `https://customer-${code}.cloudflarestream.com/${v.streamUid}/thumbnails/thumbnail.jpg?height=400&fit=crop`;
+  // time=3s: Cloudflare Stream's default still is time=0s, which is almost
+  // always the black fade-in - every gallery card came back a dark rectangle.
+  // A few seconds in lands on real footage (clamped to the last frame for
+  // very short clips), so the posters actually show the video.
+  return `https://customer-${code}.cloudflarestream.com/${v.streamUid}/thumbnails/thumbnail.jpg?time=3s&height=400`;
 }
 
 function pickAssetPill(a: Asset): { label: string; cls: string } {
