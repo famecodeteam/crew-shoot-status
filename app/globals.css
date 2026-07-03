@@ -984,6 +984,11 @@ img {
   font-size: 13px;
   padding: 8px 14px;
   border-radius: 999px;
+  transition: opacity 0.15s ease;
+}
+
+.assets-summary-nudge:hover {
+  opacity: 0.88;
 }
 
 .assets-progress {

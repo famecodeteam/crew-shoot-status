@@ -493,6 +493,13 @@ function FinalAssetsSection({
   // is Fame's to-do, not theirs, so it's excluded from the nudge.
   const waiting = s.review + s.newver;
   const pct = (n: number) => (total ? (n / total) * 100 : 0);
+  // The nudge pill jumps straight into the first video that actually
+  // needs the client - not just the top of the list below, which may
+  // start with an already-approved or still-editing asset.
+  const firstWaitingAsset = assets.find((a) => {
+    const cls = pickAssetPill(a).cls;
+    return cls === "needs-review" || cls === "comments-open";
+  });
 
   return (
     <section className="section">
@@ -506,10 +513,13 @@ function FinalAssetsSection({
               {waiting > 0 && ` · ${waiting} waiting on you`}
             </span>
           </div>
-          {waiting > 0 && (
-            <span className="assets-summary-nudge">
+          {waiting > 0 && firstWaitingAsset && (
+            <Link
+              href={`/${shootSlug}/asset/${firstWaitingAsset.slug}`}
+              className="assets-summary-nudge"
+            >
               ▸ Review {waiting} {waiting === 1 ? "video" : "videos"}
-            </span>
+            </Link>
           )}
         </div>
         <div className="assets-progress" aria-hidden="true">
