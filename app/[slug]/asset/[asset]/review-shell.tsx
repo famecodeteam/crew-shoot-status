@@ -914,7 +914,7 @@ function ApprovalState({
   if (isStale && version === latestVersionN) {
     return (
       <div className="approval-state new-version">
-        Here is your new version.
+        <span className="approval-state-title">Here is your new version.</span>
         {approval.changeRequestText && (
           <div className="approval-quote">“{approval.changeRequestText}”</div>
         )}
@@ -926,15 +926,17 @@ function ApprovalState({
   if (approval.status === "approved") {
     return (
       <div className="approval-state approved">
-        Approved on{" "}
-        {new Date(approval.decidedAt ?? Date.now()).toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })}
-        {approval.authorName && ` by ${approval.authorName}`}
-        {approval.onVersion !== version &&
-          ` (on v${clientVersionLabel(versions, approval.onVersion)})`}
+        <span className="approval-state-title">
+          Approved on{" "}
+          {new Date(approval.decidedAt ?? Date.now()).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}
+          {approval.authorName && ` by ${approval.authorName}`}
+          {approval.onVersion !== version &&
+            ` (on v${clientVersionLabel(versions, approval.onVersion)})`}
+        </span>
         <button
           type="button"
           className="approval-state-undo"
@@ -949,7 +951,9 @@ function ApprovalState({
   if (approval.status === "changes_requested") {
     return (
       <div className="approval-state changes-requested">
-        Changes requested. Your editor will be in touch with a new version shortly.
+        <span className="approval-state-title">
+          Changes requested. Your editor will be in touch with a new version shortly.
+        </span>
         {approval.changeRequestText && (
           <div className="approval-quote">“{approval.changeRequestText}”</div>
         )}
