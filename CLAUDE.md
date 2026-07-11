@@ -6,29 +6,21 @@ plus 20+ `claude/*` branches on `origin`) - the rules below exist so one
 session's work doesn't silently clobber another's, and so nothing reaches a
 real client half-finished.
 
-> ## ⚠️ This repo does NOT auto-deploy. Production is a manual step.
+> ## ⚠️ UPDATE (fixed): `main` now auto-deploys to shoots.fame.so
 >
-> Verified against the Vercel API (`GET /v9/projects/crew-shoot-status`) -
-> the project has **no Git integration linked** (`link` is empty,
-> `productionBranch` is `null`). Merging a PR - or pushing to `main` - does
-> **not** put anything live. The only way anything reaches **shoots.fame.so**
-> is:
+> As of the date this line was added, the Vercel project is **Git-connected**
+> (`famecodeteam/crew-shoot-status`, production branch `main`) - a push to
+> `main` now builds and deploys automatically, the same as Team Portal. This
+> reverses the "manual deploy only" warning that used to be here - if you're
+> reading an old cached copy of this file that still says deploys are
+> manual, trust this version and re-verify with
+> `GET /v9/projects/crew-shoot-status` if in doubt.
 >
-> ```bash
-> cd "crew-shoot-status"
-> git pull --ff-only origin main   # must fast-forward cleanly
-> git status --short               # working tree must be empty
-> pnpm typecheck && pnpm build     # confirm it actually builds
-> pnpm dlx vercel@latest deploy --prod
-> ```
->
-> Do this from a **clean checkout of `main`**, never a feature branch - that's
-> the one command that's safe to run as `--prod`. `DEPLOY.md` in this repo
-> documents the original M5 cutover and confirms the same command.
->
-> This means `origin/main` can silently sit ahead of what's actually live for
-> hours or days. **Before debugging "something's broken in prod," check
-> whether the fix in git has actually been deployed yet.**
+> Consequence: **a push to `main` is live within minutes, with no review
+> gate.** Prefer a feature branch + Vercel Preview URL for anything you
+> can't explain in one sentence. `DEPLOY.md` in this repo still documents
+> the old manual M5-cutover process - treat that file as historical, not
+> current, until someone updates it.
 
 ---
 
