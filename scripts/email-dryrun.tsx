@@ -17,6 +17,7 @@ import { getBySlug } from "../lib/storage";
 import { renderEmail } from "../lib/emails/render";
 import { send } from "../lib/emails/send";
 import { CrewConfirmedEmail } from "../lib/emails/templates/crew-confirmed";
+import { CrewReassuranceEmail } from "../lib/emails/templates/crew-reassurance";
 
 async function main() {
   const [, , slug, milestone] = process.argv;
@@ -58,8 +59,22 @@ async function main() {
       rendered = { subject, html, text };
       break;
     }
+    case "crew-reassurance": {
+      const subject = `Your crew is being lined up - ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <CrewReassuranceEmail
+          shoot={shoot}
+          statusPageUrl={statusPageUrl}
+          clientFirstName={clientFirstName}
+        />,
+      );
+      rendered = { subject, html, text };
+      break;
+    }
     default:
-      console.error(`Unknown milestone: ${milestone} (try: crew-confirmed)`);
+      console.error(
+        `Unknown milestone: ${milestone} (try: crew-confirmed, crew-reassurance)`,
+      );
       process.exit(1);
   }
 

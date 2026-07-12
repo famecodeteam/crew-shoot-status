@@ -4,6 +4,7 @@
     { "path": "/api/sync-stream", "schedule": "*/5 * * * *" },
     { "path": "/api/sync-shoots", "schedule": "*/5 * * * *" },
     { "path": "/api/cron/email-flush", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/crew-reassurance", "schedule": "0 8 * * *" },
     { "path": "/api/admin/health", "schedule": "0 9 * * *" }
   ]
 }

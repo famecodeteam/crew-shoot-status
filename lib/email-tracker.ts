@@ -19,7 +19,13 @@ export type EmailMilestone =
   | "ready-for-shoot"
   | "footage-in"
   | "assets-ready"
-  | "delivered";
+  | "delivered"
+  // Time-triggered (not a Trello list move): a gentle "your crew is being
+  // lined up" note sent while a paid shoot is still pre-crew-confirmed and
+  // the date is approaching. Fills the silent gap between booking-confirmed
+  // and crew-confirmed so the client doesn't have to chase. See the
+  // crew-reassurance cron.
+  | "crew-reassurance";
 
 export type SentRecord = {
   sentAt: string;

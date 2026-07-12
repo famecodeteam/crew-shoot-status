@@ -35,6 +35,7 @@ import { ReadyForShootEmail } from "./templates/ready-for-shoot";
 import { FootageInEmail } from "./templates/footage-in";
 import { AssetsReadyEmail } from "./templates/assets-ready";
 import { DeliveredEmail } from "./templates/delivered";
+import { CrewReassuranceEmail } from "./templates/crew-reassurance";
 
 // Pipeline ordering. Used to detect backwards transitions so a card
 // briefly dragged to the wrong list (and dragged back) doesn't trigger
@@ -154,6 +155,17 @@ async function renderForMilestone(
         <DeliveredEmail
           shoot={shoot}
           feedbackUrl={ctx.feedbackUrl}
+          statusPageUrl={ctx.statusPageUrl}
+          clientFirstName={ctx.clientFirstName}
+        />,
+      );
+      return { subject, html, text };
+    }
+    case "crew-reassurance": {
+      const subject = `Your crew is being lined up - ${shoot.shootNumber}`;
+      const { html, text } = await renderEmail(
+        <CrewReassuranceEmail
+          shoot={shoot}
           statusPageUrl={ctx.statusPageUrl}
           clientFirstName={ctx.clientFirstName}
         />,
@@ -469,5 +481,146 @@ export function subjectForMilestone(
       return `Your videos are ready to review - ${shoot.shootNumber}`;
     case "delivered":
       return `How was your Fame shoot? - ${shoot.shootNumber}`;
+    case "crew-reassurance":
+      return `Your crew is being lined up - ${shoot.shootNumber}`;
   }
+}
+
+// ── Crew-reassurance email (time-triggered, not status-triggered) ──────
+//
+// The status milestones above all fire on a Trello list move. This one is
+// different: it fires from a daily cron when a *paid but not-yet-crewed*
+// shoot's date gets close, so the client hears "your crew is being lined
+// up" before they feel the need to email and chase. It self-cancels the
+// moment crew is confirmed - once the card leaves the pre-crew statuses,
+// the decision below returns send:false, and the formal crew-confirmed
+// email takes over.
+
+// Only fire this far out - a shoot 2 months away doesn't need reassuring,
+// and firing early would just be noise. Tom's call: 14 days.
+export const CREW_REASSURANCE_WINDOW_DAYS = 14;
+
+// The paid-but-crew-not-confirmed statuses. "booking-confirmed" (Won) and
+// "searching-for-crew" both sit at client-timeline step "crew" - crew isn't
+// locked yet. Everything past this has crew (crew-confirmed onward) or is a
+// dead state (on-hold), so the reassurance would be wrong.
+const CREW_PENDING_STATUSES: ReadonlySet<Shoot["status"]> = new Set([
+  "booking-confirmed",
+  "searching-for-crew",
+]);
+
+// Whole days from today (UK operating tz) until the shoot date. Null when
+// there's no parseable date. Uses the same UK-midnight boundary as the
+// "is the shoot still upcoming" guard, so a shoot "today" reads as 0.
+function daysUntilShoot(shoot: Shoot): number | null {
+  const d = (shoot.shootDate ?? "").trim().slice(0, 10);
+  if (d.length < 10) return null;
+  const shootMs = Date.parse(`${d}T00:00:00Z`);
+  const todayMs = Date.parse(`${todayDateStr()}T00:00:00Z`);
+  if (Number.isNaN(shootMs) || Number.isNaN(todayMs)) return null;
+  return Math.round((shootMs - todayMs) / 86_400_000);
+}
+
+export type ReassuranceDecision =
+  | { send: false; reason: string }
+  | { send: true; daysLeft: number };
+
+// Pure predicate - decides whether a shoot should get the reassurance email
+// right now. Kept separate from the send so the cron can report exactly why
+// each shoot was or wasn't picked (and so it's unit-testable).
+export function crewReassuranceDecision(shoot: Shoot): ReassuranceDecision {
+  if (!CREW_PENDING_STATUSES.has(shoot.status)) {
+    return { send: false, reason: `status "${shoot.status}" - crew confirmed or past` };
+  }
+  const days = daysUntilShoot(shoot);
+  if (days === null) return { send: false, reason: "no shoot date set" };
+  if (days <= 0) return { send: false, reason: "shoot is today or in the past" };
+  if (days > CREW_REASSURANCE_WINDOW_DAYS) {
+    return { send: false, reason: `shoot ${days}d out (> ${CREW_REASSURANCE_WINDOW_DAYS}d window)` };
+  }
+  if (!(shoot.clientEmails ?? []).length) return { send: false, reason: "no client email" };
+  // Provisional "card-..." slugs regenerate once the #NNNN lands, which would
+  // dead-link the URL baked into the email - skip until the slug is final.
+  if (shoot.slug.startsWith("card-")) return { send: false, reason: "provisional slug" };
+  return { send: true, daysLeft: days };
+}
+
+export type ReassuranceResult =
+  | { status: "sent"; recipients: string[]; messageId: string }
+  | { status: "would-send"; recipients: string[] } // matched, but not live
+  | { status: "no-op"; reason: string }
+  | { status: "skipped"; reason: string }
+  | { status: "error"; reason: string };
+
+// Send (or, when not live, just report) the reassurance email for one shoot.
+//
+// `live` gates the actual Postmark send. Until CREW_REASSURANCE_LIVE is
+// turned on we return "would-send" WITHOUT claiming, marking, or sending -
+// so deploying the cron can't email a real client before the copy's signed
+// off, and flipping live later still catches every in-window shoot.
+export async function sendCrewReassurance(
+  shoot: Shoot,
+  opts: { live: boolean },
+): Promise<ReassuranceResult> {
+  const decision = crewReassuranceDecision(shoot);
+  if (!decision.send) return { status: "no-op", reason: decision.reason };
+
+  const milestone: EmailMilestone = "crew-reassurance";
+  const recipients = shoot.clientEmails ?? [];
+
+  const already = await getSent(shoot.cardId, milestone);
+  if (already?.status === "sent") return { status: "no-op", reason: "already sent" };
+
+  if (!opts.live) return { status: "would-send", recipients };
+
+  // Claim protects against overlapping cron ticks double-sending.
+  const won = await claim(shoot.cardId, milestone);
+  if (!won) return { status: "no-op", reason: "already claimed" };
+
+  const rendered = await renderForMilestone(milestone, shoot, {
+    statusPageUrl: `${publicBaseUrl()}/${shoot.slug}`,
+    feedbackUrl: `${publicBaseUrl()}/feedback/${shoot.slug}`,
+    clientFirstName: firstNameFrom(shoot.clientContactName),
+  });
+  if (!rendered) {
+    await markSkipped(shoot.cardId, milestone, "no template");
+    return { status: "skipped", reason: "no template" };
+  }
+
+  let attempt = 0;
+  let lastError = "unknown";
+  while (attempt < 2) {
+    const res = await send({
+      to: recipients,
+      subject: rendered.subject,
+      html: rendered.html,
+      text: rendered.text,
+      tags: [
+        { name: "milestone", value: milestone },
+        { name: "card", value: shoot.cardId },
+      ],
+    });
+    if (res.ok) {
+      await markSent(shoot.cardId, milestone, { messageId: res.messageId, recipients });
+      console.log(
+        `[email] sent ${milestone} for ${shoot.shootNumber} to ${recipients.join(",")} messageId=${res.messageId}${res.dryRun ? " (dry-run)" : ""}`,
+      );
+      if (!res.dryRun) {
+        await notifyEmailSent({
+          cardId: shoot.cardId,
+          milestone,
+          recipient: recipients[0] ?? null,
+          messageId: res.messageId,
+        });
+      }
+      return { status: "sent", recipients, messageId: res.messageId };
+    }
+    lastError = res.error;
+    if (!res.retriable) break;
+    attempt++;
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+  await markError(shoot.cardId, milestone, lastError);
+  console.error(`[email] FAILED ${milestone} for ${shoot.shootNumber}: ${lastError}`);
+  return { status: "error", reason: lastError };
 }
