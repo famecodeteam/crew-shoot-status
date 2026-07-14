@@ -473,7 +473,7 @@ function ShootView({
             </>
           )}.
         </div>
-        <div>Made with ❤️ by Fame Crew</div>
+        <div>Made with ❤️ by Fame</div>
       </footer>
     </main>
   );

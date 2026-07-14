@@ -127,7 +127,7 @@ export default async function AssetReviewPage({
           )}
           .
         </div>
-        <div>Made with ❤️ by Fame Crew</div>
+        <div>Made with ❤️ by Fame</div>
       </footer>
     </main>
   );
