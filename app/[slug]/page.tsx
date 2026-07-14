@@ -5,10 +5,12 @@ import { getBySlug } from "@/lib/storage";
 import { getBySlug as getBriefBySlug } from "@/lib/brief-storage";
 import { shootSlugToBriefSlug } from "@/lib/brief-slug";
 import { getAssetsForShoot } from "@/lib/asset-storage";
+import { getProxyPlaybackIds } from "@/lib/proxies";
 import { clientVersions } from "@/lib/asset-versions";
 import type { Asset, AssetVersion, Shoot } from "@/lib/types";
 import { statusLabel } from "@/lib/list-mapping";
 import { CrewPhoto } from "./crew-photo";
+import { AssetPoster } from "./AssetPoster";
 import { getDemoShoot, getJustBookedDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
 import { WelcomeSync } from "./welcome-sync";
@@ -75,6 +77,12 @@ export default async function ShootPage({
   // Assets - empty unless the editor has pushed at least one finished
   // version. Skip the lookup for the demo slug (no real cardId).
   const assets = slug === "demo" ? [] : await getAssetsForShoot(shoot.cardId);
+  // Mux proxy stills for the asset posters (see lib/proxies.ts). One KV read
+  // per shoot, joined onto each version by Drive file id in AssetCard.
+  const proxyPlaybackIds =
+    slug === "demo" || assets.length === 0
+      ? {}
+      : await getProxyPlaybackIds(shoot.cardId);
 
   // Brief page link - points at /brief/<briefSlug>?code=<shoot number>
   // for one-tap auto-unlock. Hidden until the brief has actually been
@@ -90,6 +98,7 @@ export default async function ShootPage({
     <ShootView
       shoot={shoot}
       assets={assets}
+      proxyPlaybackIds={proxyPlaybackIds}
       shootSlug={slug}
       briefHref={briefHref}
       briefUnready={briefUnready}
@@ -161,6 +170,7 @@ async function resolveBriefStatus(
 function ShootView({
   shoot,
   assets,
+  proxyPlaybackIds,
   shootSlug,
   briefHref,
   briefUnready,
@@ -168,6 +178,7 @@ function ShootView({
 }: {
   shoot: Shoot;
   assets: Asset[];
+  proxyPlaybackIds: Record<string, string>;
   shootSlug: string;
   briefHref: string | null;
   briefUnready: boolean;
@@ -317,7 +328,11 @@ function ShootView({
       )}
 
       {!isOnHold && assets.length > 0 && (
-        <FinalAssetsSection assets={assets} shootSlug={shootSlug} />
+        <FinalAssetsSection
+          assets={assets}
+          shootSlug={shootSlug}
+          proxyPlaybackIds={proxyPlaybackIds}
+        />
       )}
 
       {!isOnHold && shoot.footageUrl && footageAvailable && (
@@ -482,9 +497,11 @@ function formatDate(iso: string): string {
 function FinalAssetsSection({
   assets,
   shootSlug,
+  proxyPlaybackIds,
 }: {
   assets: Asset[];
   shootSlug: string;
+  proxyPlaybackIds: Record<string, string>;
 }) {
   const s = summarizeAssets(assets);
   const total = assets.length;
@@ -546,20 +563,33 @@ function FinalAssetsSection({
       </div>
       <div className="assets-list">
         {assets.map((a) => (
-          <AssetCard key={a.slug} asset={a} shootSlug={shootSlug} />
+          <AssetCard
+            key={a.slug}
+            asset={a}
+            shootSlug={shootSlug}
+            proxyPlaybackIds={proxyPlaybackIds}
+          />
         ))}
       </div>
     </section>
   );
 }
 
-function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
+function AssetCard({
+  asset,
+  shootSlug,
+  proxyPlaybackIds,
+}: {
+  asset: Asset;
+  shootSlug: string;
+  proxyPlaybackIds: Record<string, string>;
+}) {
   // Publish gate (contract v2 §4): card meta reflects only versions the
   // client may see.
   const versions = clientVersions(asset);
   const latest = versions.length ? versions[versions.length - 1] : null;
   const pill = pickAssetPill(asset);
-  const posterUrl = assetPosterUrl(latest);
+  const posterUrl = assetPosterUrl(asset, latest, proxyPlaybackIds);
   return (
     <Link className="asset-card" href={`/${shootSlug}/asset/${asset.slug}`}>
       {/* No version uploaded yet - nothing to preview, so skip the whole
@@ -567,12 +597,7 @@ function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
           over a fake thumbnail). Just the name/meta/status pill. */}
       {latest && (
         <div className="asset-poster">
-          {posterUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={posterUrl} alt="" loading="lazy" />
-          ) : (
-            <div className="asset-poster-glow" />
-          )}
+          <AssetPoster src={posterUrl} />
           <span className="asset-play" aria-hidden="true" />
         </div>
       )}
@@ -589,23 +614,41 @@ function AssetCard({ asset, shootSlug }: { asset: Asset; shootSlug: string }) {
   );
 }
 
-// Cloudflare Stream still for the client-facing poster. Only when the
-// version's Stream copy is `ready` (the sync-stream cron populates it after
-// upload); otherwise the card shows the dark gradient fallback. Same
-// customer-code + thumbnail path the review player uses.
-function assetPosterUrl(v: AssetVersion | null): string | null {
+// The client-facing poster for a version. Three real-frame sources in order of
+// quality, then the gradient (handled by AssetPoster if the chosen URL fails):
+//
+// 1. Cloudflare Stream still - highest quality, chosen frame - once the
+//    version's Stream copy is `ready` (the sync-stream cron populates it). It
+//    can lag, fail, or never have run for older versions, so it's not enough
+//    on its own.
+// 2. Mux proxy still - the crew app makes a Mux proxy for every reviewed
+//    version (shared `proxies:<cardId>` KV, keyed by Drive file id), including
+//    the multi-GB masters Drive won't thumbnail. Public image URL, reliable.
+// 3. Drive's own thumbnail, proxied SA-authenticated through /api/poster.
+//    Covers versions with no Mux proxy yet, but Drive skips thumbnails for
+//    large files, so it's the last resort before the gradient.
+//
+// Returns null only when there's no version to preview.
+function assetPosterUrl(
+  asset: Asset,
+  v: AssetVersion | null,
+  proxyPlaybackIds: Record<string, string>,
+): string | null {
+  if (!v) return null;
   const code = process.env.CF_STREAM_CUSTOMER_CODE;
-  if (!v || !code || v.streamStatus !== "ready" || !v.streamUid) return null;
-  // time=3s: Cloudflare Stream's default still is time=0s, which is almost
-  // always the black fade-in - every gallery card came back a dark rectangle.
-  // A few seconds in lands on real footage (clamped to the last frame for
-  // very short clips), so the posters actually show the video.
-  //
-  // Size by WIDTH, not height: a portrait 9:16 clip at height=400 is only
-  // ~224px wide, so object-fit:cover stretched it across the card and it
-  // looked blurry. width=900 gives both orientations enough pixels to stay
-  // crisp on a retina card.
-  return `https://customer-${code}.cloudflarestream.com/${v.streamUid}/thumbnails/thumbnail.jpg?time=3s&width=900`;
+  if (code && v.streamStatus === "ready" && v.streamUid) {
+    // time=3s: Stream's default still is time=0s, almost always the black
+    // fade-in. A few seconds in lands on real footage (clamped to the last
+    // frame for very short clips). Size by WIDTH so portrait 9:16 clips get
+    // enough pixels to stay crisp (height=400 left them ~224px wide + blurry).
+    return `https://customer-${code}.cloudflarestream.com/${v.streamUid}/thumbnails/thumbnail.jpg?time=3s&width=900`;
+  }
+  const playbackId = proxyPlaybackIds[v.driveFileId];
+  if (playbackId) {
+    // Same time=3 rationale as Stream above; width keeps portrait clips crisp.
+    return `https://image.mux.com/${playbackId}/thumbnail.jpg?time=3&width=900`;
+  }
+  return `/api/poster/${asset.slug}/v${v.n}`;
 }
 
 function pickAssetPill(a: Asset): { label: string; cls: string } {
