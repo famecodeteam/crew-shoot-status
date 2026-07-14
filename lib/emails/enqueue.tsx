@@ -88,7 +88,7 @@ async function renderForMilestone(
 ): Promise<{ subject: string; html: string; text: string } | null> {
   switch (milestone) {
     case "booking-confirmed": {
-      const subject = `Your shoot is booked - here's what happens next ${shoot.shootNumber}`;
+      const subject = `Your shoot is booked - here's what happens next`;
       const { html, text } = await renderEmail(
         <BookingConfirmedEmail
           shoot={shoot}
@@ -99,7 +99,7 @@ async function renderForMilestone(
       return { subject, html, text };
     }
     case "crew-confirmed": {
-      const subject = `Meet your crew - ${shoot.shootNumber}`;
+      const subject = `Meet your crew`;
       const { html, text } = await renderEmail(
         <CrewConfirmedEmail
           shoot={shoot}
@@ -115,7 +115,7 @@ async function renderForMilestone(
       // to shoot.shootDate. If the PM moves the card 2-3 days early
       // (which can happen), a "tomorrow" subject would lie. Tom
       // chose Option A from the timing audit: soften the copy.
-      const subject = `Your upcoming shoot - ${shoot.shootNumber}`;
+      const subject = `Your upcoming shoot`;
       const { html, text } = await renderEmail(
         <ReadyForShootEmail
           shoot={shoot}
@@ -127,8 +127,8 @@ async function renderForMilestone(
     }
     case "footage-in": {
       const subject = shoot.hasPostProduction
-        ? `Footage is in - editing has started - ${shoot.shootNumber}`
-        : `Your raw footage is ready - ${shoot.shootNumber}`;
+        ? `Footage is in - editing has started`
+        : `Your raw footage is ready`;
       const { html, text } = await renderEmail(
         <FootageInEmail
           shoot={shoot}
@@ -139,7 +139,7 @@ async function renderForMilestone(
       return { subject, html, text };
     }
     case "assets-ready": {
-      const subject = `Your videos are ready to review - ${shoot.shootNumber}`;
+      const subject = `Your videos are ready to review`;
       const { html, text } = await renderEmail(
         <AssetsReadyEmail
           shoot={shoot}
@@ -150,7 +150,7 @@ async function renderForMilestone(
       return { subject, html, text };
     }
     case "delivered": {
-      const subject = `How was your Fame shoot? - ${shoot.shootNumber}`;
+      const subject = `How was your Fame shoot?`;
       const { html, text } = await renderEmail(
         <DeliveredEmail
           shoot={shoot}
@@ -162,7 +162,7 @@ async function renderForMilestone(
       return { subject, html, text };
     }
     case "crew-reassurance": {
-      const subject = `Your crew is being lined up - ${shoot.shootNumber}`;
+      const subject = `Your crew is being lined up`;
       const { html, text } = await renderEmail(
         <CrewReassuranceEmail
           shoot={shoot}
@@ -468,21 +468,21 @@ export function subjectForMilestone(
 ): string {
   switch (milestone) {
     case "booking-confirmed":
-      return `Your shoot is booked - here's what happens next ${shoot.shootNumber}`;
+      return `Your shoot is booked - here's what happens next`;
     case "crew-confirmed":
-      return `Meet your crew - ${shoot.shootNumber}`;
+      return `Meet your crew`;
     case "ready-for-shoot":
-      return `Your upcoming shoot - ${shoot.shootNumber}`;
+      return `Your upcoming shoot`;
     case "footage-in":
       return shoot.hasPostProduction
-        ? `Footage is in - editing has started - ${shoot.shootNumber}`
-        : `Your raw footage is ready - ${shoot.shootNumber}`;
+        ? `Footage is in - editing has started`
+        : `Your raw footage is ready`;
     case "assets-ready":
-      return `Your videos are ready to review - ${shoot.shootNumber}`;
+      return `Your videos are ready to review`;
     case "delivered":
-      return `How was your Fame shoot? - ${shoot.shootNumber}`;
+      return `How was your Fame shoot?`;
     case "crew-reassurance":
-      return `Your crew is being lined up - ${shoot.shootNumber}`;
+      return `Your crew is being lined up`;
   }
 }
 

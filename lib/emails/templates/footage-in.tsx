@@ -32,8 +32,8 @@ export function FootageInEmail({
     <EmailLayout
       preview={
         pp
-          ? `Footage from ${shoot.shootNumber} is in - editing started`
-          : `Your raw footage for ${shoot.shootNumber} is ready`
+          ? `Footage is in - editing started`
+          : `Your raw footage is ready`
       }
       hero={{
         shootNumber: shoot.shootNumber,

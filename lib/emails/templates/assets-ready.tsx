@@ -27,7 +27,7 @@ export function AssetsReadyEmail({
 
   return (
     <EmailLayout
-      preview={`Your videos for ${shoot.shootNumber} are ready to review`}
+      preview={`Your videos are ready to review`}
       hero={{
         shootNumber: shoot.shootNumber,
         title: shoot.clientName,

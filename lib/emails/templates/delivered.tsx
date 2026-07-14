@@ -34,7 +34,7 @@ export function DeliveredEmail({
 
   return (
     <EmailLayout
-      preview={`How was your Fame shoot? - ${shoot.shootNumber} wrap-up`}
+      preview={`How was your Fame shoot? - a quick wrap-up`}
       hero={{
         shootNumber: shoot.shootNumber,
         title: shoot.clientName,

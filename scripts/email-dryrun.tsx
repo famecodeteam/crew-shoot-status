@@ -47,8 +47,8 @@ async function main() {
     case "crew-confirmed": {
       const crewFirst = shoot.crew?.name.split(/\s+/)[0];
       const subject = crewFirst
-        ? `Meet your crew - ${shoot.shootNumber}`
-        : `Your crew is confirmed - ${shoot.shootNumber}`;
+        ? `Meet your crew`
+        : `Your crew is confirmed`;
       const { html, text } = await renderEmail(
         <CrewConfirmedEmail
           shoot={shoot}
@@ -60,7 +60,7 @@ async function main() {
       break;
     }
     case "crew-reassurance": {
-      const subject = `Your crew is being lined up - ${shoot.shootNumber}`;
+      const subject = `Your crew is being lined up`;
       const { html, text } = await renderEmail(
         <CrewReassuranceEmail
           shoot={shoot}

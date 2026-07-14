@@ -37,7 +37,7 @@ export function BookingConfirmedEmail({
 
   return (
     <EmailLayout
-      preview={`Your shoot ${shoot.shootNumber} is booked - here's what happens next`}
+      preview={`Your shoot is booked - here's what happens next`}
       hero={{
         shootNumber: shoot.shootNumber,
         title: shoot.clientName,
