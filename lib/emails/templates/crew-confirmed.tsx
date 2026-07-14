@@ -43,8 +43,8 @@ export function CrewConfirmedEmail({
     <EmailLayout
       preview={
         crew
-          ? `Your crew for ${shoot.shootNumber} is confirmed - meet ${crewFirst}`
-          : `Your crew for ${shoot.shootNumber} is confirmed`
+          ? `Your crew is confirmed - meet ${crewFirst}`
+          : `Your crew is confirmed`
       }
       hero={{
         shootNumber: shoot.shootNumber,

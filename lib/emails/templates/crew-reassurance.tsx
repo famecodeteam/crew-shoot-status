@@ -54,7 +54,7 @@ export function CrewReassuranceEmail({
 
   return (
     <EmailLayout
-      preview={`Your crew for ${shoot.shootNumber} is being lined up - nothing you need to do`}
+      preview={`Your crew is being lined up - nothing you need to do`}
       hero={{
         shootNumber: shoot.shootNumber,
         title: shoot.clientName,
