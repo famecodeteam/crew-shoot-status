@@ -372,10 +372,33 @@ function ShootView({
               )}
             </div>
             <div>
-              <div className="crew-name">{shoot.crew.name}</div>
+              <div className="crew-name">
+                {shoot.crew.profileUrl ? (
+                  <a
+                    className="crew-name-link"
+                    href={shoot.crew.profileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {shoot.crew.name}
+                  </a>
+                ) : (
+                  shoot.crew.name
+                )}
+              </div>
               <div className="crew-bio">{shoot.crew.bio}</div>
               <div className="crew-chips">
                 <span className="crew-chip vetted">✓ Vetted by Fame</span>
+                {shoot.crew.profileUrl && (
+                  <a
+                    className="crew-chip profile"
+                    href={shoot.crew.profileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View profile ↗
+                  </a>
+                )}
               </div>
             </div>
           </div>

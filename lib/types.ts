@@ -176,6 +176,8 @@ export type Shoot = {
     name: string;
     bio: string;
     photoUrl?: string;
+    /** Crew member's public profile page (member.fame.so/crew/<slug>). */
+    profileUrl?: string;
   };
   briefUrl?: string;
   quoteUrl?: string;

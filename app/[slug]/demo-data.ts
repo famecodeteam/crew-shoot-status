@@ -16,6 +16,7 @@ export function getDemoShoot(): Shoot {
     crew: {
       name: "Alex Morgan",
       bio: "Based in Berlin. 14 shoots with Fame. Specializes in conference fireside.",
+      profileUrl: "https://member.fame.so/crew/alex-morgan-demo1234",
     },
     briefUrl: "https://docs.google.com/document/d/example-brief",
     quoteUrl: "https://app.betterproposals.io/example-quote",

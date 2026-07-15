@@ -727,6 +727,28 @@ img {
   color: #b12455;
 }
 
+/* Clickable "View profile" chip - opens the crew member's public page. */
+.crew-chip.profile {
+  background: var(--pink);
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+.crew-chip.profile:hover {
+  opacity: 0.85;
+}
+
+/* The crew name doubles as a link to their public profile. */
+.crew-name-link {
+  color: inherit;
+  text-decoration: none;
+}
+.crew-name-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--pink);
+  text-underline-offset: 3px;
+}
+
 @media (max-width: 480px) {
   .crew-card {
     flex-direction: column;
