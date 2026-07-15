@@ -489,16 +489,16 @@ export function subjectForMilestone(
 // ── Crew-reassurance email (time-triggered, not status-triggered) ──────
 //
 // The status milestones above all fire on a Trello list move. This one is
-// different: it fires from a daily cron when a *paid but not-yet-crewed*
-// shoot's date gets close, so the client hears "your crew is being lined
-// up" before they feel the need to email and chase. It self-cancels the
-// moment crew is confirmed - once the card leaves the pre-crew statuses,
-// the decision below returns send:false, and the formal crew-confirmed
-// email takes over.
+// different: it fires from a daily cron a few days AFTER the deposit lands
+// when crew still isn't secured, so the client hears "your crew is being
+// lined up" in the silent gap between paying and crew being confirmed -
+// before they feel the need to email and chase. One-off per shoot. It self-
+// cancels the moment crew is confirmed (the card leaves the pre-crew
+// statuses), and the formal crew-confirmed email takes over.
 
-// Only fire this far out - a shoot 2 months away doesn't need reassuring,
-// and firing early would just be noise. Tom's call: 14 days.
-export const CREW_REASSURANCE_WINDOW_DAYS = 14;
+// Fire this many days after the deposit/booking-confirmed date. Gives the
+// team a short window to lock crew before the client is nudged. Tom's call: 3.
+export const REASSURANCE_DAYS_AFTER_DEPOSIT = 3;
 
 // The paid-but-crew-not-confirmed statuses. "booking-confirmed" (Won) and
 // "searching-for-crew" both sit at client-timeline step "crew" - crew isn't
@@ -521,9 +521,21 @@ function daysUntilShoot(shoot: Shoot): number | null {
   return Math.round((shootMs - todayMs) / 86_400_000);
 }
 
+// Whole days from the deposit / booking-confirmed date to today (UK tz). The
+// bookingConfirmed milestone is stamped when the shoot enters "Won" - i.e. the
+// deposit landed. Null when there's no booking date yet.
+function daysSinceDeposit(shoot: Shoot): number | null {
+  const bc = (shoot.milestoneDates?.bookingConfirmed ?? "").trim().slice(0, 10);
+  if (bc.length < 10) return null;
+  const depMs = Date.parse(`${bc}T00:00:00Z`);
+  const todayMs = Date.parse(`${todayDateStr()}T00:00:00Z`);
+  if (Number.isNaN(depMs) || Number.isNaN(todayMs)) return null;
+  return Math.round((todayMs - depMs) / 86_400_000);
+}
+
 export type ReassuranceDecision =
   | { send: false; reason: string }
-  | { send: true; daysLeft: number };
+  | { send: true; daysSinceDeposit: number };
 
 // Pure predicate - decides whether a shoot should get the reassurance email
 // right now. Kept separate from the send so the cron can report exactly why
@@ -532,17 +544,24 @@ export function crewReassuranceDecision(shoot: Shoot): ReassuranceDecision {
   if (!CREW_PENDING_STATUSES.has(shoot.status)) {
     return { send: false, reason: `status "${shoot.status}" - crew confirmed or past` };
   }
-  const days = daysUntilShoot(shoot);
-  if (days === null) return { send: false, reason: "no shoot date set" };
-  if (days <= 0) return { send: false, reason: "shoot is today or in the past" };
-  if (days > CREW_REASSURANCE_WINDOW_DAYS) {
-    return { send: false, reason: `shoot ${days}d out (> ${CREW_REASSURANCE_WINDOW_DAYS}d window)` };
+  const sinceDeposit = daysSinceDeposit(shoot);
+  if (sinceDeposit === null) return { send: false, reason: "no deposit/booking date" };
+  if (sinceDeposit < REASSURANCE_DAYS_AFTER_DEPOSIT) {
+    return {
+      send: false,
+      reason: `deposit ${sinceDeposit}d ago (< ${REASSURANCE_DAYS_AFTER_DEPOSIT}d)`,
+    };
+  }
+  // Don't reassure a shoot that's already happened.
+  const daysLeft = daysUntilShoot(shoot);
+  if (daysLeft !== null && daysLeft <= 0) {
+    return { send: false, reason: "shoot is today or in the past" };
   }
   if (!(shoot.clientEmails ?? []).length) return { send: false, reason: "no client email" };
   // Provisional "card-..." slugs regenerate once the #NNNN lands, which would
   // dead-link the URL baked into the email - skip until the slug is final.
   if (shoot.slug.startsWith("card-")) return { send: false, reason: "provisional slug" };
-  return { send: true, daysLeft: days };
+  return { send: true, daysSinceDeposit: sinceDeposit };
 }
 
 export type ReassuranceResult =
