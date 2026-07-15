@@ -1,12 +1,12 @@
 // Crew-reassurance cron. Runs daily (vercel.json). Scans every shoot and,
-// for any that is paid-but-not-yet-crewed with a shoot date inside the
-// reassurance window, sends a one-off "your crew is being lined up" email -
-// closing the silent gap between booking-confirmed and crew-confirmed where
-// clients would otherwise email to chase.
+// for any that is paid-but-not-yet-crewed 3+ days after the deposit landed,
+// sends a one-off "your crew is being lined up" email - closing the silent
+// gap between booking-confirmed and crew-confirmed where clients would
+// otherwise email to chase.
 //
 // Time-triggered, not status-triggered: the status milestone emails fire on
-// Trello list moves; this fires on proximity to shoot.shootDate, so it needs
-// its own scan rather than riding the webhook. It self-cancels once crew is
+// Trello list moves; this fires a few days after the booking-confirmed date,
+// so it needs its own scan rather than riding the webhook. It self-cancels once crew is
 // confirmed (the card leaves the pre-crew statuses) and is idempotent per
 // shoot (sent-tracker claim), so a daily re-run is a safe no-op.
 //
