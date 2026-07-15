@@ -44,6 +44,7 @@ type FeedShoot = {
   crewMemberName: string | null;
   crewMemberBio: string | null;
   crewMemberPhotoUrl: string | null;
+  crewMemberProfileUrl: string | null;
   crewStatus: string | null;
   clientEmail: string | null;
   clientContactName: string | null;
@@ -98,6 +99,7 @@ function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | nu
         name: f.crewMemberName,
         bio: f.crewMemberBio ?? "",
         photoUrl: f.crewMemberPhotoUrl || undefined,
+        profileUrl: f.crewMemberProfileUrl || undefined,
       }
     : undefined;
   const crewFirstName = crew ? crew.name.split(/\s+/)[0] : undefined;
