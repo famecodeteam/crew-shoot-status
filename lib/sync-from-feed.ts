@@ -86,6 +86,18 @@ function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | nu
 
   const shootNumber = f.shootNumber ?? "";
   const clientName = f.clientName ?? "";
+
+  // Don't publish an internal draft. "Duplicate shoot" in the portal makes a
+  // "(copy)" in the SAME column as its source - usually Won, which maps to a
+  // publishable status - with no number and no status-page URL. The portal
+  // deliberately mints a client status page only once a shoot HAS a number, so
+  // a shoot with neither a number nor a portal URL is one it withheld a page
+  // from on purpose. Without this we'd invent a slug below and hand every
+  // duplicate a live, half-empty public client page.
+  // Anything real is unaffected: a booked shoot has a number, and any shoot the
+  // portal has already minted a URL for passes on the statusPageUrl check.
+  if (!shootNumber.trim() && !f.statusPageUrl) return null;
+
   const labels = f.labels ?? [];
   const hasPostProduction = labels.some(
     (l) => l.trim().toLowerCase() === "post production",
