@@ -48,7 +48,7 @@ export function BookingConfirmedEmail({
       <Text style={lede}>Your shoot is booked</Text>
       <Text style={paragraph}>{greeting}</Text>
       <Text style={paragraph}>
-        Great to have you on board for {shoot.shootNumber}. The deposit
+        Great to have you on board for your shoot. The deposit
         landed, the shoot is officially on the calendar. Here's how the
         next few weeks will go:
       </Text>

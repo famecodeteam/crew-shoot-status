@@ -43,7 +43,7 @@ export function ReadyForShootEmail({
       <Text style={lede}>Your shoot is coming up</Text>
       <Text style={paragraph}>{greeting}</Text>
       <Text style={paragraph}>
-        Quick heads-up on {shoot.shootNumber}.
+        Quick heads-up on your shoot.
         {crewFirst
           ? ` ${crewFirst} is your crew and will be on site`
           : " Your crew will be on site"}

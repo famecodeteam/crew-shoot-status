@@ -58,7 +58,7 @@ export function CrewConfirmedEmail({
       <Text style={lede}>Your crew is confirmed</Text>
       <Text style={paragraph}>{greeting}</Text>
       <Text style={paragraph}>
-        Quick update on {shoot.shootNumber} - we've locked in your crew
+        Quick update on your shoot - we've locked in your crew
         member{crew ? `, ${crew.name}` : ""}. They'll be the one on the
         ground for the shoot.
       </Text>

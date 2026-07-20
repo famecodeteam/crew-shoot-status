@@ -38,7 +38,7 @@ export function AssetsReadyEmail({
       <Text style={lede}>Your videos are ready to review</Text>
       <Text style={paragraph}>{greeting}</Text>
       <Text style={paragraph}>
-        First cut of {shoot.shootNumber} is up on your status page,
+        First cut of your shoot is up on your status page,
         ready for review. You can watch each video, leave timestamped
         comments, request changes, or approve when you're happy.
       </Text>
