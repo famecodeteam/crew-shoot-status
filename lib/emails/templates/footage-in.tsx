@@ -50,7 +50,7 @@ export function FootageInEmail({
       {pp ? (
         <>
           <Text style={paragraph}>
-            The raw footage from {shoot.shootNumber} just landed - the day
+            The raw footage from your shoot just landed - the day
             went well. This is the unedited footage straight from the shoot;
             our editors are on it now, and you can expect the first cut ready
             to review in around 5 business days.
