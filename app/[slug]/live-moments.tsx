@@ -46,9 +46,13 @@ function pollInterval(crewStatus: string | null): number {
 export function LiveMoments({
   slug,
   shootDate,
+  locked = false,
 }: {
   slug: string;
   shootDate: string;
+  /** Unpaid-invoice lock: hide the per-moment download (card + lightbox).
+   *  Preview still works. */
+  locked?: boolean;
 }) {
   const [moments, setMoments] = useState<LiveMoment[]>([]);
   const [crewStatus, setCrewStatus] = useState<string | null>(null);
@@ -134,11 +138,16 @@ export function LiveMoments({
             key={m.driveFileId}
             moment={m}
             onOpen={() => setLightbox(m)}
+            locked={locked}
           />
         ))}
       </div>
       {lightbox && (
-        <Lightbox moment={lightbox} onClose={() => setLightbox(null)} />
+        <Lightbox
+          moment={lightbox}
+          onClose={() => setLightbox(null)}
+          locked={locked}
+        />
       )}
     </section>
   );
@@ -147,9 +156,11 @@ export function LiveMoments({
 function MomentCard({
   moment,
   onOpen,
+  locked,
 }: {
   moment: LiveMoment;
   onOpen: () => void;
+  locked: boolean;
 }) {
   // <a download> nested inside <button> is invalid HTML, so the outer
   // container is a div with role=button.
@@ -191,15 +202,17 @@ function MomentCard({
             )}
           </>
         )}
-        <a
-          className="moment-download"
-          href={downloadUrl(moment)}
-          onClick={(e) => e.stopPropagation()}
-          aria-label={`Download ${moment.type}`}
-          title="Download"
-        >
-          <DownloadIcon />
-        </a>
+        {!locked && (
+          <a
+            className="moment-download"
+            href={downloadUrl(moment)}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`Download ${moment.type}`}
+            title="Download"
+          >
+            <DownloadIcon />
+          </a>
+        )}
       </div>
       {moment.caption && <div className="moment-caption">{moment.caption}</div>}
       <div className="moment-meta">
@@ -214,9 +227,11 @@ function MomentCard({
 function Lightbox({
   moment,
   onClose,
+  locked,
 }: {
   moment: LiveMoment;
   onClose: () => void;
+  locked: boolean;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -247,7 +262,17 @@ function Lightbox({
         ×
       </button>
       <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-        {moment.type === "video" ? (
+        {moment.type === "video" && locked ? (
+          // Locked: the normal video preview is a Drive iframe, which carries
+          // Google's own download/open-in-Drive controls - that would defeat
+          // the lock. Show the still frame instead (no Drive UI, no download).
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={publicThumbUrl(moment, 2000)}
+            alt={moment.caption ?? "Video"}
+            referrerPolicy="no-referrer"
+          />
+        ) : moment.type === "video" ? (
           // Drive's own preview handles streaming + auth-free playback
           // inside the iframe.
           <iframe
@@ -266,14 +291,16 @@ function Lightbox({
         {moment.caption && (
           <div className="lightbox-caption">{moment.caption}</div>
         )}
-        <a
-          className="lightbox-download"
-          href={downloadUrl(moment)}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <DownloadIcon />
-          <span>Download</span>
-        </a>
+        {!locked && (
+          <a
+            className="lightbox-download"
+            href={downloadUrl(moment)}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <DownloadIcon />
+            <span>Download</span>
+          </a>
+        )}
       </div>
     </div>
   );

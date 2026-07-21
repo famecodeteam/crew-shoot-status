@@ -19,6 +19,7 @@ import { getBySlug } from "@/lib/storage";
 import { getAsset } from "@/lib/asset-storage";
 import { findAssetBySlug } from "@/lib/asset-lookup";
 import { clientVersions } from "@/lib/asset-versions";
+import { getAssetsLocked } from "@/lib/assets-lock";
 import type { Asset, Shoot } from "@/lib/types";
 import { ReviewShell } from "./review-shell";
 
@@ -87,6 +88,11 @@ export default async function AssetReviewPage({
     ? visibleAsset.versions[visibleAsset.versions.length - 1]
     : null;
 
+  // Unpaid-invoice lock (set by the CPM on member.fame.so). When on, the
+  // review surface hides the download bar and blocks the player's own
+  // save/download affordances. Playback stays so the client can still review.
+  const locked = await getAssetsLocked(shoot.cardId).catch(() => false);
+
   return (
     <main className="shell">
       <header className="hero">
@@ -108,6 +114,7 @@ export default async function AssetReviewPage({
         <ReviewShell
           asset={visibleAsset}
           streamCustomerCode={process.env.CF_STREAM_CUSTOMER_CODE ?? null}
+          locked={locked}
         />
       ) : (
         <PendingUploadState />

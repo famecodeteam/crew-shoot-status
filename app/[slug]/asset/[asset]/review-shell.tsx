@@ -34,9 +34,13 @@ function commentKey(id: string): string {
 export function ReviewShell({
   asset,
   streamCustomerCode,
+  locked = false,
 }: {
   asset: Asset;
   streamCustomerCode: string | null;
+  /** Unpaid-invoice lock: hide the download bar and block the player's own
+   *  download/save affordances. Review + approval still work. */
+  locked?: boolean;
 }) {
   // `asset.versions` arrives already publish-gated: the server component
   // (page.tsx) filters it through clientVersions() before this prop is
@@ -123,8 +127,9 @@ export function ReviewShell({
         comments={comments}
         onSeek={seekTo}
         streamCustomerCode={streamCustomerCode}
+        locked={locked}
       />
-      <VersionDownloadBar asset={asset} version={version} />
+      {!locked && <VersionDownloadBar asset={asset} version={version} />}
       <CommentBar
         currentTime={currentTime}
         onAdd={onAddCommentClick}
@@ -185,6 +190,7 @@ function Player({
   comments,
   onSeek,
   streamCustomerCode,
+  locked,
 }: {
   asset: Asset;
   version: number;
@@ -193,6 +199,7 @@ function Player({
   comments: ClientComment[];
   onSeek: (seconds: number) => void;
   streamCustomerCode: string | null;
+  locked: boolean;
 }) {
   // We get the video duration so we can position comment markers
   // proportionally. HLS-via-MSE sources (Cloudflare Stream) frequently
@@ -325,6 +332,18 @@ function Player({
           preload="metadata"
           poster={posterUrl}
           className="asset-video"
+          // Locked (unpaid invoice): strip the native download control from the
+          // ⋮ menu and disable picture-in-picture + right-click save, so the
+          // player offers no one-click route to the file. Playback still works;
+          // this is a deterrent, not DRM (a determined viewer can still capture
+          // a playing stream).
+          {...(locked
+            ? {
+                controlsList: "nodownload noplaybackrate",
+                disablePictureInPicture: true,
+                onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+              }
+            : {})}
           // Once known, the clip's real ratio overrides the 16/9 default so
           // non-16:9 clips (esp. vertical) aren't letterboxed.
           style={aspect !== null ? { aspectRatio: String(aspect) } : undefined}

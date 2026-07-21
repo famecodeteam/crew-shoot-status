@@ -17,6 +17,7 @@ import type { NextRequest } from "next/server";
 import { Readable } from "node:stream";
 import { findAssetBySlug } from "@/lib/asset-lookup";
 import { clientVersions } from "@/lib/asset-versions";
+import { getAssetsLocked } from "@/lib/assets-lock";
 import { getDriveDownload } from "@/lib/drive";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +40,13 @@ export async function GET(
 
   const lookup = await findAssetBySlug(slug);
   if (!lookup) return new Response("unknown asset", { status: 404 });
+
+  // Unpaid-invoice lock: the download button is hidden in the UI, but gate the
+  // endpoint too so a bookmarked/guessed URL can't pull the deliverable while
+  // the shoot is locked.
+  if (await getAssetsLocked(lookup.shoot.cardId).catch(() => false)) {
+    return new Response("downloads are locked", { status: 403 });
+  }
 
   // Only client-visible (published) versions are downloadable.
   const version = clientVersions(lookup.asset).find((v) => v.n === n);
