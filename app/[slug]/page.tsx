@@ -6,6 +6,7 @@ import { getBySlug as getBriefBySlug } from "@/lib/brief-storage";
 import { shootSlugToBriefSlug } from "@/lib/brief-slug";
 import { getAssetsForShoot } from "@/lib/asset-storage";
 import { getProxyPlaybackIds } from "@/lib/proxies";
+import { getAssetsLocked } from "@/lib/assets-lock";
 import { clientVersions } from "@/lib/asset-versions";
 import type { Asset, AssetVersion, Shoot } from "@/lib/types";
 import { statusLabel } from "@/lib/list-mapping";
@@ -84,6 +85,11 @@ export default async function ShootPage({
       ? {}
       : await getProxyPlaybackIds(shoot.cardId);
 
+  // Unpaid-invoice lock (set on member.fame.so). Hides the per-moment
+  // downloads below; the asset review pages read the same flag themselves.
+  const assetsLocked =
+    slug === "demo" ? false : await getAssetsLocked(shoot.cardId).catch(() => false);
+
   // Brief page link - points at /brief/<briefSlug>?code=<shoot number>
   // for one-tap auto-unlock. Hidden until the brief has actually been
   // synced (parsedJson present); otherwise the link would land the
@@ -99,6 +105,7 @@ export default async function ShootPage({
       shoot={shoot}
       assets={assets}
       proxyPlaybackIds={proxyPlaybackIds}
+      assetsLocked={assetsLocked}
       shootSlug={slug}
       briefHref={briefHref}
       briefUnready={briefUnready}
@@ -171,6 +178,7 @@ function ShootView({
   shoot,
   assets,
   proxyPlaybackIds,
+  assetsLocked,
   shootSlug,
   briefHref,
   briefUnready,
@@ -179,6 +187,7 @@ function ShootView({
   shoot: Shoot;
   assets: Asset[];
   proxyPlaybackIds: Record<string, string>;
+  assetsLocked: boolean;
   shootSlug: string;
   briefHref: string | null;
   briefUnready: boolean;
@@ -357,7 +366,11 @@ function ShootView({
       )}
 
       {!isOnHold && (
-        <LiveMoments slug={shoot.slug} shootDate={shoot.shootDate} />
+        <LiveMoments
+          slug={shoot.slug}
+          shootDate={shoot.shootDate}
+          locked={assetsLocked}
+        />
       )}
 
       {showCrew && shoot.crew && (
