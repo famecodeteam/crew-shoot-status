@@ -231,13 +231,15 @@ async function forwardToMember(payload: {
   }
 }
 
-async function postToSlack(shoot: Shoot, record: StoredRecord): Promise<void> {
-  const url = process.env.SLACK_FEEDBACK_WEBHOOK_URL;
-  if (!url) {
-    console.log("[feedback] SLACK_FEEDBACK_WEBHOOK_URL unset - not posting");
-    return;
-  }
+// The delivery app owns the real Fame Bot (bot token + #crew channel); we post
+// THROUGH it so feedback appears as Fame Bot like every other crew notification,
+// not as "incoming-webhook". Derived from the same origin as the shoot feed so
+// one CREW_FEED_URL override keeps them in step.
+const CREW_SLACK_URL = (
+  process.env.CREW_FEED_URL || "https://delivery.fame.so/api/sync/shoots"
+).replace(/\/api\/sync\/shoots\/?$/, "/api/internal/crew-slack");
 
+async function postToSlack(shoot: Shoot, record: StoredRecord): Promise<void> {
   const stars = "★".repeat(record.rating) + "☆".repeat(5 - record.rating);
   const isNegative = record.rating <= 2 || record.bookAgain === "no";
   const heading = isNegative
@@ -252,16 +254,43 @@ async function postToSlack(shoot: Shoot, record: StoredRecord): Promise<void> {
   if (record.couldImprove) lines.push(`*Could improve:* ${record.couldImprove}`);
   if (record.other) lines.push(`*Other:* ${record.other}`);
   lines.push(`<https://shoots.fame.so/${shoot.slug}|Open status page>`);
+  const text = lines.join("\n");
 
+  // Preferred: post as the real Fame Bot via the delivery app, using the
+  // secret the two apps already share for the shoot feed.
+  const secret = process.env.SYNC_API_SECRET?.trim();
+  if (secret) {
+    try {
+      const res = await fetch(CREW_SLACK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${secret}`,
+        },
+        body: JSON.stringify({ text }),
+        signal: AbortSignal.timeout(6000),
+      });
+      if (res.ok) return;
+      console.warn(`[feedback] Fame Bot post failed (${res.status}); falling back to webhook`);
+    } catch (err) {
+      console.warn(`[feedback] Fame Bot post threw (${(err as Error).message}); falling back to webhook`);
+    }
+  }
+
+  // Fallback: the dedicated feedback webhook (shows the incoming-webhook app,
+  // name-overridden). Only reached if the Fame Bot path is unavailable.
+  const url = process.env.SLACK_FEEDBACK_WEBHOOK_URL;
+  if (!url) {
+    console.log("[feedback] no Fame Bot secret and SLACK_FEEDBACK_WEBHOOK_URL unset - not posting");
+    return;
+  }
   await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    // Override the webhook's default "incoming-webhook" identity so the post
-    // reads as Fame Bot. Incoming webhooks honour these display overrides.
     body: JSON.stringify({
       username: "Fame Bot",
       icon_emoji: ":movie_camera:",
-      text: lines.join("\n"),
+      text,
     }),
   });
 }
