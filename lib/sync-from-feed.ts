@@ -46,6 +46,14 @@ type FeedShoot = {
   crewMemberPhotoUrl: string | null;
   crewMemberProfileUrl: string | null;
   crewStatus: string | null;
+  /** The full booked-crew roster (lead first). Absent on older feed payloads,
+   *  where the single crewMember* fields above are used instead. */
+  crew?: Array<{
+    name: string | null;
+    bio: string | null;
+    photoUrl: string | null;
+    profileUrl: string | null;
+  }> | null;
   clientEmail: string | null;
   clientContactName: string | null;
   clientWhatsappGroup: string | null;
@@ -114,7 +122,23 @@ function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | nu
         profileUrl: f.crewMemberProfileUrl || undefined,
       }
     : undefined;
-  const crewFirstName = crew ? crew.name.split(/\s+/)[0] : undefined;
+  // The full roster. Prefer the feed's `crew` array; fall back to a
+  // single-element array built from the lead scalars for older payloads.
+  const crewMembers = (
+    Array.isArray(f.crew) && f.crew.length > 0
+      ? f.crew
+          .filter((m) => m?.name)
+          .map((m) => ({
+            name: m.name as string,
+            bio: m.bio ?? "",
+            photoUrl: m.photoUrl || undefined,
+            profileUrl: m.profileUrl || undefined,
+          }))
+      : crew
+        ? [crew]
+        : []
+  );
+  const crewFirstName = crewMembers[0]?.name.split(/\s+/)[0] ?? undefined;
 
   const clientEmails = f.clientEmail
     ? f.clientEmail
@@ -157,6 +181,7 @@ function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | nu
     status: mapping.status,
     statusLabel: statusLabel(mapping.status, crewFirstName, hasPostProduction),
     crew,
+    crewMembers,
     briefUrl: f.briefUrl || undefined,
     quoteUrl: f.quoteUrl || undefined,
     footageUrl: f.clientFootageUrl || undefined,

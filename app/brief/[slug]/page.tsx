@@ -241,18 +241,24 @@ function enrichAndFilterSections(
   shoot: Shoot | null,
 ): Section[] {
   const enriched = sections.map((s) => {
-    if (s.kind === "crew" && shoot?.crew) {
+    if (s.kind === "crew" && (shoot?.crewMembers?.length || shoot?.crew)) {
+      // Every booked crew member, lead first. Falls back to the single lead for
+      // shoots synced before the feed carried the roster array.
+      const roster =
+        shoot?.crewMembers && shoot.crewMembers.length > 0
+          ? shoot.crewMembers
+          : shoot?.crew
+            ? [shoot.crew]
+            : [];
       return {
         kind: "crew" as const,
         title: s.title,
-        members: [
-          {
-            name: shoot.crew.name,
-            bio: shoot.crew.bio || undefined,
-            photoUrl: shoot.crew.photoUrl,
-            vetted: true,
-          },
-        ],
+        members: roster.map((m) => ({
+          name: m.name,
+          bio: m.bio || undefined,
+          photoUrl: m.photoUrl,
+          vetted: true,
+        })),
       };
     }
     if (s.kind === "production" && shoot?.hasPostProduction) {
