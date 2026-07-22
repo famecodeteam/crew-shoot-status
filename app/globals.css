@@ -665,6 +665,13 @@ img {
   margin-bottom: 14px;
 }
 
+/* Stacks the crew cards when a shoot has several booked crew members. */
+.crew-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .crew-card {
   display: flex;
   gap: 20px;

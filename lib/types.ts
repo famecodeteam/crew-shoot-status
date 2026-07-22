@@ -172,6 +172,8 @@ export type Shoot = {
   mustHaveShots?: string[];
   status: ShootStatus;
   statusLabel: string; // client-facing label (already mapped from Trello list)
+  /** The lead crew member (back-compat: single "your crew" card). Prefer
+   *  `crewMembers` - `crew` stays as the lead so older code keeps working. */
   crew?: {
     name: string;
     bio: string;
@@ -179,6 +181,15 @@ export type Shoot = {
     /** Crew member's public profile page (member.fame.so/crew/<slug>). */
     profileUrl?: string;
   };
+  /** The FULL booked-crew roster (a shoot can have several people), lead first.
+   *  Falls back to a single-element array built from `crew` for shoots synced
+   *  before the feed carried the array. */
+  crewMembers?: Array<{
+    name: string;
+    bio: string;
+    photoUrl?: string;
+    profileUrl?: string;
+  }>;
   briefUrl?: string;
   quoteUrl?: string;
   // Per-shoot footage index page on member.fame.so - the client browses

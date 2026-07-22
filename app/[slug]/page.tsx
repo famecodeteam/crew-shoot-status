@@ -211,7 +211,16 @@ function ShootView({
   // Crew card appears once we've crossed the "Crew confirmed" milestone
   // (i.e. stepIdx is 2 or higher - booking-confirmed and searching-for-crew
   // both sit at stepIdx=1, working toward crew confirmation).
-  const showCrew = stepIdx >= 2 && shoot.crew && !isOnHold;
+  // The full booked-crew roster (a shoot can have several people). Falls back
+  // to the single lead `crew` for shoots synced before the feed carried the
+  // array.
+  const crewRoster =
+    shoot.crewMembers && shoot.crewMembers.length > 0
+      ? shoot.crewMembers
+      : shoot.crew
+        ? [shoot.crew]
+        : [];
+  const showCrew = stepIdx >= 2 && crewRoster.length > 0 && !isOnHold;
   const countdown = formatCountdown(shoot.shootDate, isDelivered);
 
   // M7 feed-through: live crew status from member.fame.so taps.
@@ -373,47 +382,51 @@ function ShootView({
         />
       )}
 
-      {showCrew && shoot.crew && (
+      {showCrew && (
         <section className="section">
           <div className="card-h">Your crew</div>
-          <div className="card crew-card">
-            <div className="crew-photo">
-              {shoot.crew.photoUrl ? (
-                <CrewPhoto src={shoot.crew.photoUrl} name={shoot.crew.name} />
-              ) : (
-                shoot.crew.name.charAt(0)
-              )}
-            </div>
-            <div>
-              <div className="crew-name">
-                {shoot.crew.profileUrl ? (
-                  <a
-                    className="crew-name-link"
-                    href={shoot.crew.profileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {shoot.crew.name}
-                  </a>
-                ) : (
-                  shoot.crew.name
-                )}
+          <div className="crew-list">
+            {crewRoster.map((member, i) => (
+              <div className="card crew-card" key={`${member.name}-${i}`}>
+                <div className="crew-photo">
+                  {member.photoUrl ? (
+                    <CrewPhoto src={member.photoUrl} name={member.name} />
+                  ) : (
+                    member.name.charAt(0)
+                  )}
+                </div>
+                <div>
+                  <div className="crew-name">
+                    {member.profileUrl ? (
+                      <a
+                        className="crew-name-link"
+                        href={member.profileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {member.name}
+                      </a>
+                    ) : (
+                      member.name
+                    )}
+                  </div>
+                  <div className="crew-bio">{member.bio}</div>
+                  <div className="crew-chips">
+                    <span className="crew-chip vetted">✓ Vetted by Fame</span>
+                    {member.profileUrl && (
+                      <a
+                        className="crew-chip profile"
+                        href={member.profileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View profile ↗
+                      </a>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="crew-bio">{shoot.crew.bio}</div>
-              <div className="crew-chips">
-                <span className="crew-chip vetted">✓ Vetted by Fame</span>
-                {shoot.crew.profileUrl && (
-                  <a
-                    className="crew-chip profile"
-                    href={shoot.crew.profileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    View profile ↗
-                  </a>
-                )}
-              </div>
-            </div>
+            ))}
           </div>
         </section>
       )}
