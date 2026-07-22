@@ -256,6 +256,12 @@ async function postToSlack(shoot: Shoot, record: StoredRecord): Promise<void> {
   await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text: lines.join("\n") }),
+    // Override the webhook's default "incoming-webhook" identity so the post
+    // reads as Fame Bot. Incoming webhooks honour these display overrides.
+    body: JSON.stringify({
+      username: "Fame Bot",
+      icon_emoji: ":movie_camera:",
+      text: lines.join("\n"),
+    }),
   });
 }
