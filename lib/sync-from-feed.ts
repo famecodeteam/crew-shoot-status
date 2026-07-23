@@ -207,6 +207,8 @@ export type FeedSyncSummary = {
   fetched: number;
   upserted: number;
   skipped: number;
+  /** Shoots whose own sync threw - counted, never fatal to the rest. */
+  failed: number;
   /** Milestone emails scheduled this run (status transitions detected). */
   emailsScheduled: number;
   /** Local copies deleted because the portal marked the card retired. */
@@ -358,6 +360,7 @@ export async function syncFromFeed(opts?: {
       fetched: 0,
       upserted: 0,
       skipped: 0,
+      failed: 0,
       emailsScheduled: 0,
       error: "SYNC_API_SECRET unset",
     };
@@ -375,6 +378,7 @@ export async function syncFromFeed(opts?: {
         fetched: 0,
         upserted: 0,
         skipped: 0,
+      failed: 0,
         emailsScheduled: 0,
         error: `feed ${res.status}`,
       };
@@ -390,6 +394,7 @@ export async function syncFromFeed(opts?: {
       fetched: 0,
       upserted: 0,
       skipped: 0,
+      failed: 0,
       emailsScheduled: 0,
       error: (err as Error).message,
     };
@@ -397,9 +402,15 @@ export async function syncFromFeed(opts?: {
 
   let upserted = 0;
   let skipped = 0;
+  let failed = 0;
   let emailsScheduled = 0;
   const sample: FeedSyncSummary["sample"] = [];
   for (const f of shoots) {
+    // Per-shoot guard. Without it ONE bad shoot (a Drive/KV blip, a malformed
+    // row) threw out of the whole run, so every shoot after it in the loop
+    // silently stopped syncing - a client page could sit frozen for days with
+    // nothing in the summary to show why. Isolate each shoot and carry on.
+    try {
     const existing = await getByCardId(f.cardId);
     const shoot = feedToShoot(f, existing?.slug);
     if (!shoot) {
@@ -487,6 +498,13 @@ export async function syncFromFeed(opts?: {
         );
       }
     }
+    } catch (err) {
+      failed += 1;
+      console.warn(
+        `[sync-shoots] shoot ${f.shootNumber ?? f.cardId} failed:`,
+        (err as Error).message,
+      );
+    }
   }
   // Delete the client's local copy of any shoot the portal has retired
   // (archived / soft-deleted) so its public status page 404s. Reversible:
@@ -514,6 +532,7 @@ export async function syncFromFeed(opts?: {
     fetched: shoots.length,
     upserted,
     skipped,
+    failed,
     emailsScheduled,
     retired,
     ...(dryRun ? { sample } : {}),
