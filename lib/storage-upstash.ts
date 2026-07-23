@@ -56,10 +56,25 @@ async function writeAll(store: Store): Promise<void> {
 
 export async function getBySlug(slug: string): Promise<Shoot | null> {
   const store = await readAll();
+  // The store is keyed by CARD id, so one slug can sit on more than one entry
+  // (a shoot that changed card id leaves an orphan behind). Returning the
+  // first match let a stale orphan shadow the live record permanently - the
+  // client page froze on an old status while the sync kept updating the other
+  // entry, and its milestone emails rendered the correct one. Take the most
+  // recently updated match instead, so the live record always wins.
+  let best: Shoot | null = null;
+  let viaPrevious: Shoot | null = null;
+  const fresher = (a: Shoot, b: Shoot | null) =>
+    !b || (a.updatedAt ?? "") > (b.updatedAt ?? "");
   for (const shoot of Object.values(store)) {
-    if (shoot.slug === slug) return shoot;
+    if (shoot.slug === slug) {
+      if (fresher(shoot, best)) best = shoot;
+    } else if (shoot.previousSlugs?.includes(slug)) {
+      // Historical slug - old/emailed links still resolve (page redirects).
+      if (fresher(shoot, viaPrevious)) viaPrevious = shoot;
+    }
   }
-  return null;
+  return best ?? viaPrevious;
 }
 
 export async function getByCardId(cardId: string): Promise<Shoot | null> {
