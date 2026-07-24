@@ -16,6 +16,7 @@ import { EmailLayout, PrimaryButton } from "../layout";
 import { EmailTimeline } from "../timeline";
 import { QuestionsCTA } from "../questions-cta";
 import { fameTheme } from "../theme";
+import { clientFacingCrewName } from "../../crew-name";
 import type { Shoot } from "../../types";
 
 const { colors } = fameTheme;
@@ -83,7 +84,7 @@ export function BookingConfirmedEmail({
                   </td>
                 ) : null}
                 <td style={crewTextCell}>
-                  <Text style={crewName}>{crew.name}</Text>
+                  <Text style={crewName}>{clientFacingCrewName(crew.name)}</Text>
                   {crew.bio ? <Text style={crewBio}>{crew.bio}</Text> : null}
                 </td>
               </tr>

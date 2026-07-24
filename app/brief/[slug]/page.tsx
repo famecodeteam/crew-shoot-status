@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBySlug } from "@/lib/brief-storage";
 import { getBySlug as getShootBySlug } from "@/lib/storage";
+import { clientFacingCrewName } from "@/lib/crew-name";
 import type { BriefRecord, Shoot } from "@/lib/types";
 import type { ParsedBrief, Section } from "@/lib/parse-brief";
 import { SectionCard } from "./sections";
@@ -254,7 +255,7 @@ function enrichAndFilterSections(
         kind: "crew" as const,
         title: s.title,
         members: roster.map((m) => ({
-          name: m.name,
+          name: clientFacingCrewName(m.name),
           bio: m.bio || undefined,
           photoUrl: m.photoUrl,
           vetted: true,
