@@ -42,8 +42,22 @@ function fromLine(): string {
   return `${display} <${address}>`;
 }
 
-function replyTo(): string | undefined {
-  return process.env.EMAIL_REPLY_TO || undefined;
+const CREW_INBOX = "crew@fame.so";
+
+function replyTo(): string {
+  // A client replied to one of these and got a bounce-back: the From address
+  // (hello@shoots.fame.so) is send-only. Reply-To must always be a real,
+  // monitored inbox, so default to the crew Google Group rather than leaving
+  // it to an env var that can be blank - and never let it be set to the
+  // send-only From address, which would just recreate the bounce.
+  const configured = process.env.EMAIL_REPLY_TO?.trim();
+  const fromAddress = (
+    process.env.EMAIL_FROM_ADDRESS || "hello@shoots.fame.so"
+  ).trim();
+  if (!configured || configured.toLowerCase() === fromAddress.toLowerCase()) {
+    return CREW_INBOX;
+  }
+  return configured;
 }
 
 function bcc(): string[] {
