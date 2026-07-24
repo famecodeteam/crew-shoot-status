@@ -109,3 +109,31 @@ export async function listAll(): Promise<Shoot[]> {
   const store = await readAll();
   return Object.values(store);
 }
+
+/**
+ * One-shot batch: read the store once, apply every upsert + delete, write once.
+ *
+ * The feed sync used to call getByCardId + upsertByCardId per shoot, and each
+ * of those reads (and rewrites) the WHOLE store - ~3 full-store transfers per
+ * shoot, ~370 for a 123-shoot run. That blew the 60s function limit, so the
+ * sync was killed part-way and every shoot after the cut-off silently stopped
+ * updating. It was also a lost-update race: two overlapping runs would clobber
+ * each other's changes, since each held a whole-store snapshot.
+ */
+export async function applyBatch(batch: {
+  upserts?: Record<string, Shoot>;
+  deletes?: string[];
+}): Promise<void> {
+  const store = await readAll();
+  for (const [cardId, shoot] of Object.entries(batch.upserts ?? {})) {
+    store[cardId] = shoot;
+  }
+  for (const cardId of batch.deletes ?? []) delete store[cardId];
+  await writeAll(store);
+}
+
+/** The whole store keyed by card id - one read, for callers that need to look
+ *  up many shoots (see applyBatch). */
+export async function listAllMap(): Promise<Record<string, Shoot>> {
+  return readAll();
+}

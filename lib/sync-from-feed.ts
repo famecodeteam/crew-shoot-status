@@ -15,7 +15,12 @@ import {
   projectDeliveredDate,
 } from "./milestone-dates";
 import { DEFAULT_PRODUCER, PRODUCERS } from "./producer";
-import { deleteByCardId, getByCardId, upsertByCardId } from "./storage";
+import {
+  applyBatch,
+  getByCardId,
+  listAllMap,
+  upsertByCardId,
+} from "./storage";
 import { registerBrief } from "./brief-storage";
 import { extractDocId, shootSlugToBriefSlug } from "./brief-slug";
 import { generateSlug } from "./transform";
@@ -400,6 +405,14 @@ export async function syncFromFeed(opts?: {
     };
   }
 
+  // ONE read of the whole store up front. Per-shoot getByCardId/upsertByCardId
+  // each transferred the entire store (~370 full-store round trips for a
+  // 123-shoot run), which blew the 60s limit - the run was killed part-way and
+  // every shoot after the cut-off silently stopped syncing. Everything below
+  // works against this snapshot and is written once at the end.
+  const storeBefore = await listAllMap();
+  const pendingUpserts: Record<string, Shoot> = {};
+
   let upserted = 0;
   let skipped = 0;
   let failed = 0;
@@ -411,7 +424,7 @@ export async function syncFromFeed(opts?: {
     // silently stopped syncing - a client page could sit frozen for days with
     // nothing in the summary to show why. Isolate each shoot and carry on.
     try {
-    const existing = await getByCardId(f.cardId);
+    const existing = storeBefore[f.cardId] ?? null;
     const shoot = feedToShoot(f, existing?.slug);
     if (!shoot) {
       skipped += 1; // not publishable / no card id - leave existing alone
@@ -435,7 +448,8 @@ export async function syncFromFeed(opts?: {
       upserted += 1; // "would upsert"
       continue;
     }
-    await upsertByCardId(f.cardId, () => shoot);
+    pendingUpserts[f.cardId] = shoot;
+    storeBefore[f.cardId] = shoot;
     upserted += 1;
 
     // Zero-orphan backfill: when the portal hasn't minted a status_page_url
@@ -512,19 +526,28 @@ export async function syncFromFeed(opts?: {
   // the local copy. Explicit list from the portal, so no risk of pruning a
   // still-active shoot that just blipped out of the feed.
   let retired = 0;
+  const pendingDeletes: string[] = [];
   if (!dryRun) {
     for (const cardId of retiredCardIds) {
-      try {
-        if (await getByCardId(cardId)) {
-          await deleteByCardId(cardId);
-          retired += 1;
-        }
-      } catch (err) {
-        console.warn(
-          `[sync-shoots] retire-delete failed for ${cardId}:`,
-          (err as Error).message,
-        );
+      if (storeBefore[cardId]) {
+        pendingDeletes.push(cardId);
+        retired += 1;
       }
+    }
+    // The single write for the whole run: every upsert + every retire-delete.
+    try {
+      await applyBatch({ upserts: pendingUpserts, deletes: pendingDeletes });
+    } catch (err) {
+      console.error("[sync-shoots] batch write failed:", (err as Error).message);
+      return {
+        fetched: shoots.length,
+        upserted: 0,
+        skipped,
+        failed,
+        emailsScheduled,
+        retired: 0,
+        error: `batch write failed: ${(err as Error).message}`,
+      };
     }
   }
 
