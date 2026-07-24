@@ -10,6 +10,7 @@ import { getAssetsLocked } from "@/lib/assets-lock";
 import { clientVersions } from "@/lib/asset-versions";
 import type { Asset, AssetVersion, Shoot } from "@/lib/types";
 import { statusLabel } from "@/lib/list-mapping";
+import { clientFacingCrewName } from "@/lib/crew-name";
 import { CrewPhoto } from "./crew-photo";
 import { AssetPoster } from "./AssetPoster";
 import { getDemoShoot, getJustBookedDemoShoot } from "./demo-data";
@@ -404,10 +405,10 @@ function ShootView({
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {member.name}
+                        {clientFacingCrewName(member.name)}
                       </a>
                     ) : (
-                      member.name
+                      clientFacingCrewName(member.name)
                     )}
                   </div>
                   <div className="crew-bio">{member.bio}</div>
