@@ -388,12 +388,19 @@ function ShootView({
           <div className="card-h">Your crew</div>
           <div className="crew-list">
             {crewRoster.map((member, i) => (
-              <div className="card crew-card" key={`${member.name}-${i}`}>
+              // Key + alt + the CrewPhoto prop all use the SHORTENED name:
+              // props of a client component are serialised into the page
+              // payload, so passing the full name here would hand the client
+              // the surname in the page source even though the UI hides it.
+              <div className="card crew-card" key={`crew-${i}`}>
                 <div className="crew-photo">
                   {member.photoUrl ? (
-                    <CrewPhoto src={member.photoUrl} name={member.name} />
+                    <CrewPhoto
+                      src={member.photoUrl}
+                      name={clientFacingCrewName(member.name)}
+                    />
                   ) : (
-                    member.name.charAt(0)
+                    clientFacingCrewName(member.name).charAt(0)
                   )}
                 </div>
                 <div>
