@@ -20,6 +20,11 @@ type StorageModule = {
   ): Promise<Shoot>;
   deleteByCardId(cardId: string): Promise<void>;
   listAll(): Promise<Shoot[]>;
+  listAllMap(): Promise<Record<string, Shoot>>;
+  applyBatch(batch: {
+    upserts?: Record<string, Shoot>;
+    deletes?: string[];
+  }): Promise<void>;
 };
 
 let cached: StorageModule | null = null;
@@ -77,4 +82,18 @@ export async function deleteByCardId(cardId: string): Promise<void> {
 
 export async function listAll(): Promise<Shoot[]> {
   return (await getImpl()).listAll();
+}
+
+/** The whole store keyed by card id, in ONE read. */
+export async function listAllMap(): Promise<Record<string, Shoot>> {
+  return (await getImpl()).listAllMap();
+}
+
+/** Apply many upserts/deletes in ONE read + ONE write - see the impls for why
+ *  the per-shoot path couldn't stay. */
+export async function applyBatch(batch: {
+  upserts?: Record<string, Shoot>;
+  deletes?: string[];
+}): Promise<void> {
+  return (await getImpl()).applyBatch(batch);
 }
