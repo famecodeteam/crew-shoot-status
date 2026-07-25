@@ -1,6 +1,7 @@
 // Brand kit for milestone emails. Mirrors the public status page so
-// the email and the page feel like the same product. Source of truth
-// for variables in app/globals.css and the page header.
+// the email and the page feel like the same product - values track
+// app/globals.css, which in turn follows the approved web brand
+// guidelines (fame-website/docs/brand-guidelines.md).
 
 export const fameTheme = {
   colors: {
@@ -10,8 +11,11 @@ export const fameTheme = {
     dark: "#292a25",
     cream: "#f8f1eb", // page background
     card: "#ffffff",
-    border: "#e5e7eb",
-    textMuted: "#6b7280",
+    // Warm, matching the page. The cool greys these replaced (#e5e7eb /
+    // #6b7280) fight the cream background - web brand guidelines s.9,
+    // decisions 3 and 5.
+    border: "#e7ded4",
+    textMuted: "#6b6470",
     mint: "#cee8e0",
   },
   fontFamily:
