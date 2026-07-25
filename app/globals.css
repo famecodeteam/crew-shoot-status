@@ -7,10 +7,6 @@
   /* Secondary */
   --mint: #cee8e0;
   --pink-light: #f9d2e3; /* brand "light pink" - soft badge backgrounds */
-  /* Same hue as --pink, dark enough for small text. Brand pink is only
-     2.4:1 on pink-light and 2.9:1 on cream - fine as a fill, illegible as
-     label text. Guidelines s.8: pink is never used for small body copy. */
-  --pink-deep: #a81442;
   --periwinkle: #7778b8;
   --orchid: #b373b0;
   --green: #71be46;
@@ -224,7 +220,7 @@ img {
   align-items: center;
   gap: 8px;
   background: var(--pink-light);
-  color: var(--pink-deep);
+  color: var(--pink);
   font-weight: 600;
   font-size: 14px;
   padding: 8px 14px;
@@ -236,7 +232,7 @@ img {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--pink-deep);
+  background: var(--pink);
 }
 
 .status-badge.delivered {
@@ -756,13 +752,17 @@ img {
 
 .crew-chip.vetted {
   background: var(--pink-light);
-  color: #b12455;
+  color: var(--pink);
 }
 
-/* Clickable "View profile" chip - opens the crew member's public page. */
+/* Clickable "View profile" chip - opens the crew member's public page.
+   Brand pink fill: white on pink is ~3.4:1, which is why the guidelines put
+   a 14px/600 floor on white-on-pink labels rather than darkening the fill. */
 .crew-chip.profile {
-  background: var(--pink-deep);
+  background: var(--pink);
   color: #fff;
+  font-size: 14px;
+  font-weight: 600;
   text-decoration: none;
   transition: opacity 0.15s ease;
 }
@@ -893,7 +893,7 @@ img {
 }
 
 .footer a {
-  color: var(--pink-deep);
+  color: var(--pink);
   font-weight: 500;
 }
 
@@ -1032,10 +1032,12 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: var(--pink-deep);
+  /* The one primary CTA on this page, so it keeps the brand pink fill. The
+     label sits at the 14px/600 floor the guidelines set for white on pink. */
+  background: var(--pink);
   color: #fff;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   padding: 8px 14px;
   border-radius: 999px;
 }
@@ -1220,7 +1222,7 @@ img {
 
 .asset-card-pill.needs-review {
   background: var(--pink-light);
-  color: #b12455;
+  color: var(--pink);
 }
 .asset-card-pill.needs-review::before {
   background: var(--pink);
