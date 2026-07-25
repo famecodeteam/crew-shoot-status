@@ -50,13 +50,13 @@ function computeHealth(parsed: ParsedBrief): ParseHealth {
   }
   const sections = parsed.sections.length;
   const suspicious =
-    // Brief has structure but the Project Overview parsed empty —
+    // Brief has structure but the Project Overview parsed empty -
     // typically means heading-style drift or the template was
     // rewritten without our field labels.
     (sections > 0 && overviewFields === 0) ||
     // The Doc had no recognised section headers at all.
     sections === 0 ||
-    // Most sections fell through to prose — the template's section
+    // Most sections fell through to prose - the template's section
     // names probably no longer match SECTION_KIND_BY_TITLE.
     (sections >= 3 && proseFallback >= sections - 1);
   return { sections, overviewFields, crewMembers, proseFallback, suspicious };
@@ -109,7 +109,7 @@ export async function syncOne(rec: BriefRecord): Promise<SyncResult> {
       lastSyncedAt: new Date().toISOString(),
       lastErrorAt: null,
       lastErrorMessage: null,
-      // Don't bump updatedAt — preserves "real change" signal downstream.
+      // Don't bump updatedAt - preserves "real change" signal downstream.
     }));
     // Compute health off the stored parse so monitoring stays accurate
     // even when nothing changed since the last sync. Same shape as the
@@ -177,7 +177,7 @@ export function logSyncResult(r: SyncResult): void {
   console.log(`[sync-briefs] ${JSON.stringify(payload)}`);
   if (r.health?.suspicious) {
     console.warn(
-      `[sync-briefs] suspicious parse for ${r.slug} — overviewFields=${r.health.overviewFields} sections=${r.health.sections} proseFallback=${r.health.proseFallback}. Likely producer template drift (HEADING_3 misuse / renamed sections / missing field labels).`,
+      `[sync-briefs] suspicious parse for ${r.slug} - overviewFields=${r.health.overviewFields} sections=${r.health.sections} proseFallback=${r.health.proseFallback}. Likely producer template drift (HEADING_3 misuse / renamed sections / missing field labels).`,
     );
   }
 }

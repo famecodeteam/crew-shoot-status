@@ -41,12 +41,12 @@ export default async function BriefPage({ params }: PageProps) {
   if (!rec) notFound();
 
   if (!rec.parsedJson) {
-    // Registered but not yet synced — we know about the brief but the
+    // Registered but not yet synced - we know about the brief but the
     // cron hasn't parsed the Doc yet. Show a soft placeholder.
     return <PendingView slug={slug} rec={rec} />;
   }
 
-  // Look up the matching Shoot — used to enrich the brief's crew section
+  // Look up the matching Shoot - used to enrich the brief's crew section
   // with the same photo / bio / "Vetted by Fame" treatment the status
   // page renders. Best-effort: if the Shoot has rotated to a different
   // slug or isn't in storage, we fall back to the brief Doc's crew data.
@@ -176,7 +176,7 @@ function PendingView({ slug, rec }: { slug: string; rec: BriefRecord }) {
 // ---------- Status page CTA ----------
 
 // Replaces whatever "Pre-Event Communications" / "Shoot Status" section
-// the producer put in the Doc — those are always "click here to see live
+// the producer put in the Doc - those are always "click here to see live
 // status" and look bad as a stack of bullets. The designed card below is
 // the page's call-to-action: a single clickable surface that takes the
 // client to the live status page.
@@ -232,7 +232,7 @@ function BriefFooter({ rec }: { rec: BriefRecord }) {
 //   1. When shoot.crew is available, override the brief's crew section
 //      with the richer status-page treatment (photo, bio, "Vetted by
 //      Fame"). The brief Doc's "Team On-Site" data (WhatsApp number,
-//      etc.) is intentionally dropped — the brief page mirrors the
+//      etc.) is intentionally dropped - the brief page mirrors the
 //      client-facing status page treatment per producer feedback.
 //   2. Drop any section whose kind-specific content is empty (orphan
 //      HEADING_3 in the Doc, deliberately blank section, etc.) so the
@@ -337,7 +337,7 @@ function isStatusPageRedirect(s: Section): boolean {
 
 function isSectionEmpty(s: Section): boolean {
   // Sections with empty titles AND no content are usually orphan
-  // HEADING_3 paragraphs the producer left behind — never useful.
+  // HEADING_3 paragraphs the producer left behind - never useful.
   switch (s.kind) {
     case "overview":
       return Object.keys(s.fields).length === 0;
@@ -418,7 +418,7 @@ function deriveLocationLabel(parsed: ParsedBrief): string | null {
     .map((s) => s.trim())
     .filter(Boolean);
   for (let i = parts.length - 1; i >= 0; i--) {
-    // Skip postal codes (e.g. "Singapore 078852") — split off the digits.
+    // Skip postal codes (e.g. "Singapore 078852") - split off the digits.
     const cleaned = parts[i].replace(/\s+\d{3,}.*$/, "").trim();
     if (cleaned && /[A-Za-z]/.test(cleaned)) return cleaned;
   }

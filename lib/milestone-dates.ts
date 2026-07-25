@@ -24,7 +24,7 @@ export type MilestoneDates = {
 // including the live board's "Recieved" typo.)
 //
 // "Assets Shared With Client" deliberately maps to NOTHING. Sharing
-// assets for review is not the same as delivery — the client-facing
+// assets for review is not the same as delivery - the client-facing
 // label for that list is "Assets ready for review", not "Delivered".
 // Treating it as `delivered` was a bug: it baked an actual delivered
 // date into the record, which short-circuits the projected-ETA path

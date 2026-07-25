@@ -45,7 +45,7 @@ export type ProseBlock = { html: string; bullet?: boolean; level?: number };
 //     or a hyperlinked LinkValue.
 //   • The matching Shoot record on the brief page (page-level override).
 //     Yields {name, bio, photoUrl, vetted} for the richer card seen on
-//     the status page — preferred when available so the brief mirrors
+//     the status page - preferred when available so the brief mirrors
 //     the status-page treatment instead of the Doc's contact-only row.
 export type CrewMember = {
   name: string;
@@ -164,7 +164,7 @@ function parseHeader(title: string): ParsedBrief["header"] {
   // as the event name so we still show *something*.
   const trimmed = title.trim();
   const m = trimmed.match(
-    /^Brief\s+#?(\S+)\s*[-–—]\s*([^-–—]+?)\s*[-–—]\s*(.+)$/iu,
+    /^Brief\s+#?(\S+)\s*[-–-]\s*([^-–-]+?)\s*[-–-]\s*(.+)$/iu,
   );
   if (m) {
     return {
@@ -186,8 +186,8 @@ type SectionChunk = {
 
 // Section headings always carry the numbered "N. Title" template (e.g.
 // "1. Project Overview"). When a Doc has a HEADING_3 paragraph that
-// DOESN'T match — a common producer mistake is to apply the heading
-// style to field labels like "Client Name: ..." — treat it as regular
+// DOESN'T match - a common producer mistake is to apply the heading
+// style to field labels like "Client Name: ..." - treat it as regular
 // content inside the current section rather than starting a new one.
 // Without this, every styled paragraph splits the Doc into a stack of
 // empty single-paragraph sections that all get filtered as empty.
@@ -209,7 +209,7 @@ function splitSections(ps: Paragraph[]): SectionChunk[] {
         continue;
       }
       // Heading styling on a non-numbered line (e.g. the Doc-title line, or
-      // a field label a producer accidentally styled as a heading) — producer
+      // a field label a producer accidentally styled as a heading) - producer
       // drift. Fall through and treat it as a regular paragraph below.
     }
     if (!current) continue; // pre-heading content (doc title etc.) ignored
@@ -318,7 +318,7 @@ function detectSubheading(p: Paragraph): {
   // really a single bulleted item not a subheading transition. Without
   // this check, the entire prose gets wedged into the equipment dict
   // as a giant key with an empty value, and following items get lost.
-  // Schedule + deliverables are more forgiving — schedule validates the
+  // Schedule + deliverables are more forgiving - schedule validates the
   // time pattern at dispatch, deliverables takes any content.
   if (bucket === "equipment" && value && !/^\S[^:]*:\s+\S/.test(value)) {
     return null;
@@ -328,7 +328,7 @@ function detectSubheading(p: Paragraph): {
 }
 
 const TIME_RX =
-  /^\s*(\d{1,2}:\d{2}\s*(?:AM|PM)(?:\s*[-–—]\s*\d{1,2}:\d{2}\s*(?:AM|PM))?)\s*$/iu;
+  /^\s*(\d{1,2}:\d{2}\s*(?:AM|PM)(?:\s*[-–-]\s*\d{1,2}:\d{2}\s*(?:AM|PM))?)\s*$/iu;
 
 function parseProduction(body: Paragraph[]): {
   schedule: ScheduleRow[];
@@ -344,7 +344,7 @@ function parseProduction(body: Paragraph[]): {
   // subheading inline with the first item ("Equipment Requirements:
   // Cameras: 2x 4K Camera Kits."). We can't recover the bold structure
   // on the remainder cleanly, so this path uses a regex split on the
-  // plain-text remainder — fine for equipment (values are plain strings)
+  // plain-text remainder - fine for equipment (values are plain strings)
   // and schedule (we still validate the time pattern). The deliverables
   // case carries the source paragraph's bullet state through so the
   // remainder renders alongside other bullets in the same <ul>.
@@ -384,7 +384,7 @@ function parseProduction(body: Paragraph[]): {
     }
     // Until we've seen an explicit subheading, default to "deliverables"
     // so free-form section-3 templates (no Confirmed Schedule / Equipment
-    // Requirements / Deliverables subheadings — e.g. brief #0214) still
+    // Requirements / Deliverables subheadings - e.g. brief #0214) still
     // render their bullets instead of being silently dropped.
     const effective: ProductionBucket = bucket ?? "deliverables";
     const split = splitLabelValue(p);

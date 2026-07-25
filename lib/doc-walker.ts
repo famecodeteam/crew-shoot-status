@@ -1,5 +1,5 @@
 // Low-level helpers for reading a Google Docs API structural response.
-// Pure functions only — no I/O — so the parser can be unit-tested against
+// Pure functions only - no I/O - so the parser can be unit-tested against
 // a fixture without standing up the Docs client.
 
 import type { docs_v1 } from "googleapis";
@@ -9,7 +9,7 @@ export type ParagraphElement = docs_v1.Schema$ParagraphElement;
 export type TextRun = NonNullable<ParagraphElement["textRun"]>;
 
 // Iterate paragraph blocks in document order. Skips sectionBreak / table /
-// tableOfContents — none appear in our brief template; if one does later
+// tableOfContents - none appear in our brief template; if one does later
 // the section walker just doesn't see it.
 export function paragraphs(doc: docs_v1.Schema$Document): Paragraph[] {
   const out: Paragraph[] = [];
@@ -50,7 +50,7 @@ export function bulletLevel(p: Paragraph): number {
   return p.bullet?.nestingLevel ?? 0;
 }
 
-// Concatenated plain text of a paragraph — only textRun.content runs;
+// Concatenated plain text of a paragraph - only textRun.content runs;
 // auto-text and footnote references are ignored (the brief template
 // doesn't use them).
 export function plainText(p: Paragraph): string {
@@ -82,7 +82,7 @@ export function escapeHtml(s: string): string {
 // Render a paragraph's text runs to a tiny HTML subset: <strong>, <em>,
 // <a href ... target="_blank" rel="noopener">. Trailing newlines stripped
 // (paragraphs become <p> at the next level up). Linked runs override the
-// bold/italic wrapping order — links wrap inside marks.
+// bold/italic wrapping order - links wrap inside marks.
 //
 // Two element types contribute output:
 //   • textRun: ordinary text, with optional bold/italic/link marks.
@@ -161,14 +161,14 @@ function renderRichLink(
   return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(display)}</a>`;
 }
 
-// Many brief paragraphs follow the shape "**Label:** value..." — a
+// Many brief paragraphs follow the shape "**Label:** value..." - a
 // contiguous prefix of bold text runs followed by the value in non-bold
 // runs. Returns the trimmed plain-text label (without the trailing colon)
 // and the trimmed value. Returns null if no colon can be located.
 //
 // Tolerates two producer patterns:
 //   • Colon INSIDE the bold prefix:   **Label:** value
-//     e.g. schedule rows "1:00 PM: …" — splits on the LAST colon in the
+//     e.g. schedule rows "1:00 PM: …" - splits on the LAST colon in the
 //     bold prefix so the internal colons in times don't get mistaken
 //     for the separator.
 //   • Colon OUTSIDE the bold prefix:  **Label**: value
@@ -189,7 +189,7 @@ export function splitLabelValue(p: Paragraph): { label: string; value: string } 
   }
   if (!boldText.trim()) {
     // No bold prefix at all. This happens when the producer styled a
-    // field row as HEADING_3 — Docs renders it bold visually but the
+    // field row as HEADING_3 - Docs renders it bold visually but the
     // underlying runs aren't marked bold. Fall back to splitting on
     // the first ":<space>" in the whole paragraph text.
     const fullText = runs
@@ -212,10 +212,10 @@ export function splitLabelValue(p: Paragraph): { label: string; value: string } 
 
   let label: string;
   let value: string;
-  // Pattern 1: bold prefix ends with ":" — the trailing colon is the
+  // Pattern 1: bold prefix ends with ":" - the trailing colon is the
   // separator. Anchored to the END (not "any colon in bold") so labels
-  // that legitimately contain colons internally — e.g. "Monday 11th
-  // (10:00–11:30 am):" or schedule rows "1:00 PM:" — keep their full
+  // that legitimately contain colons internally - e.g. "Monday 11th
+  // (10:00–11:30 am):" or schedule rows "1:00 PM:" - keep their full
   // text as the label.
   const trailing = boldText.match(/^(.*):\s*$/su);
   if (trailing) {
@@ -223,7 +223,7 @@ export function splitLabelValue(p: Paragraph): { label: string; value: string } 
     value = valueText;
   } else if (/^\s*:/.test(valueText)) {
     // Pattern 2: bold prefix doesn't end in ":" but the non-bold
-    // remainder begins with one — e.g. "**On-Site Coverage**: 4 hours".
+    // remainder begins with one - e.g. "**On-Site Coverage**: 4 hours".
     const m = valueText.match(/^\s*:\s*(.*)$/su);
     if (!m) return null;
     label = boldText;
