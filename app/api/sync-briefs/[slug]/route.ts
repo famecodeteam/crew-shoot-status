@@ -6,7 +6,7 @@
 //   • The producer wants to publish a Doc edit before the next 5-min tick.
 //   • Manual debugging of a specific brief from the terminal.
 //
-// By default this respects syncOne's content-hash short-circuit — if the
+// By default this respects syncOne's content-hash short-circuit - if the
 // Doc hasn't changed since the last sync it returns "unchanged" without
 // re-parsing. Pass ?force=1 (or ?force=true) to bypass that and force a
 // full re-fetch + re-parse + upsert. Use force after a parser change, or
@@ -43,7 +43,7 @@ export async function POST(
   }
 
   // ?force bypasses the content-hash short-circuit by clearing the
-  // stored hash + parse before handing the record to syncOne — same
+  // stored hash + parse before handing the record to syncOne - same
   // technique the bulk /api/backfill-briefs endpoint uses.
   const forceParam = req.nextUrl.searchParams.get("force");
   const force = forceParam === "1" || forceParam === "true";

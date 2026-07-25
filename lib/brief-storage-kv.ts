@@ -1,5 +1,5 @@
 // Redis Cloud brief store. Legacy fallback path during the Upstash
-// migration window — mirrors lib/storage-kv.ts for shoots.
+// migration window - mirrors lib/storage-kv.ts for shoots.
 
 import { createClient, type RedisClientType } from "redis";
 import type { BriefRecord } from "./types";

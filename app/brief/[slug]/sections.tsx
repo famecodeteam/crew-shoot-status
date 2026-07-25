@@ -1,7 +1,7 @@
-// Server components — one per Section kind in the parsed brief. Pure
+// Server components - one per Section kind in the parsed brief. Pure
 // view, no client state. The 'prose' fallback handles any section whose
 // title didn't match the typed-section map (e.g. producer renamed
-// "Project Overview" to "Project Background" — we still render it).
+// "Project Overview" to "Project Background" - we still render it).
 
 import type {
   CrewMember,
@@ -146,7 +146,7 @@ function BulletList({
     <ul>
       {nodes.map((n, i) => (
         <li key={i}>
-          {/* HTML produced by lib/doc-walker.renderRichText — escapes
+          {/* HTML produced by lib/doc-walker.renderRichText - escapes
               text + emits only <strong>/<em>/<a target=_blank>. */}
           <span dangerouslySetInnerHTML={{ __html: n.html }} />
           {n.children.length > 0 && (
@@ -253,7 +253,7 @@ function CrewCard({ member }: { member: CrewMember }) {
           alt={member.name}
         />
       ) : (
-        <div className="brief-crew-avatar">{initials || "—"}</div>
+        <div className="brief-crew-avatar">{initials || "-"}</div>
       )}
       <div>
         <div className="brief-crew-name">{member.name}</div>

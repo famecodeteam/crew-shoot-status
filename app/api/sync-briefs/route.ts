@@ -1,6 +1,6 @@
 // Vercel Cron: GET /api/sync-briefs (every 5 minutes per vercel.json).
 //
-// For each registered brief, call lib/sync-brief.syncOne — fetch the
+// For each registered brief, call lib/sync-brief.syncOne - fetch the
 // Doc, hash-skip if unchanged, otherwise re-parse and upsert. Per-brief
 // failures are captured on the record without overwriting the last good
 // parse. The whole loop is time-boxed at 55s so we exit cleanly before
@@ -9,7 +9,7 @@
 //
 // Auth: when CRON_SECRET is set in env, Vercel includes Authorization:
 // Bearer <secret> on every cron-triggered request. In dev (no secret
-// set) the route is callable directly — handy for manual triggers.
+// set) the route is callable directly - handy for manual triggers.
 
 import { NextResponse, type NextRequest } from "next/server";
 import { listAll } from "@/lib/brief-storage";

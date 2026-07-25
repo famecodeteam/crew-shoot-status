@@ -3,11 +3,11 @@
 // One-shot operational endpoint: iterates every shoot in storage, and
 // for each one with a detected brief Doc (shoot.briefUrl set), registers
 // the BriefRecord + immediately syncs it. Server-side mirror of
-// scripts/backfill-briefs.ts — used when we need to populate the briefs
+// scripts/backfill-briefs.ts - used when we need to populate the briefs
 // store against the production environment (the CLI script writes to
 // whatever store the local .env points at, which isn't always prod).
 //
-// Auth: same CRON_SECRET bearer as the cron route. Idempotent — safe to
+// Auth: same CRON_SECRET bearer as the cron route. Idempotent - safe to
 // run again (registerBrief no-ops when nothing changed; syncOne hashes
 // the Doc and skips if unchanged).
 
@@ -115,13 +115,13 @@ export async function POST(req: NextRequest) {
 
     const rec = await getBriefBySlug(split.briefSlug);
     if (!rec) {
-      // Shouldn't happen — register-then-read is sequential, but log
+      // Shouldn't happen - register-then-read is sequential, but log
       // and continue defensively.
       console.warn(`[backfill-briefs] missing record after register: ${split.briefSlug}`);
       continue;
     }
 
-    // Backfill is the "definitely re-parse everything" path — it's
+    // Backfill is the "definitely re-parse everything" path - it's
     // typically invoked after a parser change, so we want to bypass
     // syncOne's content-hash short-circuit. Pass an empty hash + null
     // parsedJson so syncOne always re-parses + writes back.

@@ -264,7 +264,7 @@ export type BriefRecord = {
   hash: string;            // 8-hex-char unguessable suffix of the status-page slug
   docId: string;           // Google Doc ID backing this brief
   cardId: string;          // Trello card id (so the webhook can find this)
-  shootNumber?: string;    // "#0219" — convenience for logs / observability
+  shootNumber?: string;    // "#0219" - convenience for logs / observability
   lastSyncedAt: string | null;     // ISO of last sync attempt that succeeded
   lastContentHash: string | null;  // SHA-256 of the structural Docs API response
   parsedJson: ParsedBrief | null;  // last successfully parsed model

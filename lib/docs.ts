@@ -1,5 +1,5 @@
 // Google Docs API client. Reuses the shared service account (same one
-// `lib/drive.ts` and `lib/google-auth.ts` use) — brief Docs are already
+// `lib/drive.ts` and `lib/google-auth.ts` use) - brief Docs are already
 // shared with this SA via the per-shoot Drive folders that findShootDriveLinks
 // queries, so adding the `documents.readonly` scope is enough to read them
 // here without a separate OAuth dance.

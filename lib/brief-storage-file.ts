@@ -1,7 +1,7 @@
 // File-backed brief store. Local dev only (no UPSTASH / REDIS_URL set).
 //
 // Shape on disk: { "<briefSlug>": BriefRecord, ... } in .data/briefs.json.
-// Mirrors the layout used by storage-file.ts for shoots — single map keyed
+// Mirrors the layout used by storage-file.ts for shoots - single map keyed
 // by the record's natural identity (here, the brief slug).
 
 import { promises as fs } from "node:fs";
