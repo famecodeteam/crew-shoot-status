@@ -34,11 +34,22 @@
   --review-fg: #8a4a16; /* deep amber-brown, AA on the pale amber */
   --review-accent: #f0843c; /* amber - the bar / solid accent */
 
+  /* "New version ready" state - periwinkle. Was #1fb4fd / #1670a8, which
+     broke the no-blue rule (web brand guidelines s.9, decision 1). This is
+     the only state without tokens, so the blue was hardcoded in three
+     places plus an inline style. Periwinkle separates from the green
+     "approved" beside it BETTER than the blue did: the old blue sat at 1.02
+     contrast against the green - near-identical luminance, which is the
+     thing that actually fails for colourblind readers - periwinkle is 1.77. */
+  --newver-bg: #e4e4f1; /* 20% periwinkle on white */
+  --newver-fg: #4f5089; /* darker periwinkle - 5.9:1 on that bg, clears AA */
+  --newver-accent: #7778b8; /* periwinkle - the bar / dot */
+
   /* ---- Functional / neutral (intentionally not brand colours) ---- */
   --card: #ffffff;
-  --border: #e5e7eb;
+  --border: #e7ded4; /* warm hairline - cool grey fights the cream */
   --text: var(--dark);
-  --text-muted: #6b7280;
+  --text-muted: #6b6470; /* warm muted - see brand guidelines s.9 */
   --marker-muted: #94a3b8; /* resolved comment markers */
   --red: #c0392b; /* errors + destructive actions only - brand has no red */
 
@@ -47,7 +58,7 @@
   /* ---- Quote-page design language (grow.fame.so/q) ----
      Ported so the client/crew status pages share the quote's premium
      look: a dark hero, softer "paper" cards, larger radii. */
-  --ink: #0e0a1a; /* deep near-black with a violet tint - hero bg */
+  --ink: #292a25; /* Fame's Our Black - warm near-black, hero bg */
   --ink-soft: #2e2e2e;
   --line-soft: #e7ded4; /* warm hairline that reads on cream */
   --pink-strong: #df558f;
@@ -1033,7 +1044,7 @@ img {
   background: var(--pink);
 }
 .assets-progress-bar.newver {
-  background: #1fb4fd;
+  background: var(--newver-accent);
 }
 .assets-progress-bar.changes {
   background: var(--review-accent);
@@ -1102,7 +1113,10 @@ img {
 .asset-poster {
   position: relative;
   aspect-ratio: 16 / 9;
-  background: linear-gradient(135deg, #1a1330, #0e0a1a 72%);
+  /* Warm darks tracking --ink. Was #1a1330 -> #0e0a1a, both blue-violet
+     blacks - one of them the old --ink - which would now sit next to a
+     warm-black hero on the same page. */
+  background: linear-gradient(135deg, #3b3d36, var(--ink) 72%);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1199,11 +1213,11 @@ img {
 }
 
 .asset-card-pill.comments-open {
-  background: #d3ecf8;
-  color: #1670a8;
+  background: var(--newver-bg);
+  color: var(--newver-fg);
 }
 .asset-card-pill.comments-open::before {
-  background: #1670a8;
+  background: var(--newver-fg);
 }
 
 .asset-card-pill.approved {

@@ -605,7 +605,7 @@ function FinalAssetsSection({
             <span><i style={{ background: "var(--pink)" }} />{s.review} awaiting your review</span>
           )}
           {s.newver > 0 && (
-            <span><i style={{ background: "#1fb4fd" }} />{s.newver} new version ready</span>
+            <span><i style={{ background: "var(--newver-accent)" }} />{s.newver} new version ready</span>
           )}
           {s.changes > 0 && (
             <span><i style={{ background: "var(--review-accent)" }} />{s.changes} changes in progress</span>
