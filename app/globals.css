@@ -7,6 +7,10 @@
   /* Secondary */
   --mint: #cee8e0;
   --pink-light: #f9d2e3; /* brand "light pink" - soft badge backgrounds */
+  /* Same hue as --pink, dark enough for small text. Brand pink is only
+     2.4:1 on pink-light and 2.9:1 on cream - fine as a fill, illegible as
+     label text. Guidelines s.8: pink is never used for small body copy. */
+  --pink-deep: #a81442;
   --periwinkle: #7778b8;
   --orchid: #b373b0;
   --green: #71be46;
@@ -82,7 +86,7 @@ html,
 body {
   background: var(--bg);
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 body {
@@ -172,10 +176,10 @@ img {
 
 .hero-title {
   font-size: 40px;
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
-  letter-spacing: -0.03em;
-  line-height: 1.03;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   margin-bottom: 16px;
 }
 
@@ -220,7 +224,7 @@ img {
   align-items: center;
   gap: 8px;
   background: var(--pink-light);
-  color: var(--pink);
+  color: var(--pink-deep);
   font-weight: 600;
   font-size: 14px;
   padding: 8px 14px;
@@ -232,7 +236,7 @@ img {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--pink);
+  background: var(--pink-deep);
 }
 
 .status-badge.delivered {
@@ -757,7 +761,7 @@ img {
 
 /* Clickable "View profile" chip - opens the crew member's public page. */
 .crew-chip.profile {
-  background: var(--pink);
+  background: var(--pink-deep);
   color: #fff;
   text-decoration: none;
   transition: opacity 0.15s ease;
@@ -889,7 +893,7 @@ img {
 }
 
 .footer a {
-  color: var(--pink);
+  color: var(--pink-deep);
   font-weight: 500;
 }
 
@@ -1013,7 +1017,7 @@ img {
 
 .assets-summary-count {
   font-size: 26px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
@@ -1028,7 +1032,7 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: var(--pink);
+  background: var(--pink-deep);
   color: #fff;
   font-weight: 600;
   font-size: 13px;
