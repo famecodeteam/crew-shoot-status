@@ -1930,3 +1930,97 @@ img {
 .feedback-prompt-btn:hover {
   background: var(--pink-hover);
 }
+
+/* ---------- "When/where is your shoot?" ask (missing date/location) ---------- */
+/* Pink-tinted rather than success-green: this is an open request for the
+   client, not a confirmation, and it sits directly under the welcome banner. */
+
+.details-ask {
+  background: var(--pink-light);
+  border: 1px solid var(--pink);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 28px;
+}
+
+.details-ask-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.details-ask-sub {
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+
+.details-ask-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.details-ask-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1 1 200px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.details-ask-field input {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  color: inherit;
+}
+
+.details-ask-field input:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 2px;
+}
+
+.details-ask-btn {
+  margin-top: 14px;
+  padding: 11px 22px;
+  border: none;
+  border-radius: 999px;
+  background: var(--pink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.details-ask-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.details-ask-error {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #c0392b;
+}
+
+.details-ask-note {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  opacity: 0.75;
+}
+
+.details-ask-done {
+  font-size: 15px;
+  line-height: 1.55;
+}

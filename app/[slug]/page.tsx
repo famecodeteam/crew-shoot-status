@@ -16,6 +16,7 @@ import { AssetPoster } from "./AssetPoster";
 import { getDemoShoot, getJustBookedDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
 import { WelcomeSync } from "./welcome-sync";
+import { ShootDetailsForm } from "./shoot-details-form";
 import { currentStepIndex, timelineSteps } from "./status";
 
 // Re-fetch on every request - we want ≤60s lag from a Trello move.
@@ -284,6 +285,16 @@ function ShootView({
             Bookmark this page to check back anytime.
           </p>
         </div>
+      )}
+      {/* Some bookings are paid before the date or venue is settled. Ask for
+          whichever we're missing - shown until answered, not just on the
+          ?welcome=1 landing, because that param is stripped after one render. */}
+      {(!shoot.shootDate || !shoot.location) && (
+        <ShootDetailsForm
+          slug={shoot.slug}
+          needDate={!shoot.shootDate}
+          needLocation={!shoot.location}
+        />
       )}
       <header className="hero">
         <div className="hero-top">
