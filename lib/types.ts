@@ -161,7 +161,7 @@ export type Shoot = {
   previousSlugs?: string[];
   cardId: string; // Trello card id (stable across renames)
   shootNumber: string; // "#0190"
-  clientName: string; // "genOway"
+  clientName: string; // "Northwind"
   // Category-style label from Trello (e.g. "Podcast", "Conference",
   // "Event"). Sourced from the card's first non-"Post Production" label.
   shootType?: string;
