@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Illustrated placeholder portrait">
+  <!-- A drawn placeholder, not a photograph of a real person. The demo crew
+       member is fictional, so using a real crew member's face here would
+       misrepresent them - and a stock headshot needs a licence we can point
+       at. Brand tokens only: cream ground, pink figure. -->
+  <rect width="160" height="160" fill="#f8f1eb"/>
+  <circle cx="80" cy="62" r="26" fill="#ff467c" opacity="0.9"/>
+  <path d="M24 160c0-31 25-56 56-56s56 25 56 56z" fill="#ff467c" opacity="0.9"/>
+  <circle cx="80" cy="62" r="26" fill="none" stroke="#292a25" stroke-opacity="0.12" stroke-width="2"/>
+</svg>

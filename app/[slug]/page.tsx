@@ -13,7 +13,7 @@ import { statusLabel } from "@/lib/list-mapping";
 import { clientFacingCrewName } from "@/lib/crew-name";
 import { CrewPhoto } from "./crew-photo";
 import { AssetPoster } from "./AssetPoster";
-import { getDemoShoot, getJustBookedDemoShoot } from "./demo-data";
+import { getDemoAssets, getDemoShoot, getJustBookedDemoShoot } from "./demo-data";
 import { LiveMoments } from "./live-moments";
 import { WelcomeSync } from "./welcome-sync";
 import { ShootDetailsForm } from "./shoot-details-form";
@@ -78,8 +78,9 @@ export default async function ShootPage({
   }
 
   // Assets - empty unless the editor has pushed at least one finished
-  // version. Skip the lookup for the demo slug (no real cardId).
-  const assets = slug === "demo" ? [] : await getAssetsForShoot(shoot.cardId);
+  // version. The demo slug has no real cardId, so it serves a fixed set:
+  // without them the review tool could only be described, never shown.
+  const assets = slug === "demo" ? getDemoAssets() : await getAssetsForShoot(shoot.cardId);
   // Mux proxy stills for the asset posters (see lib/proxies.ts). One KV read
   // per shoot, joined onto each version by Drive file id in AssetCard.
   const proxyPlaybackIds =
