@@ -14,6 +14,7 @@
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getDemoAssets, getDemoShoot } from "../../demo-data";
 import Link from "next/link";
 import { getBySlug } from "@/lib/storage";
 import { getAsset } from "@/lib/asset-storage";
@@ -40,6 +41,13 @@ async function resolveShootAsset(
   slug: string,
   assetSlug: string,
 ): Promise<{ shoot: Shoot; asset: Asset } | null> {
+  // The demo shoot has no real cardId, so neither lookup below can find it.
+  // Without this the demo status page listed assets that all 404'd on click -
+  // the review tool is the part of Fame OS the Crew pages point at.
+  if (slug === "demo") {
+    const asset = getDemoAssets().find((a) => a.slug === assetSlug);
+    return asset ? { shoot: getDemoShoot(), asset } : null;
+  }
   const shoot = await getBySlug(slug);
   if (shoot) {
     const asset = await getAsset(shoot.cardId, assetSlug);
