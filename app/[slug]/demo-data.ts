@@ -66,9 +66,24 @@ export function getJustBookedDemoShoot(): Shoot {
 // Demo assets for /demo, so the client-review side of the tool has something
 // to show. Previously the demo shoot returned no assets at all, which meant
 // the review tool - the part of Fame OS a prospect most wants to see - could
-// only be described, never demonstrated. Cloudflare Stream fields are left
-// unset: there is no real video behind these, and the poster falls back to a
-// placeholder rather than pretending a file exists.
+// only be described, never demonstrated.
+//
+// The video IS real, not faked: review-shell.tsx only ever builds a player
+// from a Cloudflare Stream HLS manifest (customer-<code>.cloudflarestream.com/
+// <uid>/manifest/video.m3u8) - there's no plain-<video src> fallback to lean
+// on - so a placeholder streamUid would just show a broken player, which is
+// worse than the placeholder poster this replaces.
+//
+// fame.so/portfolio (the source these were meant to come from) turned out to
+// be YouTube embeds, not fetchable files, and Stream's ingest API needs a
+// direct URL it can pull from - so these are ingested instead from the same
+// real, Tom-approved raw shoot footage used for member.fame.so/footage/demo
+// (see that repo's demo-data.ts for the source and full explanation). A
+// raw, unedited clip is arguably a better fit for a review-tool demo than a
+// finished case study anyway. Ingested via lib/stream.ts's copyFromUrl,
+// tagged meta.app: "crew-shoot-status" per that file's orphan-prune
+// convention. durationSeconds/sizeBytes below are Stream's own reported
+// values for the ingested copy, not invented.
 export function getDemoAssets(): Asset[] {
   const base = {
     shootCardId: "demo-card-id",
@@ -77,18 +92,27 @@ export function getDemoAssets(): Asset[] {
     updatedAt: "2026-05-22T16:20:00.000Z",
     createdBy: null,
   };
-  const version = (n: number, filename: string, uploadedAt: string): AssetVersion => ({
+  const version = (
+    n: number,
+    filename: string,
+    uploadedAt: string,
+    streamUid: string,
+    durationSeconds: number,
+    sizeBytes: number,
+  ): AssetVersion => ({
     n,
     driveFileId: `demo-file-${filename}`,
     uploadedAt,
     uploadedBy: "Fame editor",
-    sizeBytes: 148 * 1024 * 1024,
-    durationSeconds: 96,
+    sizeBytes,
+    durationSeconds,
     filename,
     isPublishedToClient: true,
     publishedToClientAt: uploadedAt,
     publishedBy: "Fame",
     internalStatus: "published",
+    streamUid,
+    streamStatus: "ready",
   });
 
   return [
@@ -96,17 +120,17 @@ export function getDemoAssets(): Asset[] {
       ...base,
       slug: "conference-sizzle-reel",
       name: "Conference Sizzle Reel",
-      notes: "90-second highlight cut for the post-event campaign.",
+      notes: "Highlight cut for the post-event campaign.",
       versions: [
-        version(1, "v1.mp4", "2026-05-18T09:00:00.000Z"),
-        version(2, "v2.mp4", "2026-05-21T11:30:00.000Z"),
+        version(1, "v1.mp4", "2026-05-18T09:00:00.000Z", "83a1c57c629920c689fc46d520efb17a", 25.5, 469913272),
+        version(2, "v2.mp4", "2026-05-21T11:30:00.000Z", "ac17a0466faaf40bbfe04bb808fa349e", 12, 268582478),
       ],
       approval: {
         status: "changes_requested",
         onVersion: 1,
         authorName: "Priya Raman",
         decidedAt: "2026-05-20T14:05:00.000Z",
-        changeRequestText: "Can we cut the wide at 00:42 and hold on the keynote line instead?",
+        changeRequestText: "Can we hold on the walk-on a beat longer before cutting wide?",
       },
       lifecycle: "awaiting_client_review",
     },
@@ -114,8 +138,10 @@ export function getDemoAssets(): Asset[] {
       ...base,
       slug: "keynote-full-session",
       name: "Keynote - Full Session",
-      notes: "Full 24-minute keynote, colour graded, captions burned in.",
-      versions: [version(1, "v1.mp4", "2026-05-19T08:15:00.000Z")],
+      notes: "Keynote pull, colour graded, captions burned in.",
+      versions: [
+        version(1, "v1.mp4", "2026-05-19T08:15:00.000Z", "813eb808bbb36dbe0a7c247cd03f4d0d", 10.5, 201473154),
+      ],
       approval: {
         status: "approved",
         onVersion: 1,
@@ -130,7 +156,9 @@ export function getDemoAssets(): Asset[] {
       slug: "speaker-clip-vertical",
       name: "Speaker Clip (Vertical)",
       notes: "9:16 cut for LinkedIn and Shorts.",
-      versions: [version(1, "v1.mp4", "2026-05-22T10:00:00.000Z")],
+      versions: [
+        version(1, "v1.mp4", "2026-05-22T10:00:00.000Z", "39920a88d5630753278e597ea274ccea", 8, 201472312),
+      ],
       approval: null,
       lifecycle: "awaiting_client_review",
     },
