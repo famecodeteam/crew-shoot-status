@@ -14,7 +14,12 @@ import { syncFromFeed } from "@/lib/sync-from-feed";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// Runtime scales with shoot count - ~235ms each, so 124 shoots takes ~29s.
+// At the old 60s cap this would have started timing out around 255 shoots,
+// and a timeout here is silent: every client status page simply stops
+// updating until someone presses "Sync to client page" by hand. It has
+// already happened once at 61.2s. 300s buys roughly 1,200 shoots of headroom.
+export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
   // Accept CRON_SECRET (Vercel cron), ADMIN_RESYNC_TOKEN (manual), or the
