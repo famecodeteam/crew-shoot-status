@@ -22,6 +22,11 @@ export type SyncHeartbeat = {
   fetched?: number;
   upserted?: number;
   failed?: number;
+  /** Shoots whose feed timestamp matched the copy we hold - the whole point
+   *  of the incremental pass. */
+  unchanged?: number;
+  /** True when this run reconciled every shoot rather than only changed ones. */
+  fullPass?: boolean;
   error?: string;
 };
 
@@ -51,3 +56,24 @@ export async function readSyncHeartbeat(): Promise<SyncHeartbeat | null> {
   if (!raw) return null;
   return typeof raw === "string" ? (JSON.parse(raw) as SyncHeartbeat) : raw;
 }
+
+const FULL_KEY = "sync:last-full-pass";
+
+/** When the last FULL reconcile ran. Incremental runs skip shoots whose
+ *  shoots.updated_at hasn't moved, but the feed also joins crew_members and
+ *  shoot_crew - a photo, bio or roster change doesn't bump that timestamp, so
+ *  a periodic full pass is what stops those quietly never arriving. */
+export async function readLastFullPass(): Promise<number | null> {
+  const c = client();
+  if (!c) return null;
+  const raw = (await c.get(FULL_KEY).catch(() => null)) as number | string | null;
+  if (raw == null) return null;
+  return typeof raw === "string" ? Number(raw) : raw;
+}
+
+export async function recordFullPass(at: number): Promise<void> {
+  const c = client();
+  if (!c) return;
+  await c.set(FULL_KEY, String(at)).catch(() => {});
+}
+
