@@ -34,7 +34,17 @@ export async function GET(req: NextRequest) {
   }
 
   const dryRun = req.nextUrl.searchParams.get("dryRun") === "1";
-  const summary = await syncFromFeed({ dryRun });
+  // Vercel's cron sends CRON_SECRET; a person pressing "Sync to client page"
+  // comes in on one of the others. Recording which lets a stale page be traced
+  // to "the cron stopped" instead of guessed at.
+  const auth = req.headers.get("authorization") ?? "";
+  const token = req.nextUrl.searchParams.get("token") ?? "";
+  const cronSecret = process.env.CRON_SECRET;
+  const trigger =
+    cronSecret && (auth === `Bearer ${cronSecret}` || token === cronSecret)
+      ? ("cron" as const)
+      : ("manual" as const);
+  const summary = await syncFromFeed({ dryRun, trigger });
   console.log(`[sync-shoots] ${JSON.stringify(summary)}`);
   return NextResponse.json(summary);
 }

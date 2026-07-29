@@ -26,6 +26,7 @@ import { extractDocId, shootSlugToBriefSlug } from "./brief-slug";
 import { generateSlug } from "./transform";
 import { scheduleMilestoneEmail } from "./emails/enqueue";
 import type { CrewStatus, Shoot } from "./types";
+import { recordSyncRun } from "./sync-heartbeat";
 
 const FEED_URL =
   process.env.CREW_FEED_URL?.trim() ||
@@ -357,8 +358,13 @@ export async function emailReadinessFromFeed(): Promise<
 
 export async function syncFromFeed(opts?: {
   dryRun?: boolean;
+  /** Who kicked this off, so a stale page can be traced to "the cron stopped"
+   *  rather than guessed at. */
+  trigger?: "cron" | "manual";
 }): Promise<FeedSyncSummary> {
   const dryRun = opts?.dryRun ?? false;
+  const startedAt = Date.now();
+  const trigger = opts?.trigger ?? "unknown";
   const secret = process.env.SYNC_API_SECRET?.trim();
   if (!secret) {
     return {
@@ -549,6 +555,18 @@ export async function syncFromFeed(opts?: {
         error: `batch write failed: ${(err as Error).message}`,
       };
     }
+  }
+
+  if (!dryRun) {
+    await recordSyncRun({
+      at: new Date().toISOString(),
+      trigger,
+      ok: failed === 0,
+      durationMs: Date.now() - startedAt,
+      fetched: shoots.length,
+      upserted,
+      failed,
+    });
   }
 
   return {
