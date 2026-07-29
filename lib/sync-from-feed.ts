@@ -26,7 +26,12 @@ import { extractDocId, shootSlugToBriefSlug } from "./brief-slug";
 import { generateSlug } from "./transform";
 import { scheduleMilestoneEmail } from "./emails/enqueue";
 import type { CrewStatus, Shoot } from "./types";
-import { recordSyncRun } from "./sync-heartbeat";
+import { canSkipUnchanged } from "./sync-skip";
+import {
+  readLastFullPass,
+  recordFullPass,
+  recordSyncRun,
+} from "./sync-heartbeat";
 
 const FEED_URL =
   process.env.CREW_FEED_URL?.trim() ||
@@ -212,6 +217,10 @@ function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | nu
 export type FeedSyncSummary = {
   fetched: number;
   upserted: number;
+  /** Skipped because nothing changed since the last run. */
+  unchanged?: number;
+  /** True when this run reconciled every shoot, not just changed ones. */
+  fullPass?: boolean;
   skipped: number;
   /** Shoots whose own sync threw - counted, never fatal to the rest. */
   failed: number;
@@ -419,6 +428,20 @@ export async function syncFromFeed(opts?: {
   const storeBefore = await listAllMap();
   const pendingUpserts: Record<string, Shoot> = {};
 
+  // Incremental by default: rewriting all ~124 shoots every 5 minutes is what
+  // pushed the run toward the timeout, and almost none of them have changed.
+  // A shoot whose feed updatedAt matches the copy we already hold is skipped.
+  //
+  // But updatedAt is shoots.updated_at alone, while the feed also joins
+  // crew_members and shoot_crew - a crew photo, bio or roster change doesn't
+  // move it. So a full pass still runs hourly, which is what stops those
+  // changes quietly never arriving. Urgent changes don't wait for it: the
+  // portal pushes client-visible edits the moment they happen.
+  const lastFull = await readLastFullPass();
+  const fullPass =
+    dryRun || lastFull == null || Date.now() - lastFull > 55 * 60_000;
+  let unchanged = 0;
+
   let upserted = 0;
   let skipped = 0;
   let failed = 0;
@@ -431,6 +454,17 @@ export async function syncFromFeed(opts?: {
     // nothing in the summary to show why. Isolate each shoot and carry on.
     try {
     const existing = storeBefore[f.cardId] ?? null;
+    // Never skip a shoot we don't hold yet, however old its timestamp.
+    if (
+      canSkipUnchanged({
+        fullPass,
+        existingUpdatedAt: existing?.updatedAt,
+        feedUpdatedAt: f.updatedAt,
+      })
+    ) {
+      unchanged += 1;
+      continue;
+    }
     const shoot = feedToShoot(f, existing?.slug);
     if (!shoot) {
       skipped += 1; // not publishable / no card id - leave existing alone
@@ -558,6 +592,7 @@ export async function syncFromFeed(opts?: {
   }
 
   if (!dryRun) {
+    if (fullPass) await recordFullPass(Date.now());
     await recordSyncRun({
       at: new Date().toISOString(),
       trigger,
@@ -566,12 +601,16 @@ export async function syncFromFeed(opts?: {
       fetched: shoots.length,
       upserted,
       failed,
+      unchanged,
+      fullPass,
     });
   }
 
   return {
     fetched: shoots.length,
     upserted,
+    unchanged,
+    fullPass,
     skipped,
     failed,
     emailsScheduled,
