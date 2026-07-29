@@ -199,6 +199,15 @@ function ShootView({
   const steps = timelineSteps(shoot.hasPostProduction);
   const stepIdx = currentStepIndex(shoot.status, shoot.hasPostProduction);
   const isOnHold = shoot.status === "on-hold";
+  // Pre-shoot only: once the shoot has happened the answer is history, and
+  // asking for it undermines the page it sits on.
+  const beforeShootDay =
+    shoot.status === "booking-confirmed" ||
+    shoot.status === "searching-for-crew" ||
+    shoot.status === "crew-confirmed" ||
+    shoot.status === "ready-for-shoot";
+  const askForDetails =
+    beforeShootDay && (!shoot.shootDate || !shoot.location);
   const isDelivered = shoot.status === "delivered";
   // Footage section gate. The footageUrl alone isn't sufficient because
   // member.fame.so can pre-generate a hashed URL for the shoot folder
@@ -289,8 +298,15 @@ function ShootView({
       )}
       {/* Some bookings are paid before the date or venue is settled. Ask for
           whichever we're missing - shown until answered, not just on the
-          ?welcome=1 landing, because that param is stripped after one render. */}
-      {(!shoot.shootDate || !shoot.location) && (
+          ?welcome=1 landing, because that param is stripped after one render.
+
+          Only before the shoot happens. #0269 was at "Edited Assets Shared
+          With Client" - footage delivered, client invited to review it - and
+          the page still asked "When and where is your shoot?", because the
+          date had never been backfilled. On a page we email to clients that
+          reads as broken, and there is nothing useful they can answer by
+          then. */}
+      {askForDetails && (
         <ShootDetailsForm
           slug={shoot.slug}
           needDate={!shoot.shootDate}
