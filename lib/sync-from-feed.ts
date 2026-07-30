@@ -437,9 +437,15 @@ export async function syncFromFeed(opts?: {
   // move it. So a full pass still runs hourly, which is what stops those
   // changes quietly never arriving. Urgent changes don't wait for it: the
   // portal pushes client-visible edits the moment they happen.
+  // A person pressing "Sync to client page" is almost always doing it because
+  // something looks wrong, so their run always reconciles everything. Leaving
+  // manual runs incremental broke the one escape hatch the team reaches for.
   const lastFull = await readLastFullPass();
   const fullPass =
-    dryRun || lastFull == null || Date.now() - lastFull > 55 * 60_000;
+    dryRun ||
+    trigger !== "cron" ||
+    lastFull == null ||
+    Date.now() - lastFull > 55 * 60_000;
   let unchanged = 0;
 
   let upserted = 0;
