@@ -45,9 +45,18 @@ export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization") ?? "";
   const token = req.nextUrl.searchParams.get("token") ?? "";
   const cronSecret = process.env.CRON_SECRET;
-  const trigger =
-    cronSecret && (auth === `Bearer ${cronSecret}` || token === cronSecret)
-      ? ("cron" as const)
+  const isCron =
+    cronSecret && (auth === `Bearer ${cronSecret}` || token === cronSecret);
+  // The portal pushes on every client-visible edit and waits on the response,
+  // so those runs must stay incremental - a full pass takes ~30s and the push
+  // aborts long before that, which meant the change never landed and the page
+  // stayed stale until someone pressed Sync. A person pressing Sync still gets
+  // the full reconcile; they're doing it because something looks wrong.
+  const wantsFull = req.nextUrl.searchParams.get("full");
+  const trigger = isCron
+    ? ("cron" as const)
+    : wantsFull === "0"
+      ? ("push" as const)
       : ("manual" as const);
   const summary = await syncFromFeed({ dryRun, trigger });
   console.log(`[sync-shoots] ${JSON.stringify(summary)}`);

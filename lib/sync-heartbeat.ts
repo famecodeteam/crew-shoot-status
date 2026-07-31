@@ -16,7 +16,7 @@ const KEY = "sync:last-run";
 
 export type SyncHeartbeat = {
   at: string;
-  trigger: "cron" | "manual" | "unknown";
+  trigger: "cron" | "manual" | "push" | "unknown";
   ok: boolean;
   durationMs: number;
   fetched?: number;
