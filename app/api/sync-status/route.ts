@@ -8,7 +8,12 @@
 // behind an admin session, so Tom never needs the secret.
 
 import { NextResponse, type NextRequest } from "next/server";
-import { readSyncHeartbeat } from "@/lib/sync-heartbeat";
+
+type SyncHeartbeatLike = { at: string };
+import {
+  readSyncHeartbeat,
+  readSyncHeartbeatsByTrigger,
+} from "@/lib/sync-heartbeat";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -27,7 +32,10 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const beat = await readSyncHeartbeat();
+  const [beat, byTrigger] = await Promise.all([
+    readSyncHeartbeat(),
+    readSyncHeartbeatsByTrigger(),
+  ]);
   if (!beat) {
     return NextResponse.json({
       lastRun: null,
@@ -35,9 +43,18 @@ export async function GET(req: NextRequest) {
     });
   }
   const ageMs = Date.now() - Date.parse(beat.at);
+  const ageOf = (b: SyncHeartbeatLike | null) =>
+    b ? Math.round((Date.now() - Date.parse(b.at)) / 1000) : null;
+
   return NextResponse.json({
     lastRun: beat,
     ageSeconds: Math.round(ageMs / 1000),
+    // Per-trigger, because the cron overwrites the single slot every 5 min and
+    // hides whether pushes are landing at all.
+    lastPush: byTrigger.push ?? null,
+    lastPushAgeSeconds: ageOf(byTrigger.push ?? null),
+    lastCron: byTrigger.cron ?? null,
+    lastManual: byTrigger.manual ?? null,
     // The cron is every 5 minutes, so anything past ~11 means it missed at
     // least two runs - the state that leaves a client looking at a stale page.
     cronLooksHealthy: beat.trigger === "cron" ? ageMs < 11 * 60_000 : null,
