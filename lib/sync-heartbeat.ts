@@ -13,6 +13,11 @@
 import { Redis } from "@upstash/redis";
 
 const KEY = "sync:last-run";
+// Also keyed per trigger. With a 5-minute cron overwriting a single "last run"
+// slot, a push is invisible within a minute of happening - which made the
+// heartbeat useless for answering "did that status change reach the client?"
+// and had us chasing a bug that may not have existed.
+const KEY_BY_TRIGGER = (t: string) => `sync:last-run:${t}`;
 
 export type SyncHeartbeat = {
   at: string;
@@ -43,7 +48,36 @@ function client(): Redis | null {
 export async function recordSyncRun(beat: SyncHeartbeat): Promise<void> {
   const c = client();
   if (!c) return;
-  await c.set(KEY, JSON.stringify(beat)).catch(() => {});
+  const payload = JSON.stringify(beat);
+  await Promise.all([
+    c.set(KEY, payload).catch(() => {}),
+    c.set(KEY_BY_TRIGGER(beat.trigger), payload).catch(() => {}),
+  ]);
+}
+
+/** The most recent run of each kind, so a push stays visible after the cron
+ *  has run again. */
+export async function readSyncHeartbeatsByTrigger(): Promise<
+  Record<string, SyncHeartbeat | null>
+> {
+  const c = client();
+  if (!c) return {};
+  const triggers = ["cron", "push", "manual"];
+  const out: Record<string, SyncHeartbeat | null> = {};
+  await Promise.all(
+    triggers.map(async (t) => {
+      const raw = (await c.get(KEY_BY_TRIGGER(t)).catch(() => null)) as
+        | SyncHeartbeat
+        | string
+        | null;
+      out[t] = !raw
+        ? null
+        : typeof raw === "string"
+          ? (JSON.parse(raw) as SyncHeartbeat)
+          : raw;
+    }),
+  );
+  return out;
 }
 
 export async function readSyncHeartbeat(): Promise<SyncHeartbeat | null> {
