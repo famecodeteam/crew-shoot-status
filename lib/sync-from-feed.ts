@@ -369,7 +369,7 @@ export async function syncFromFeed(opts?: {
   dryRun?: boolean;
   /** Who kicked this off, so a stale page can be traced to "the cron stopped"
    *  rather than guessed at. */
-  trigger?: "cron" | "manual";
+  trigger?: "cron" | "manual" | "push";
 }): Promise<FeedSyncSummary> {
   const dryRun = opts?.dryRun ?? false;
   const startedAt = Date.now();
@@ -443,7 +443,7 @@ export async function syncFromFeed(opts?: {
   const lastFull = await readLastFullPass();
   const fullPass =
     dryRun ||
-    trigger !== "cron" ||
+    trigger === "manual" ||
     lastFull == null ||
     Date.now() - lastFull > 55 * 60_000;
   let unchanged = 0;
