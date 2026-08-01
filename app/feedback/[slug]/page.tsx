@@ -17,7 +17,9 @@ import { notFound } from "next/navigation";
 import { getBySlug } from "@/lib/storage";
 import { FeedbackForm } from "./feedback-form";
 
-export const dynamic = "force-dynamic";
+// ISR: serve cached HTML and revalidate in the background every 30s.
+// The page only reads the shoot record for the hero; 30s staleness is fine.
+export const revalidate = 30;
 
 const FAME_LOGO_URL =
   "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65bcbe23cfb0eb14d2ce0063_logo.svg";

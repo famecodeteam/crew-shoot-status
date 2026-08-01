@@ -98,7 +98,62 @@ function slugFromStatusPageUrl(url: string | null): string | null {
   }
 }
 
-function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | null {
+// Incremental-cursor key: the feed's serverTime from the last successful
+// full sync. Passed back as ?since= so the portal only scans activity-log
+// rows newer than it, instead of the whole table every 15 minutes. Stored
+// in the same Redis the shoot store uses; when unreadable (or in file-dev
+// mode) the sync just falls back to a full feed pull.
+const FEED_CURSOR_KEY = "sync-shoots:feed-cursor";
+
+let cursorUpstash: import("@upstash/redis").Redis | null = null;
+let cursorNode: import("redis").RedisClientType | null = null;
+
+async function getFeedCursor(): Promise<string | null> {
+  try {
+    if (
+      process.env.UPSTASH_KV_REST_API_URL &&
+      process.env.UPSTASH_KV_REST_API_TOKEN
+    ) {
+      if (!cursorUpstash) {
+        const { Redis } = await import("@upstash/redis");
+        cursorUpstash = new Redis({
+          url: process.env.UPSTASH_KV_REST_API_URL,
+          token: process.env.UPSTASH_KV_REST_API_TOKEN,
+        });
+      }
+      return (await cursorUpstash.get<string>(FEED_CURSOR_KEY)) ?? null;
+    }
+    if (process.env.REDIS_URL) {
+      if (!cursorNode) {
+        const { createClient } = await import("redis");
+        cursorNode = createClient({ url: process.env.REDIS_URL });
+        cursorNode.on("error", (e) =>
+          console.error("[sync-shoots] cursor redis error:", e),
+        );
+        await cursorNode.connect();
+      }
+      return await cursorNode.get(FEED_CURSOR_KEY);
+    }
+  } catch (err) {
+    console.warn("[sync-shoots] cursor read failed:", (err as Error).message);
+  }
+  return null;
+}
+
+async function setFeedCursor(value: string): Promise<void> {
+  try {
+    if (cursorUpstash) {
+      await cursorUpstash.set(FEED_CURSOR_KEY, value);
+    } else if (cursorNode) {
+      await cursorNode.set(FEED_CURSOR_KEY, value);
+    }
+    // File-dev mode: no persistent cursor, every run is a full pull.
+  } catch (err) {
+    console.warn("[sync-shoots] cursor write failed:", (err as Error).message);
+  }
+}
+
+function feedToShoot(f: FeedShoot, existing: Shoot | null): Shoot | null {
   if (!f.cardId) return null;
   const mapping = mapList(f.status ?? "");
   if (!mapping || !mapping.publishable) return null;
@@ -158,8 +213,16 @@ function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | nu
         .filter(Boolean)
     : [];
 
+  // Merge feed milestones INTO the ones we already hold. On an incremental
+  // pull (?since=) the feed only carries transitions since the last sync, so
+  // replacing wholesale would wipe every earlier milestone date. Existing
+  // wins on conflict - milestone semantics are "earliest time the shoot
+  // entered that status", and what we hold is by definition older.
   const milestoneDates = capMilestonesToStatus(
-    milestoneDatesFromListDates(f.milestoneDates ?? {}),
+    {
+      ...milestoneDatesFromListDates(f.milestoneDates ?? {}),
+      ...(existing?.milestoneDates ?? {}),
+    },
     mapping.status,
   );
   const projectedDeliveredDate = milestoneDates.delivered
@@ -169,6 +232,7 @@ function feedToShoot(f: FeedShoot, existingSlug: string | undefined): Shoot | nu
   // Prefer the portal's canonical client-facing slug; only fall back to an
   // existing non-provisional slug, then a freshly generated one, when the
   // portal has no status-page URL for this shoot.
+  const existingSlug = existing?.slug;
   const slug =
     slugFromStatusPageUrl(f.statusPageUrl) ??
     (existingSlug && !existingSlug.startsWith("card-")
@@ -304,7 +368,7 @@ export async function refreshOneFromFeed(cardId: string): Promise<Shoot | null> 
   const f = shoots.find((s) => s.cardId === cardId);
   if (!f) return null;
   const existing = await getByCardId(cardId);
-  const shoot = feedToShoot(f, existing?.slug);
+  const shoot = feedToShoot(f, existing);
   if (!shoot) return null;
   await upsertByCardId(cardId, () => shoot);
   return shoot;
@@ -341,7 +405,7 @@ export async function emailReadinessFromFeed(): Promise<
 
   const rows: ReadinessRow[] = [];
   for (const f of shoots) {
-    const shoot = feedToShoot(f, undefined);
+    const shoot = feedToShoot(f, null);
     if (!shoot) continue; // non-publishable (pre-Won, unrecognised list)
     rows.push({
       cardId: shoot.cardId,
@@ -386,10 +450,19 @@ export async function syncFromFeed(opts?: {
     };
   }
 
+  // Incremental pull: tell the feed the serverTime of our last successful
+  // sync so it only scans activity-log rows newer than that. First run (or
+  // an unreadable cursor) falls back to the original full pull.
+  const cursor = await getFeedCursor();
+  const feedUrl = cursor
+    ? `${FEED_URL}?since=${encodeURIComponent(cursor)}`
+    : FEED_URL;
+
   let shoots: FeedShoot[];
   let retiredCardIds: string[] = [];
+  let serverTime: string | null = null;
   try {
-    const res = await fetch(FEED_URL, {
+    const res = await fetch(feedUrl, {
       headers: { Authorization: `Bearer ${secret}` },
       cache: "no-store",
     });
@@ -406,9 +479,11 @@ export async function syncFromFeed(opts?: {
     const body = (await res.json()) as {
       shoots?: FeedShoot[];
       retiredCardIds?: string[];
+      serverTime?: string;
     };
     shoots = body.shoots ?? [];
     retiredCardIds = body.retiredCardIds ?? [];
+    serverTime = body.serverTime ?? null;
   } catch (err) {
     return {
       fetched: 0,
@@ -471,7 +546,7 @@ export async function syncFromFeed(opts?: {
       unchanged += 1;
       continue;
     }
-    const shoot = feedToShoot(f, existing?.slug);
+    const shoot = feedToShoot(f, existing);
     if (!shoot) {
       skipped += 1; // not publishable / no card id - leave existing alone
       continue;
@@ -594,6 +669,12 @@ export async function syncFromFeed(opts?: {
         retired: 0,
         error: `batch write failed: ${(err as Error).message}`,
       };
+    }
+    // Advance the cursor only after the batch write landed - a failed run
+    // must retry from the same point, not silently skip the window. An old
+    // feed deploy without serverTime simply keeps full pulls (no cursor).
+    if (serverTime) {
+      await setFeedCursor(serverTime);
     }
   }
 

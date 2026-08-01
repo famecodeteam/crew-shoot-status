@@ -24,7 +24,9 @@ import { getAssetsLocked } from "@/lib/assets-lock";
 import type { Asset, Shoot } from "@/lib/types";
 import { ReviewShell } from "./review-shell";
 
-export const dynamic = "force-dynamic";
+// ISR: serve cached HTML and revalidate in the background every 30s.
+// The Trello webhook is the real-time path; 30s staleness is fine here.
+export const revalidate = 30;
 
 const FAME_LOGO_URL =
   "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65bcbe23cfb0eb14d2ce0063_logo.svg";

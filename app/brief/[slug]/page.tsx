@@ -16,7 +16,9 @@ import type { ParsedBrief, Section } from "@/lib/parse-brief";
 import { SectionCard } from "./sections";
 import "./brief.css";
 
-export const dynamic = "force-dynamic";
+// ISR: serve cached HTML and revalidate in the background every 30s.
+// Briefs only change when the sync cron re-parses the Doc; 30s is fine.
+export const revalidate = 30;
 
 const FAME_F_ICON =
   "https://cdn.prod.website-files.com/65af97212977390aef05af1b/65dbc8c137b6d056d81db0ad_fame-f-icon-square-pink-cream%403x%201.png";
